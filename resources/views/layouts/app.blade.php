@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+
+        <title>{{ config('app.name', 'Laravel') }}</title>
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+        <!-- Scripts -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <style>
+            [x-cloak] { display: none !important; }
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 4px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 10px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+        </style>
+        @stack('styles')
+    </head>
+    <body class="font-sans antialiased bg-gray-100" x-data="{ mobileMenuOpen: false }">
+        <div class="flex h-screen overflow-hidden bg-gray-100">
+            <!-- Sidebar Component -->
+            <livewire:layout.navigation />
+
+            <!-- Main Content Area -->
+            <div class="flex flex-col flex-1 min-w-0 overflow-hidden bg-gray-100">
+                <!-- Top Header -->
+                <header class="bg-white border-b border-gray-200 z-20 flex-shrink-0">
+                    <div class="px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+                        <div class="flex items-center">
+                            <!-- Mobile Toggle Button (Only visible on mobile) -->
+                            <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden text-gray-500 hover:text-gray-600 focus:outline-none p-2 rounded-md hover:bg-gray-100">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                </svg>
+                            </button>
+                            
+                            @if (isset($header))
+                                <div class="ml-4 lg:ml-0 font-semibold text-gray-800">
+                                    {{ $header }}
+                                </div>
+                            @endif
+                        </div>
+                        
+                        <!-- User Dropdown -->
+                        <div class="flex items-center space-x-2">
+                            <livewire:layout.messages-notification />
+                            
+                            <x-dropdown align="right" width="48">
+                                <x-slot name="trigger">
+                                    <button class="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none transition duration-150 ease-in-out px-3 py-2 rounded-md hover:bg-gray-50">
+                                        <div class="mr-1">{{ auth()->user()->name }}</div>
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </x-slot>
+                                <x-slot name="content">
+                                    <x-dropdown-link :href="route('profile')" wire:navigate>{{ __('Perfil') }}</x-dropdown-link>
+                                    <livewire:layout.logout-button />
+                                </x-slot>
+                            </x-dropdown>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Page Content -->
+                <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+                    {{ $slot }}
+                </main>
+            </div>
+        </div>
+        @stack('scripts')
+    </body>
+</html>

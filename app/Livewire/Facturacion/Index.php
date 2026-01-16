@@ -1,0 +1,70 @@
+<?php
+
+namespace App\Livewire\Facturacion;
+
+use Livewire\Component;
+
+use App\Models\Factura;
+
+class Index extends Component
+{
+    public $facturas;
+
+    public function mount()
+    {
+        if (!auth()->user()->can('manage billing')) {
+            abort(403);
+        }
+        $this->facturas = Factura::with('cliente')->latest()->get();
+    }
+
+    public $showModal = false;
+    public $cliente_id;
+    public $total;
+    public $moneda = 'MXN';
+    public $estado = 'pendiente';
+
+    protected $rules = [
+        'cliente_id' => 'required|exists:clientes,id',
+        'total' => 'required|numeric|min:0',
+        'moneda' => 'required|in:MXN,USD',
+        'estado' => 'required|in:pendiente,pagada,cancelada',
+    ];
+
+    public function create()
+    {
+        $this->reset(['cliente_id', 'total', 'moneda', 'estado']);
+        $this->showModal = true;
+    }
+
+    public function store()
+    {
+        $this->validate();
+
+        $subtotal = $this->total / 1.16;
+        $iva = $this->total - $subtotal;
+
+        Factura::create([
+            'tenant_id' => auth()->user()->tenant_id,
+            'cliente_id' => $this->cliente_id,
+            'subtotal' => $subtotal,
+            'iva' => $iva,
+            'total' => $this->total,
+            'moneda' => $this->moneda,
+            'estado' => $this->estado,
+            'fecha_emision' => now(),
+            'fecha_vencimiento' => now()->addDays(30),
+        ]);
+
+        $this->showModal = false;
+        $this->dispatch('notify', 'Factura creada exitosamente');
+        $this->facturas = Factura::with('cliente')->latest()->get();
+    }
+
+    public function render()
+    {
+        return view('livewire.facturacion.index', [
+            'clientes' => \App\Models\Cliente::where('tenant_id', auth()->user()->tenant_id)->get()
+        ]);
+    }
+}
