@@ -46,6 +46,21 @@
         @endif
     </div>
 
+    <!-- SaaS Section -->
+    @if(auth()->user()->hasRole('super_admin'))
+    <div class="pt-4 border-t border-gray-300">
+        <p class="px-2 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">SaaS</p>
+        
+        <x-sidebar-link :href="route('admin.tenants.index')" :active="request()->routeIs('admin.tenants.*')" icon="office-building">
+            {{ __('Tenants') }}
+        </x-sidebar-link>
+
+        <x-sidebar-link :href="route('admin.plans.index')" :active="request()->routeIs('admin.plans.*')" icon="collection">
+            {{ __('Planes') }}
+        </x-sidebar-link>
+    </div>
+    @endif
+
     <!-- Administration Section -->
     @canany(['manage settings', 'manage users'])
     <div class="pt-4 border-t border-gray-300">

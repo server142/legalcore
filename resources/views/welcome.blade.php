@@ -36,21 +36,18 @@
     <!-- Hero Section with Video Background -->
     <section class="relative pt-32 pb-20 px-4 overflow-hidden min-h-screen flex items-center">
         <!-- Video Background -->
-     
- 
-    <div class="absolute inset-0 w-full h-full overflow-hidden">
-        <video 
-            autoplay 
-            muted 
-            loop 
-            playsinline
-            class="absolute inset-0 w-full h-full object-cover opacity-70"
-        >
-            <source src="{{ asset('video/bg01.mp4') }}" type="video/mp4">
-            Tu navegador no soporta video HTML5.
-        </video>
-    </div>
-
+        <div class="absolute inset-0 w-full h-full overflow-hidden">
+            <video 
+                autoplay 
+                muted 
+                loop 
+                playsinline
+                class="absolute inset-0 w-full h-full object-cover opacity-70"
+            >
+                <source src="{{ asset('video/bg01.mp4') }}" type="video/mp4">
+                Tu navegador no soporta video HTML5.
+            </video>
+        </div>
 
         <!-- Gradient Overlay -->
         <div class="absolute inset-0 gradient-bg opacity-90"></div>
@@ -58,7 +55,7 @@
         <!-- Content -->
         <div class="relative z-10 max-w-7xl mx-auto text-center text-white">
             <div class="inline-block mb-4 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
-                🎉 Prueba gratis por 30 días
+                🎉 Prueba gratis por 15 días
             </div>
             <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight animate-fade-in">
                 Gestiona tu Despacho Jurídico<br>desde la Nube
@@ -167,7 +164,7 @@
         </div>
     </section>
 
-    <!-- Pricing Section -->
+    <!-- Pricing Section (DYNAMIC) -->
     <section id="pricing" class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4">
             <div class="text-center mb-16">
@@ -176,59 +173,45 @@
             </div>
 
             <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                <!-- Plan Básico -->
-                <div class="border-2 border-gray-200 rounded-2xl p-8 hover:border-indigo-500 transition">
-                    <h3 class="text-2xl font-bold mb-2">Básico</h3>
-                    <div class="mb-6">
-                        <span class="text-4xl font-bold">$200</span>
-                        <span class="text-gray-600">/mes</span>
+                @foreach($plans as $plan)
+                    <div class="border-2 {{ $loop->iteration % 2 == 0 ? 'border-indigo-600 transform scale-105 shadow-xl relative' : 'border-gray-200 hover:border-indigo-500' }} rounded-2xl p-8 transition duration-300 flex flex-col">
+                        @if($loop->iteration % 2 == 0)
+                            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-sm font-bold">Más Popular</div>
+                        @endif
+                        
+                        <h3 class="text-2xl font-bold mb-2">{{ $plan->name }}</h3>
+                        <div class="mb-6">
+                            <span class="text-4xl font-bold">${{ number_format($plan->price, 0) }}</span>
+                            <span class="text-gray-600">/mes</span>
+                        </div>
+                        
+                        <ul class="space-y-3 mb-8 flex-1">
+                            <li class="flex items-center">
+                                <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> 
+                                {{ $plan->max_admin_users }} Admin
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> 
+                                {{ $plan->max_lawyer_users ?? 'Ilimitados' }} Abogados
+                            </li>
+                            @if(is_array($plan->features))
+                                @foreach($plan->features as $feature)
+                                    <li class="flex items-center">
+                                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> 
+                                        {{ $feature }}
+                                    </li>
+                                @endforeach
+                            @endif
+                        </ul>
+                        
+                        <a href="/register?plan={{ $plan->slug }}" class="block w-full {{ $loop->iteration % 2 == 0 ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-100 text-gray-900 hover:bg-gray-200' }} text-center py-3 rounded-lg font-bold transition">
+                            Seleccionar Plan
+                        </a>
                     </div>
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> 1 Usuario</li>
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> 50 Expedientes</li>
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> 5GB Almacenamiento</li>
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Soporte por Email</li>
-                    </ul>
-                    <a href="/register?plan=basico" class="block w-full bg-gray-100 text-gray-900 text-center py-3 rounded-lg font-bold hover:bg-gray-200 transition">Comenzar</a>
-                </div>
-
-                <!-- Plan Profesional (Destacado) -->
-                <div class="border-2 border-indigo-600 rounded-2xl p-8 relative transform scale-105 shadow-xl">
-                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-sm font-bold">Más Popular</div>
-                    <h3 class="text-2xl font-bold mb-2">Profesional</h3>
-                    <div class="mb-6">
-                        <span class="text-4xl font-bold">$500</span>
-                        <span class="text-gray-600">/mes</span>
-                    </div>
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> 5 Usuarios</li>
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Expedientes Ilimitados</li>
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> 50GB Almacenamiento</li>
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Soporte Prioritario</li>
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Bitácora de Seguridad</li>
-                    </ul>
-                    <a href="/register?plan=profesional" class="block w-full gradient-bg text-white text-center py-3 rounded-lg font-bold hover:shadow-xl transition">Comenzar Ahora</a>
-                </div>
-
-                <!-- Plan Despacho -->
-                <div class="border-2 border-gray-200 rounded-2xl p-8 hover:border-indigo-500 transition">
-                    <h3 class="text-2xl font-bold mb-2">Despacho</h3>
-                    <div class="mb-6">
-                        <span class="text-4xl font-bold">$1,200</span>
-                        <span class="text-gray-600">/mes</span>
-                    </div>
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Usuarios Ilimitados</li>
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Expedientes Ilimitados</li>
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> 200GB Almacenamiento</li>
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Soporte 24/7</li>
-                        <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Personalización Avanzada</li>
-                    </ul>
-                    <a href="/register?plan=despacho" class="block w-full bg-gray-100 text-gray-900 text-center py-3 rounded-lg font-bold hover:bg-gray-200 transition">Comenzar</a>
-                </div>
+                @endforeach
             </div>
 
-            <p class="text-center mt-12 text-gray-600">Todos los planes incluyen 30 días de prueba gratuita. Sin permanencia mínima.</p>
+            <p class="text-center mt-12 text-gray-600">Todos los planes incluyen 15 días de prueba gratuita si eliges comenzar sin pagar.</p>
         </div>
     </section>
 
@@ -290,7 +273,7 @@
             <a href="/register?plan=trial" class="inline-block bg-white text-indigo-600 px-10 py-4 rounded-lg font-bold text-lg hover:shadow-2xl transition transform hover:scale-105">
                 Comenzar Prueba Gratuita
             </a>
-            <p class="mt-6 text-sm opacity-75">30 días gratis • Sin tarjeta de crédito • Cancela cuando quieras</p>
+            <p class="mt-6 text-sm opacity-75">15 días gratis • Sin tarjeta de crédito • Cancela cuando quieras</p>
         </div>
     </section>
 

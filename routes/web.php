@@ -1,8 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Models\Plan;
 
-Route::view('/', 'welcome');
+Route::get('/', function () {
+    $plans = Plan::where('is_active', true)
+        ->where('slug', '!=', 'trial') // Opcional: Ocultar trial si solo queremos mostrar planes de pago
+        ->orderBy('price', 'asc')
+        ->get();
+    return view('welcome', ['plans' => $plans]);
+})->name('welcome');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
@@ -25,19 +32,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/expedientes/{expediente}/asignaciones', \App\Livewire\Expedientes\ManageAssignments::class)->name('expedientes.assignments')->middleware('can:manage users');
     
     // Admin only - Trial Management
-    Route::get('/admin/trials', \App\Livewire\Admin\TrialManagement::class)->name('admin.trials')->middleware('can:manage tenants');
+    // Admin - Tenant Management
+    Route::get('/admin/tenants', \App\Livewire\Admin\Tenants\Index::class)->name('admin.tenants.index')->middleware('can:manage tenants');
     Route::get('/admin/users', \App\Livewire\Admin\Users\Index::class)->name('admin.users.index')->middleware('can:manage users');
     Route::get('/admin/roles', \App\Livewire\Admin\Roles\Index::class)->name('admin.roles.index')->middleware('can:manage users');
     Route::get('/admin/materias', \App\Livewire\Admin\Materias\Index::class)->name('admin.materias.index')->middleware('can:manage users');
     Route::get('/admin/juzgados', \App\Livewire\Admin\Juzgados\Index::class)->name('admin.juzgados.index')->middleware('can:manage users');
     Route::get('/admin/abogados', \App\Livewire\Admin\Abogados\Index::class)->name('admin.abogados.index')->middleware('can:manage users');
     Route::get('/admin/settings', \App\Livewire\Admin\TenantSettings::class)->name('admin.settings')->middleware('can:manage settings');
+    
+    // Plans Management
+    Route::get('/admin/plans', \App\Livewire\Admin\Plans\Index::class)->name('admin.plans.index')->middleware('can:manage settings');
+    Route::get('/admin/plans/create', \App\Livewire\Admin\Plans\Manage::class)->name('admin.plans.create')->middleware('can:manage settings');
+    Route::get('/admin/plans/{plan}/edit', \App\Livewire\Admin\Plans\Manage::class)->name('admin.plans.edit')->middleware('can:manage settings');
 
     Route::get('/reportes/factura/{factura}', [\App\Http\Controllers\ReportController::class, 'invoice'])->name('reportes.factura');
     Route::get('/reportes/expediente/{expediente}', [\App\Http\Controllers\ReportController::class, 'expediente'])->name('reportes.expediente');
 
     Route::get('/manual', \App\Livewire\Manual\Index::class)->name('manual.index');
     Route::get('/admin/manual', \App\Livewire\Manual\Manage::class)->name('manual.manage')->middleware('can:manage users');
+
+    // Subscription Routes
+    Route::get('/billing/subscribe/{plan}', \App\Livewire\Billing\Subscribe::class)->name('billing.subscribe');
+    Route::get('/subscription/expired', [\App\Http\Controllers\SubscriptionController::class, 'expired'])->name('subscription.expired');
 });
 
 Route::view('profile', 'profile')

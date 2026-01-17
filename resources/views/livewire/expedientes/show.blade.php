@@ -5,29 +5,32 @@
 </x-slot>
 
 <div class="p-6">
-    <div class="mb-6 flex justify-between items-center">
-        <div class="flex items-center space-x-4">
-            <a href="{{ route('expedientes.index') }}" class="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition text-gray-500">
+    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex items-center space-x-4 w-full md:w-auto">
+            <a href="{{ route('expedientes.index') }}" class="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition text-gray-500 flex-shrink-0">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             </a>
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800">{{ $expediente->numero }}</h2>
-                <p class="text-gray-500 text-sm">{{ $expediente->materia }} | {{ $expediente->juzgado }}</p>
+            <div class="min-w-0">
+                <h2 class="text-2xl font-bold text-gray-800 truncate">{{ $expediente->numero }}</h2>
+                <p class="text-gray-500 text-sm truncate">{{ $expediente->materia }} | {{ $expediente->juzgado }}</p>
             </div>
         </div>
-        <div class="flex space-x-2">
+        <div class="flex flex-wrap gap-2 w-full md:w-auto">
             @can('manage users')
-                <a href="{{ route('expedientes.assignments', $expediente) }}" wire:navigate class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center">
+                <a href="{{ route('expedientes.assignments', $expediente) }}" wire:navigate class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none whitespace-nowrap">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                    Gestionar Asignaciones
+                    Gestionar
                 </a>
             @endcan
-            <a href="{{ route('reportes.expediente', $expediente) }}" target="_blank" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center">
+            <a href="{{ route('reportes.expediente', $expediente) }}" target="_blank" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 Informe
             </a>
-            <button wire:click="edit" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50">Editar</button>
-            <button wire:click="toggleAddActuacion" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">+ Nueva Actuación</button>
+            <button wire:click="edit" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex-1 md:flex-none">Editar</button>
+            <button wire:click="toggleAddActuacion" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex-1 md:flex-none whitespace-nowrap">
+                <span class="md:hidden">+</span>
+                <span class="hidden md:inline">+ Actuación</span>
+            </button>
         </div>
     </div>
 

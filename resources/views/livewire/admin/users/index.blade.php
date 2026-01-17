@@ -21,7 +21,8 @@
 
                     <!-- Table -->
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                        <!-- Desktop Table -->
+                        <table class="min-w-full divide-y divide-gray-200 hidden md:table">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -62,6 +63,33 @@
                                 @endforeach
                             </tbody>
                         </table>
+
+                        <!-- Mobile Cards -->
+                        <div class="block md:hidden">
+                            @foreach($users as $user)
+                            <div class="p-4 border-b border-gray-200 hover:bg-gray-50 transition">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900">{{ $user->name }}</h3>
+                                        <p class="text-sm text-gray-500">{{ $user->email }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    @foreach($user->roles as $role)
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 mr-1">
+                                            {{ $role->name }}
+                                        </span>
+                                    @endforeach
+                                </div>
+
+                                <div class="flex justify-end space-x-3">
+                                    <button wire:click="edit({{ $user->id }})" class="text-indigo-600 font-medium text-sm hover:text-indigo-800">Editar</button>
+                                    <button wire:click="confirmDelete({{ $user->id }})" class="text-red-600 font-medium text-sm hover:text-red-800">Eliminar</button>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
                     </div>
                     
                     <div class="mt-4">

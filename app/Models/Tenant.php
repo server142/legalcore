@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Cashier\Billable;
 
 class Tenant extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Billable;
 
     protected $fillable = [
         'name',
@@ -16,21 +17,34 @@ class Tenant extends Model
         'domain',
         'status',
         'plan',
+        'plan_id',
         'trial_ends_at',
-        'is_active',
         'subscription_ends_at',
+        'grace_period_ends_at',
+        'subscription_status',
+        'stripe_customer_id',
+        'pm_type',
+        'pm_last_four',
+        'is_active',
         'settings',
     ];
 
     protected $casts = [
         'settings' => 'array',
-        'trial_ends_at' => 'date',
-        'subscription_ends_at' => 'date',
+        'trial_ends_at' => 'datetime',
+        'subscription_ends_at' => 'datetime',
+        'grace_period_ends_at' => 'datetime',
+        'is_active' => 'boolean',
     ];
 
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+
+    public function planRelation()
+    {
+        return $this->belongsTo(Plan::class, 'plan_id');
     }
 
     public function isOnTrial()
@@ -47,5 +61,39 @@ class Tenant extends Model
     {
         if (!$this->isOnTrial()) return 0;
         return now()->diffInDays($this->trial_ends_at, false);
+    }
+
+    /**
+     * Verificar si el tenant puede agregar un usuario admin
+     */
+    public function canAddAdminUser(): bool
+    {
+        if (!$this->planRelation) {
+            return false;
+        }
+
+        return $this->planRelation->canAddAdminUser($this);
+    }
+
+    /**
+     * Verificar si el tenant puede agregar un usuario abogado
+     */
+    public function canAddLawyerUser(): bool
+    {
+        if (!$this->planRelation) {
+            return false;
+        }
+
+        return $this->planRelation->canAddLawyerUser($this);
+    }
+
+    /**
+     * Obtener el conteo actual de usuarios por rol
+     */
+    public function getUserCountByRole(string $role): int
+    {
+        return $this->users()->whereHas('roles', function ($query) use ($role) {
+            $query->where('name', $role);
+        })->count();
     }
 }

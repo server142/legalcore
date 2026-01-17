@@ -79,6 +79,46 @@
                     </div>
                 </header>
 
+                <!-- Subscription Warning Banner -->
+                @php
+                    $tenant = auth()->user()->tenant;
+                    $showWarning = false;
+                    $warningMessage = '';
+                    $warningType = 'warning'; // warning, danger
+
+                    if ($tenant) {
+                        if ($tenant->isOnTrial()) {
+                            $daysLeft = $tenant->daysLeftInTrial();
+                            if ($daysLeft <= 3) {
+                                $showWarning = true;
+                                $warningMessage = "Tu periodo de prueba termina en {$daysLeft} días. ¡Suscríbete ahora para no perder acceso!";
+                            }
+                        } elseif ($tenant->subscription_status === 'active' && $tenant->subscription_ends_at) {
+                            $daysLeft = now()->diffInDays($tenant->subscription_ends_at, false);
+                            if ($daysLeft <= 3 && $daysLeft >= 0) {
+                                $showWarning = true;
+                                $warningMessage = "Tu suscripción vence en {$daysLeft} días. Renueva pronto.";
+                            }
+                        } elseif (session()->has('warning')) {
+                            $showWarning = true;
+                            $warningMessage = session('warning');
+                            $warningType = 'danger';
+                        }
+                    }
+                @endphp
+
+                @if($showWarning)
+                    <div class="{{ $warningType === 'danger' ? 'bg-red-600' : 'bg-yellow-500' }} text-white px-4 py-3 shadow-md relative z-10 flex justify-between items-center">
+                        <div class="flex items-center">
+                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <span class="font-medium">{{ $warningMessage }}</span>
+                        </div>
+                        <a href="{{ route('billing.subscribe', ['plan' => $tenant->plan ?? 'profesional']) }}" class="bg-white text-gray-900 px-4 py-1 rounded-full text-sm font-bold hover:bg-gray-100 transition">
+                            Renovar / Pagar
+                        </a>
+                    </div>
+                @endif
+
                 <!-- Page Content -->
                 <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
                     {{ $slot }}

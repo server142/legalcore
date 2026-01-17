@@ -17,7 +17,8 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <!-- Desktop Table -->
+                <table class="min-w-full divide-y divide-gray-200 hidden md:table">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Fecha</th>
@@ -76,6 +77,53 @@
                         @endforelse
                     </tbody>
                 </table>
+
+                <!-- Mobile Cards -->
+                <div class="block md:hidden">
+                    @forelse($logs as $log)
+                        <div class="p-4 border-b border-gray-200 hover:bg-gray-50 transition">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex items-center">
+                                    <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs mr-2">
+                                        {{ substr($log->user->name, 0, 1) }}
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold text-gray-900">{{ $log->user->name }}</div>
+                                        <div class="text-xs text-gray-500">{{ $log->created_at->format('d/m/Y H:i') }}</div>
+                                    </div>
+                                </div>
+                                <span class="px-2 py-1 inline-flex text-[10px] leading-5 font-semibold rounded-full 
+                                    {{ $log->accion == 'upload' ? 'bg-green-100 text-green-800' : 
+                                       ($log->accion == 'delete' ? 'bg-red-100 text-red-800' : 
+                                       ($log->accion == 'view' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800')) }}">
+                                    {{ strtoupper($log->accion) }}
+                                </span>
+                            </div>
+
+                            <div class="mb-2">
+                                <p class="text-sm text-gray-800">{{ $log->descripcion }}</p>
+                            </div>
+
+                            <div class="flex justify-between items-center text-xs text-gray-500 mt-2">
+                                <div class="flex items-center">
+                                    <span class="font-semibold mr-1">Módulo:</span> {{ ucfirst($log->modulo) }}
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="mr-1">IP:</span> {{ $log->ip_address }}
+                                    @if($log->metadatos)
+                                        <button @click="alert(JSON.stringify(@js($log->metadatos), null, 2))" class="ml-2 text-indigo-600 hover:text-indigo-800">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="p-6 text-center text-gray-500">
+                            No se encontraron registros en la bitácora.
+                        </div>
+                    @endforelse
+                </div>
             </div>
 
             <div class="mt-6">

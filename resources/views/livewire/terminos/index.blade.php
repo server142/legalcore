@@ -20,7 +20,8 @@
 
     <!-- Lista de Términos -->
     <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
+        <!-- Desktop Table -->
+        <table class="min-w-full divide-y divide-gray-200 hidden md:table">
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vencimiento</th>
@@ -80,6 +81,61 @@
                 @endforelse
             </tbody>
         </table>
+
+        <!-- Mobile Cards -->
+        <div class="block md:hidden">
+            @forelse($terminos as $termino)
+                @php
+                    $isVencido = $termino->estado === 'pendiente' && $termino->fecha_vencimiento->isPast();
+                    $isProximo = $termino->estado === 'pendiente' && $termino->fecha_vencimiento->diffInDays(now()) <= 3;
+                    $cardClass = $isVencido ? 'bg-red-50 border-l-4 border-red-500' : ($isProximo ? 'bg-orange-50 border-l-4 border-orange-500' : 'bg-white border-l-4 border-transparent');
+                @endphp
+                <div class="p-4 border-b border-gray-200 {{ $cardClass }}">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="text-sm font-bold {{ $isVencido ? 'text-red-600' : ($isProximo ? 'text-orange-600' : 'text-gray-900') }}">
+                                {{ $termino->fecha_vencimiento->format('d/m/Y') }}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                {{ $termino->fecha_vencimiento->diffForHumans() }}
+                            </div>
+                        </div>
+                        @if($termino->estado === 'cumplido')
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Cumplido</span>
+                        @elseif($isVencido)
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Vencido</span>
+                        @else
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Pendiente</span>
+                        @endif
+                    </div>
+
+                    <div class="mb-3">
+                        <h3 class="text-lg font-bold text-gray-900">{{ $termino->titulo }}</h3>
+                        <p class="text-sm text-gray-600">{{ $termino->descripcion }}</p>
+                    </div>
+
+                    <div class="flex items-center text-xs text-gray-500 mb-4">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                        {{ $termino->expediente->numero }} - {{ $termino->expediente->titulo }}
+                    </div>
+
+                    <div class="flex justify-end items-center gap-3 border-t pt-3 border-gray-200">
+                        @if($termino->estado === 'pendiente')
+                            <button wire:click="marcarComoCumplido({{ $termino->id }})" class="text-indigo-600 font-medium text-sm hover:text-indigo-800">
+                                Marcar Cumplido
+                            </button>
+                        @endif
+                        <a href="{{ route('expedientes.show', $termino->expediente_id) }}" class="text-gray-600 font-medium text-sm hover:text-gray-900">
+                            Ver Detalle
+                        </a>
+                    </div>
+                </div>
+            @empty
+                <div class="p-6 text-center text-gray-500 italic">
+                    No se encontraron términos que coincidan con los criterios.
+                </div>
+            @endforelse
+        </div>
     </div>
 
     <div class="mt-4">
