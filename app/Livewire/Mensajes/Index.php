@@ -17,7 +17,7 @@ class Index extends Component
     public $showModal = false;
     public $receiver_id;
     public $contenido;
-    public $selectedConversation = null;
+    public $selectedConversationId = null;
     public $replyContent = '';
     public $selectedMessageId = null;
     public $attachment;
@@ -52,11 +52,13 @@ class Index extends Component
             ->get();
 
         $messages = [];
-        if ($this->selectedConversation) {
+        $selectedConversation = null;
+        if ($this->selectedConversationId) {
+            $selectedConversation = User::find($this->selectedConversationId);
             $messages = Mensaje::where(function($q) {
-                $q->where('sender_id', auth()->id())->where('receiver_id', $this->selectedConversation->id);
+                $q->where('sender_id', auth()->id())->where('receiver_id', $this->selectedConversationId);
             })->orWhere(function($q) {
-                $q->where('sender_id', $this->selectedConversation->id)->where('receiver_id', auth()->id());
+                $q->where('sender_id', $this->selectedConversationId)->where('receiver_id', auth()->id());
             })->orderBy('created_at', 'asc')->get();
         }
 
@@ -64,6 +66,7 @@ class Index extends Component
             'conversations' => $conversations,
             'users' => $users,
             'messages' => $messages,
+            'selectedConversation' => $selectedConversation,
         ]);
     }
 
@@ -96,8 +99,9 @@ class Index extends Component
 
     public function selectConversation($userId)
     {
-        $this->selectedConversation = User::find($userId);
+        $this->selectedConversationId = $userId;
         $this->markConversationAsRead($userId);
+        $this->dispatch('message-sent'); // Trigger scroll
     }
 
     public function markConversationAsRead($userId)
@@ -130,7 +134,7 @@ class Index extends Component
         $mensaje = Mensaje::create([
             'tenant_id' => auth()->user()->tenant_id,
             'sender_id' => auth()->id(),
-            'receiver_id' => $this->selectedConversation->id,
+            'receiver_id' => $this->selectedConversationId,
             'contenido' => $this->replyContent,
             'leido' => false,
             'attachment_path' => $attachmentPath,
@@ -142,7 +146,7 @@ class Index extends Component
             'user_id' => auth()->id(),
             'accion' => 'send_message',
             'modulo' => 'mensajes',
-            'descripcion' => 'Envió un mensaje a ' . $this->selectedConversation->name,
+            'descripcion' => 'Envió un mensaje a ' . User::find($this->selectedConversationId)->name,
             'metadatos' => ['mensaje_id' => $mensaje->id],
             'ip_address' => request()->ip(),
         ]);

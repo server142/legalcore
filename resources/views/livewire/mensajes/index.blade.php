@@ -5,12 +5,16 @@
         </h2>
     </x-slot>
 
-    <div class="py-6" x-data="{ showChat: @entangle('selectedConversation') }">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" style="height: calc(100vh - 200px);" wire:poll.5s>
-                <div class="grid grid-cols-12 h-full">
-                    <!-- Sidebar: Conversaciones -->
-                    <div class="col-span-12 md:col-span-4 border-r border-gray-200 flex flex-col" :class="showChat ? 'hidden md:flex' : 'flex'">
+    <div class="py-4 h-[calc(100vh-160px)]" x-data="{ 
+        selectedId: @entangle('selectedConversationId'),
+        get showChat() { return this.selectedId !== null }
+    }">
+        <div class="max-w-7xl mx-auto h-full sm:px-6 lg:px-8">
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden h-full flex flex-col md:flex-row" wire:poll.10s>
+                <!-- Sidebar: Conversaciones -->
+                <div class="w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 flex flex-col h-full bg-white" 
+                     x-show="!showChat || window.innerWidth >= 768"
+                     :class="{'hidden md:flex': showChat, 'flex': !showChat}">
                         <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
                             <h3 class="font-bold text-gray-900">Conversaciones</h3>
                             <button wire:click="create" class="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
@@ -63,13 +67,15 @@
                         </div>
                     </div>
 
-                    <!-- Panel de Conversación -->
-                    <div class="col-span-12 md:col-span-8 flex flex-col" :class="showChat ? 'flex' : 'hidden md:flex'">
+                <!-- Panel de Conversación -->
+                <div class="flex-1 flex flex-col h-full bg-gray-50" 
+                     x-show="showChat || window.innerWidth >= 768"
+                     :class="{'flex': showChat, 'hidden md:flex': !showChat}">
                         @if($selectedConversation)
                             <!-- Header de conversación -->
-                            <div class="p-4 border-b border-gray-200 bg-white flex items-center justify-between">
+                            <div class="p-4 border-b border-gray-200 bg-white flex items-center justify-between shadow-sm z-10">
                                 <div class="flex items-center space-x-3">
-                                    <button @click="showChat = false" class="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
+                                    <button @click="selectedId = null" class="md:hidden p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full transition">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                                     </button>
                                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">
@@ -83,29 +89,61 @@
                             </div>
 
                             <!-- Mensajes -->
-                            <div class="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4" id="messages-container">
+                            <div class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 scroll-smooth" id="messages-container">
+                                @php $lastDate = null; @endphp
                                 @foreach($messages as $message)
-                                    <div class="flex {{ $message->sender_id === auth()->id() ? 'justify-end' : 'justify-start' }}">
-                                        <div class="max-w-[85%] md:max-w-md">
-                                            <div class="rounded-2xl px-4 py-2 {{ $message->sender_id === auth()->id() ? 'bg-indigo-600 text-white' : 'bg-white text-gray-900 shadow-sm' }}">
-                                                <p class="text-sm whitespace-pre-wrap break-words">{{ $message->contenido }}</p>
+                                    @php 
+                                        $messageDate = $message->created_at->format('Y-m-d');
+                                        $showDate = $lastDate !== $messageDate;
+                                        $lastDate = $messageDate;
+                                    @endphp
+
+                                    @if($showDate)
+                                        <div class="flex justify-center my-4">
+                                            <span class="px-3 py-1 bg-gray-200 text-gray-600 text-xs rounded-full font-medium uppercase tracking-wider">
+                                                {{ $message->created_at->isToday() ? 'Hoy' : ($message->created_at->isYesterday() ? 'Ayer' : $message->created_at->format('d M Y')) }}
+                                            </span>
+                                        </div>
+                                    @endif
+
+                                    <div class="flex {{ $message->sender_id === auth()->id() ? 'justify-end' : 'justify-start' }} group">
+                                        <div class="max-w-[85%] md:max-w-[70%] lg:max-w-[60%]">
+                                            <div class="relative rounded-2xl px-4 py-2.5 shadow-sm {{ $message->sender_id === auth()->id() ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-gray-900 rounded-tl-none border border-gray-100' }}">
+                                                <p class="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{{ $message->contenido }}</p>
                                                 
                                                 @if($message->attachment_path)
                                                     <div class="mt-2 pt-2 border-t {{ $message->sender_id === auth()->id() ? 'border-indigo-500' : 'border-gray-100' }}">
                                                         @if(Str::startsWith($message->attachment_type, 'image/'))
-                                                            <img src="{{ Storage::url($message->attachment_path) }}" alt="Adjunto" class="max-w-full rounded-lg max-h-48 object-cover">
+                                                            <a href="{{ Storage::url($message->attachment_path) }}" target="_blank">
+                                                                <img src="{{ Storage::url($message->attachment_path) }}" alt="Adjunto" class="max-w-full rounded-lg max-h-64 object-cover hover:opacity-90 transition">
+                                                            </a>
                                                         @else
-                                                            <a href="{{ Storage::url($message->attachment_path) }}" target="_blank" class="flex items-center space-x-2 text-xs hover:underline">
-                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
-                                                                <span>{{ $message->attachment_name }}</span>
+                                                            <a href="{{ Storage::url($message->attachment_path) }}" target="_blank" class="flex items-center space-x-2 p-2 rounded-lg {{ $message->sender_id === auth()->id() ? 'bg-indigo-700 hover:bg-indigo-800' : 'bg-gray-50 hover:bg-gray-100' }} transition">
+                                                                <div class="p-2 bg-white/20 rounded">
+                                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                                                </div>
+                                                                <div class="flex-1 min-w-0">
+                                                                    <p class="text-xs font-medium truncate">{{ $message->attachment_name }}</p>
+                                                                    <p class="text-[10px] opacity-70 uppercase">{{ explode('/', $message->attachment_type)[1] ?? 'FILE' }}</p>
+                                                                </div>
                                                             </a>
                                                         @endif
                                                     </div>
                                                 @endif
                                             </div>
-                                            <p class="text-xs text-gray-400 mt-1 {{ $message->sender_id === auth()->id() ? 'text-right' : 'text-left' }}">
-                                                {{ $message->created_at->format('H:i') }}
-                                            </p>
+                                            <div class="flex items-center mt-1 space-x-1 {{ $message->sender_id === auth()->id() ? 'justify-end' : 'justify-start' }}">
+                                                <p class="text-[10px] text-gray-400 font-medium">
+                                                    {{ $message->created_at->format('H:i') }}
+                                                </p>
+                                                @if($message->sender_id === auth()->id())
+                                                    <svg class="w-3 h-3 {{ $message->leido ? 'text-blue-500' : 'text-gray-300' }}" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M22.31 6.31L10.5 18.12l-6.81-6.81L2.27 12.73l8.23 8.23 13.23-13.23-1.42-1.42z"/>
+                                                        @if($message->leido)
+                                                            <path d="M16.5 6.31L10.5 12.31l-1.42-1.42 6-6 1.42 1.42z" />
+                                                        @endif
+                                                    </svg>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
@@ -209,14 +247,20 @@
 
     <script>
         document.addEventListener('livewire:init', () => {
+            const scrollToBottom = () => {
+                const container = document.getElementById('messages-container');
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            };
+
+            // Scroll on message sent or conversation selected
             Livewire.on('message-sent', () => {
-                setTimeout(() => {
-                    const container = document.getElementById('messages-container');
-                    if (container) {
-                        container.scrollTop = container.scrollHeight;
-                    }
-                }, 100);
+                setTimeout(scrollToBottom, 50);
             });
+
+            // Initial scroll
+            setTimeout(scrollToBottom, 500);
         });
     </script>
 </div>
