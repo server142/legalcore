@@ -23,6 +23,9 @@ class Index extends Component
     public $editSlug;
     public $editIsActive;
 
+    public $confirmingTenantEdit = false;
+    public $confirmingPlanChange = false;
+
     public function mount()
     {
         //
@@ -46,7 +49,6 @@ class Index extends Component
         $this->selectedPlanId = $tenant->plan_id;
         $this->dispatch('open-modal', 'edit-tenant-modal');
     }
-
     public function updateTenant()
     {
         $this->validate([
@@ -58,27 +60,44 @@ class Index extends Component
         $tenant = Tenant::find($this->selectedTenantId);
         $plan = Plan::find($this->selectedPlanId);
 
-        $tenant->update([
-            'name' => $this->editName,
-            'slug' => $this->editSlug,
-            'is_active' => $this->editIsActive,
-            'plan' => $plan->slug,
-            'plan_id' => $plan->id,
-        ]);
+        $tenant->name = $this->editName;
+        $tenant->slug = $this->editSlug;
+        $tenant->is_active = $this->editIsActive;
 
-        // Si el plan cambió o se reactivó, asegurar que el status sea correcto
-        if ($tenant->is_active) {
-            if ($tenant->plan === 'trial') {
-                $tenant->update(['subscription_status' => ($tenant->trial_ends_at && $tenant->trial_ends_at->isFuture()) ? 'trial' : 'grace_period']);
-            } else {
-                $tenant->update(['subscription_status' => ($tenant->subscription_ends_at && $tenant->subscription_ends_at->isFuture()) ? 'active' : 'grace_period']);
-            }
+        // Si el plan cambió, aplicar la nueva configuración de plan
+        if ($tenant->plan_id !== $plan->id) {
+            $this->applyPlanToTenant($tenant, $plan);
         } else {
-            $tenant->update(['subscription_status' => 'cancelled']);
+            // Si el plan es el mismo pero se reactivó, asegurar status
+            if ($tenant->is_active && $tenant->subscription_status === 'cancelled') {
+                $tenant->subscription_status = $tenant->plan === 'trial' ? 'trial' : 'active';
+            } elseif (!$tenant->is_active) {
+                $tenant->subscription_status = 'cancelled';
+            }
+            $tenant->save();
         }
 
         $this->dispatch('close-modal', 'edit-tenant-modal');
         session()->flash('message', "Tenant '{$tenant->name}' actualizado correctamente.");
+    }
+
+    private function applyPlanToTenant(Tenant $tenant, Plan $plan)
+    {
+        $tenant->plan = $plan->slug;
+        $tenant->plan_id = $plan->id;
+        $tenant->is_active = true;
+        $tenant->subscription_status = $plan->slug === 'trial' ? 'trial' : 'active';
+
+        if ($plan->slug === 'trial') {
+            $tenant->trial_ends_at = now()->addDays($plan->duration_in_days);
+            $tenant->subscription_ends_at = null;
+        } else {
+            $tenant->subscription_ends_at = now()->addDays($plan->duration_in_days);
+            $tenant->trial_ends_at = null;
+        }
+        
+        $tenant->grace_period_ends_at = null;
+        $tenant->save();
     }
 
     public function changePlan()
@@ -90,25 +109,7 @@ class Index extends Component
             return;
         }
 
-        $data = [
-            'plan' => $plan->slug,
-            'plan_id' => $plan->id,
-            'is_active' => true,
-            'subscription_status' => $plan->slug === 'trial' ? 'trial' : 'active',
-        ];
-
-        // Solo extender fecha si es un cambio de plan real o estaba vencido
-        if ($tenant->plan !== $plan->slug || !$tenant->subscription_ends_at || $tenant->subscription_ends_at->isPast()) {
-            if ($plan->slug === 'trial') {
-                $data['trial_ends_at'] = now()->addDays($plan->duration_in_days);
-                $data['subscription_ends_at'] = null;
-            } else {
-                $data['subscription_ends_at'] = now()->addDays($plan->duration_in_days);
-                $data['trial_ends_at'] = null;
-            }
-        }
-
-        $tenant->update($data);
+        $this->applyPlanToTenant($tenant, $plan);
 
         $this->dispatch('close-modal', 'change-plan-modal');
         session()->flash('message', "Plan actualizado a {$plan->name} correctamente.");

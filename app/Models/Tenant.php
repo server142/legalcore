@@ -49,7 +49,7 @@ class Tenant extends Model
 
     public function isOnTrial()
     {
-        return $this->plan === 'trial' && $this->trial_ends_at && $this->trial_ends_at->isFuture();
+        return $this->is_active && $this->plan === 'trial' && $this->trial_ends_at && $this->trial_ends_at->isFuture();
     }
 
     public function trialExpired()
@@ -65,12 +65,23 @@ class Tenant extends Model
 
     public function isSubscriptionActive()
     {
-        return $this->subscription_status === 'active' && $this->subscription_ends_at && $this->subscription_ends_at->isFuture();
+        return $this->is_active && $this->subscription_status === 'active' && $this->subscription_ends_at && $this->subscription_ends_at->isFuture();
     }
 
     public function isOnGracePeriod()
     {
-        return $this->subscription_status === 'grace_period' && $this->grace_period_ends_at && $this->grace_period_ends_at->isFuture();
+        return $this->is_active && $this->subscription_status === 'grace_period' && $this->grace_period_ends_at && $this->grace_period_ends_at->isFuture();
+    }
+
+    public function getExpirationDateAttribute()
+    {
+        return $this->plan === 'trial' ? $this->trial_ends_at : $this->subscription_ends_at;
+    }
+
+    public function getIsExpiredAttribute()
+    {
+        $date = $this->expiration_date;
+        return $date ? $date->isPast() : true;
     }
 
     /**

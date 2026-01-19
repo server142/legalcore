@@ -61,7 +61,7 @@
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tenant</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan Actual</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado Trial</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vencimiento</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuarios</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
@@ -81,17 +81,17 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        @if($tenant->trial_ends_at)
-                                            <div class="{{ $tenant->trialExpired() ? 'text-red-600 font-bold' : 'text-gray-900' }}">
-                                                {{ $tenant->trial_ends_at->format('d/m/Y') }}
+                                        @if($tenant->expiration_date)
+                                            <div class="{{ $tenant->is_expired ? 'text-red-600 font-bold' : 'text-gray-900' }}">
+                                                {{ $tenant->expiration_date->format('d/m/Y') }}
                                             </div>
-                                            @if($tenant->isOnTrial())
-                                                <div class="text-xs text-green-600">{{ $tenant->daysLeftInTrial() }} días restantes</div>
-                                            @elseif($tenant->trialExpired())
+                                            @if(!$tenant->is_expired)
+                                                <div class="text-xs text-green-600">{{ now()->diffInDays($tenant->expiration_date) }} días restantes</div>
+                                            @else
                                                 <div class="text-xs text-red-500">Expirado</div>
                                             @endif
                                         @else
-                                            <span class="text-gray-400">N/A</span>
+                                            <span class="text-gray-400">Sin fecha</span>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -155,16 +155,16 @@
                             </div>
 
                             <div class="mb-4 text-sm">
-                                @if($tenant->trial_ends_at)
+                                @if($tenant->expiration_date)
                                     <div class="flex items-center">
-                                        <span class="text-gray-500 mr-2">Fin Trial:</span>
-                                        <span class="{{ $tenant->trialExpired() ? 'text-red-600 font-bold' : 'text-gray-900' }}">
-                                            {{ $tenant->trial_ends_at->format('d/m/Y') }}
+                                        <span class="text-gray-500 mr-2">Vencimiento:</span>
+                                        <span class="{{ $tenant->is_expired ? 'text-red-600 font-bold' : 'text-gray-900' }}">
+                                            {{ $tenant->expiration_date->format('d/m/Y') }}
                                         </span>
                                     </div>
-                                    @if($tenant->isOnTrial())
-                                        <div class="text-xs text-green-600 mt-1">{{ $tenant->daysLeftInTrial() }} días restantes</div>
-                                    @elseif($tenant->trialExpired())
+                                    @if(!$tenant->is_expired)
+                                        <div class="text-xs text-green-600 mt-1">{{ now()->diffInDays($tenant->expiration_date) }} días restantes</div>
+                                    @else
                                         <div class="text-xs text-red-500 mt-1">Expirado</div>
                                     @endif
                                 @endif
@@ -236,7 +236,7 @@
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button wire:click="$set('confirmingTenantEdit', false)">
+                <x-secondary-button x-on:click="$dispatch('close-modal', 'edit-tenant-modal')">
                     {{ __('Cancelar') }}
                 </x-secondary-button>
 
@@ -269,7 +269,7 @@
             </div>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button wire:click="$set('confirmingPlanChange', false)">
+                <x-secondary-button x-on:click="$dispatch('close-modal', 'change-plan-modal')">
                     {{ __('Cancelar') }}
                 </x-secondary-button>
 
