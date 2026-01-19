@@ -68,9 +68,15 @@ class ReportController extends Controller
             }
         }
         
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.expediente', compact('expediente', 'tenant', 'logoBase64'));
-        
-        $filename = str_replace(['/', '\\'], '-', $expediente->numero);
-        return $pdf->download("reporte-expediente-{$filename}.pdf");
+        try {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.expediente', compact('expediente', 'tenant', 'logoBase64'));
+            
+            $filename = str_replace(['/', '\\'], '-', $expediente->numero);
+            return $pdf->download("reporte-expediente-{$filename}.pdf");
+        } catch (\Exception $e) {
+            \Log::error('Error generando PDF de expediente: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            return response()->json(['error' => 'Error interno al generar el PDF: ' . $e->getMessage()], 500);
+        }
     }
 }
