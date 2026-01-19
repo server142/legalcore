@@ -44,6 +44,15 @@ class AddEvent extends Component
             'tipo' => $this->tipo,
         ]);
 
+        \App\Models\AuditLog::create([
+            'user_id' => auth()->id(),
+            'accion' => 'create',
+            'modulo' => 'agenda',
+            'descripcion' => "Agendó evento: {$this->titulo}",
+            'metadatos' => ['expediente_id' => $this->expediente->id, 'tipo' => $this->tipo],
+            'ip_address' => request()->ip(),
+        ]);
+
         $this->dispatch('event-added');
         $this->reset(['titulo', 'descripcion', 'tipo']);
         $this->start_time = now()->format('Y-m-d\TH:i');

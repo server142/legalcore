@@ -41,7 +41,7 @@ new class extends Component
             style="background-color: #e2e8f0;"
         >
             <div class="flex items-center justify-between h-16 px-6 bg-gray-300 border-b border-gray-400">
-                <span class="text-lg font-bold text-indigo-900">LEGALCORE</span>
+                <span class="text-lg font-bold text-indigo-900">DIOGENES</span>
                 <button @click="mobileMenuOpen = false" class="text-gray-500 hover:text-gray-700">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
@@ -55,7 +55,7 @@ new class extends Component
     <!-- Desktop Sidebar (Static) -->
     <div class="hidden lg:flex lg:flex-col lg:w-64 h-full bg-gray-200 border-r border-gray-300" style="background-color: #e2e8f0;">
         <div class="flex items-center h-16 px-6 bg-gray-300 border-b border-gray-400">
-            <span class="text-lg font-bold text-indigo-900">LEGALCORE</span>
+            <span class="text-lg font-bold text-indigo-900">DIOGENES</span>
         </div>
         <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
             @include('livewire.layout.navigation-links')

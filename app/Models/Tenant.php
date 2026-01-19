@@ -63,6 +63,16 @@ class Tenant extends Model
         return now()->diffInDays($this->trial_ends_at, false);
     }
 
+    public function isSubscriptionActive()
+    {
+        return $this->subscription_status === 'active' && $this->subscription_ends_at && $this->subscription_ends_at->isFuture();
+    }
+
+    public function isOnGracePeriod()
+    {
+        return $this->subscription_status === 'grace_period' && $this->grace_period_ends_at && $this->grace_period_ends_at->isFuture();
+    }
+
     /**
      * Verificar si el tenant puede agregar un usuario admin
      */

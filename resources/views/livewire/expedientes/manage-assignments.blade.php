@@ -13,7 +13,10 @@
                 <p class="mt-1 text-xs text-gray-500">Este abogado será el responsable principal del expediente</p>
             </div>
 
-            <div class="flex justify-end">
+            <div class="flex justify-end items-center">
+                <x-action-message class="mr-3" on="responsible-changed">
+                    {{ __('Guardado.') }}
+                </x-action-message>
                 <x-primary-button wire:click="changeResponsible">
                     {{ __('Cambiar Responsable') }}
                 </x-primary-button>
@@ -44,7 +47,10 @@
             @endforeach
         </div>
 
-        <div class="mt-6 flex justify-end">
+        <div class="mt-6 flex justify-end items-center">
+            <x-action-message class="mr-3" on="assignments-updated">
+                {{ __('Guardado.') }}
+            </x-action-message>
             <x-primary-button wire:click="updateAssignments">
                 {{ __('Guardar Asignaciones') }}
             </x-primary-button>

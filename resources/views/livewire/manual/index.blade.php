@@ -3,7 +3,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="font-bold text-2xl text-gray-900 leading-tight">
-                    {{ __('Centro de Ayuda LegalCore') }}
+                    {{ __('Centro de Ayuda Diogenes') }}
                 </h2>
                 <p class="text-sm text-gray-500 mt-1">Guía completa para el uso eficiente de su despacho jurídico.</p>
             </div>
@@ -74,7 +74,7 @@
 
                             <!-- Footer del Post -->
                             <div class="px-8 py-4 bg-gray-50/50 border-t border-gray-50 flex justify-between items-center">
-                                <span class="text-xs text-gray-400">LegalCore v1.0 • Manual de Usuario</span>
+                                <span class="text-xs text-gray-400">Diogenes v1.0 • Manual de Usuario</span>
                                 <a href="#header" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition">Volver arriba ↑</a>
                             </div>
                         </article>

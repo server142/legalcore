@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LegalCore - Sistema de Gestión Jurídica en la Nube</title>
+    <title>Diogenes - Sistema de Gestión Jurídica en la Nube</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -18,7 +18,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center">
-                    <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">LegalCore</span>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Diogenes</span>
                 </div>
                 <div class="hidden md:flex space-x-8">
                     <a href="#features" class="text-gray-700 hover:text-indigo-600 transition">Características</a>
@@ -204,7 +204,15 @@
                             @endif
                         </ul>
                         
-                        <a href="/register?plan={{ $plan->slug }}" class="block w-full {{ $loop->iteration % 2 == 0 ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-100 text-gray-900 hover:bg-gray-200' }} text-center py-3 rounded-lg font-bold transition">
+                        @php
+                            $btnColors = [
+                                0 => 'bg-indigo-600 hover:bg-indigo-700 text-white',
+                                1 => 'bg-emerald-600 hover:bg-emerald-700 text-white',
+                                2 => 'bg-purple-600 hover:bg-purple-700 text-white',
+                            ];
+                            $btnClass = $btnColors[$loop->index % 3];
+                        @endphp
+                        <a href="/register?plan={{ $plan->slug }}" class="block w-full {{ $btnClass }} text-center py-3 rounded-lg font-bold transition">
                             Seleccionar Plan
                         </a>
                     </div>
@@ -310,7 +318,7 @@
             </div>
         </div>
         <div class="max-w-7xl mx-auto mt-12 pt-8 border-t border-gray-800 text-center text-sm">
-            <p>&copy; 2026 LegalCore. Todos los derechos reservados.</p>
+            <p>&copy; 2026 Diogenes. Todos los derechos reservados.</p>
         </div>
     </footer>
 </body>

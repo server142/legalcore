@@ -24,7 +24,10 @@ class Index extends Component
             ->with('expediente.cliente')
             ->when(auth()->user()->hasRole('abogado') && !auth()->user()->can('view all terminos'), function($q) {
                 $q->whereHas('expediente', function($qe) {
-                    $qe->where('abogado_responsable_id', auth()->id());
+                    $qe->where('abogado_responsable_id', auth()->id())
+                       ->orWhereHas('assignedUsers', function($qu) {
+                           $qu->where('user_id', auth()->id());
+                       });
                 });
             })
             ->when($this->search, function($q) {

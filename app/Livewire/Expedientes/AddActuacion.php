@@ -42,6 +42,15 @@ class AddActuacion extends Component
             'estado' => 'pendiente',
         ]);
 
+        \App\Models\AuditLog::create([
+            'user_id' => auth()->id(),
+            'accion' => 'create',
+            'modulo' => 'actuaciones',
+            'descripcion' => "Creó la actuación: {$this->titulo}",
+            'metadatos' => ['expediente_id' => $this->expediente->id, 'es_plazo' => $this->es_plazo],
+            'ip_address' => request()->ip(),
+        ]);
+
         $this->dispatch('actuacion-added');
         $this->reset(['titulo', 'descripcion', 'fecha_vencimiento', 'es_plazo']);
         $this->fecha = now()->format('Y-m-d');

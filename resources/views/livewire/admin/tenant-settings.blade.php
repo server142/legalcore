@@ -10,6 +10,88 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <form wire:submit="save" class="space-y-6">
+                        <!-- Plan Information Section -->
+                        <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-6 mb-6">
+                            <h3 class="text-lg font-medium text-indigo-900 mb-4">{{ __('Mi Plan Actual') }}</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <p class="text-sm text-indigo-600 font-semibold uppercase">Plan</p>
+                                    <p class="text-2xl font-bold text-gray-900">{{ $currentPlanDetails->name ?? 'Prueba Gratuita' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-indigo-600 font-semibold uppercase">Estado</p>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $subscriptionStatus === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                        {{ ucfirst($subscriptionStatus ?? 'Trial') }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-indigo-600 font-semibold uppercase">Vencimiento</p>
+                                    <p class="text-lg font-medium text-gray-900">
+                                        {{ $subscriptionEndsAt ? \Carbon\Carbon::parse($subscriptionEndsAt)->format('d/m/Y') : 'N/A' }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 pt-4 border-t border-indigo-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Límite de Abogados</p>
+                                    <p class="text-gray-900">{{ $currentPlanDetails->max_lawyer_users ?? 'Ilimitado' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Límite de Admins</p>
+                                    <p class="text-gray-900">{{ $currentPlanDetails->max_admin_users ?? '1' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Upgrade Options -->
+                        @if($availablePlans->count() > 0)
+                        <div class="mb-8">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Mejorar mi Plan') }}</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                @foreach($availablePlans as $plan)
+                                <div class="border rounded-lg p-6 hover:shadow-lg transition bg-white flex flex-col">
+                                    <div class="flex-grow">
+                                        <h4 class="text-xl font-bold text-gray-900">{{ $plan->name }}</h4>
+                                        <p class="text-2xl font-bold text-indigo-600 mt-2">${{ number_format($plan->price, 2) }} <span class="text-sm text-gray-500 font-normal">/mes</span></p>
+                                        <ul class="mt-4 space-y-2">
+                                            <li class="flex items-center text-sm text-gray-600">
+                                                <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                {{ $plan->max_lawyer_users ?? 'Ilimitados' }} Abogados
+                                            </li>
+                                            <li class="flex items-center text-sm text-gray-600">
+                                                <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                {{ $plan->max_admin_users }} Admins
+                                            </li>
+                                            @if(is_array($plan->features))
+                                                @foreach($plan->features as $feature)
+                                                <li class="flex items-center text-sm text-gray-600">
+                                                    <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                    {{ $feature }}
+                                                </li>
+                                                @endforeach
+                                            @endif
+                                        </ul>
+                                    </div>
+                                    <div class="mt-6">
+                                        @php
+                                            $colors = [
+                                                0 => 'bg-indigo-600 hover:bg-indigo-700',
+                                                1 => 'bg-emerald-600 hover:bg-emerald-700',
+                                                2 => 'bg-purple-600 hover:bg-purple-700',
+                                            ];
+                                            $colorClass = $colors[$loop->index % 3];
+                                        @endphp
+                                        <a href="{{ route('billing.subscribe', $plan->slug) }}" class="block w-full text-center {{ $colorClass }} text-white px-4 py-2 rounded-lg transition">
+                                            Actualizar a {{ $plan->name }}
+                                        </a>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Logo -->
                             <div class="md:col-span-2 flex items-center space-x-6">

@@ -29,7 +29,7 @@
                 </div>
                 <div>
                     <h3 class="text-lg font-bold">Tu Prueba Gratuita Ha Expirado</h3>
-                    <p class="text-sm opacity-90">Selecciona un plan para continuar usando LegalCore</p>
+                    <p class="text-sm opacity-90">Selecciona un plan para continuar usando Diogenes</p>
                 </div>
             </div>
             <a href="/upgrade" class="bg-white text-red-600 px-6 py-3 rounded-lg font-bold hover:shadow-xl transition">

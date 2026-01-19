@@ -23,6 +23,12 @@ class TenantSettings extends Component
     public $sms_days_before = 3;
     public $sms_recipients = '';
 
+    // Plan & Billing
+    public $currentPlanDetails;
+    public $availablePlans;
+    public $subscriptionStatus;
+    public $subscriptionEndsAt;
+
     public function mount()
     {
         $tenant = auth()->user()->tenant;
@@ -38,6 +44,18 @@ class TenantSettings extends Component
         $this->sms_enabled = $settings['sms_enabled'] ?? false;
         $this->sms_days_before = $settings['sms_days_before'] ?? 3;
         $this->sms_recipients = $settings['sms_recipients'] ?? '';
+
+        // Plan Info
+        $this->currentPlanDetails = $tenant->planRelation;
+        $this->subscriptionStatus = $tenant->subscription_status;
+        $this->subscriptionEndsAt = $tenant->subscription_ends_at;
+
+        // Available Upgrades (Only higher price)
+        $currentPrice = $this->currentPlanDetails ? $this->currentPlanDetails->price : 0;
+        $this->availablePlans = \App\Models\Plan::where('price', '>', $currentPrice)
+            ->where('is_active', true)
+            ->orderBy('price', 'asc')
+            ->get();
     }
 
     public function save()
@@ -86,6 +104,6 @@ class TenantSettings extends Component
 
     public function render()
     {
-        return view('livewire.admin.tenant-settings');
+        return view('livewire.admin.tenant-settings')->layout('layouts.app');
     }
 }

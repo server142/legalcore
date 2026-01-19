@@ -110,8 +110,12 @@
                                                 </button>
                                             @endif
                                             
-                                            <button wire:click="openPlanChangeModal({{ $tenant->id }})" class="text-indigo-600 hover:text-indigo-900">
-                                                Cambiar Plan
+                                            <button type="button" wire:click="openEditModal({{ $tenant->id }})" class="text-indigo-600 hover:text-indigo-900">
+                                                Editar
+                                            </button>
+                                            
+                                            <button type="button" wire:click="openPlanChangeModal({{ $tenant->id }})" class="text-blue-600 hover:text-blue-900">
+                                                Plan
                                             </button>
                                         </div>
                                     </td>
@@ -172,8 +176,11 @@
                                         +15 días
                                     </button>
                                 @endif
-                                <button wire:click="openPlanChangeModal({{ $tenant->id }})" class="text-indigo-600 font-medium text-sm hover:text-indigo-800">
-                                    Cambiar Plan
+                                <button type="button" wire:click="openEditModal({{ $tenant->id }})" class="text-indigo-600 font-medium text-sm hover:text-indigo-800">
+                                    Editar
+                                </button>
+                                <button type="button" wire:click="openPlanChangeModal({{ $tenant->id }})" class="text-blue-600 font-medium text-sm hover:text-blue-800">
+                                    Plan
                                 </button>
                             </div>
                         </div>
@@ -192,15 +199,63 @@
         </div>
     </div>
 
-    <!-- Modal Cambio de Plan -->
-    <x-modal name="change-plan-modal" :show="$confirmingPlanChange" focusable>
+    <!-- Modal Editar Tenant -->
+    <x-modal name="edit-tenant-modal" focusable>
         <div class="p-6">
             <h2 class="text-lg font-medium text-gray-900">
-                {{ __('Cambiar Plan del Tenant') }}
+                {{ __('Gestionar Datos del Tenant') }}
+            </h2>
+
+            <div class="mt-6 space-y-4">
+                <div>
+                    <x-input-label for="editName" value="{{ __('Nombre del Despacho') }}" />
+                    <x-text-input wire:model="editName" id="editName" class="mt-1 block w-full" type="text" />
+                    <x-input-error :messages="$errors->get('editName')" class="mt-2" />
+                </div>
+
+                <div>
+                    <x-input-label for="editSlug" value="{{ __('Slug / Subdominio') }}" />
+                    <x-text-input wire:model="editSlug" id="editSlug" class="mt-1 block w-full" type="text" />
+                    <x-input-error :messages="$errors->get('editSlug')" class="mt-2" />
+                </div>
+
+                <div>
+                    <x-input-label for="editPlan" value="{{ __('Plan Asignado') }}" />
+                    <select wire:model="selectedPlanId" id="editPlan" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                        @foreach($plans as $plan)
+                            <option value="{{ $plan->id }}">{{ $plan->name }} - ${{ number_format($plan->price, 2) }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('selectedPlanId')" class="mt-2" />
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" wire:model="editIsActive" id="editIsActive" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                    <x-input-label for="editIsActive" value="{{ __('Tenant Activo') }}" class="ml-2" />
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <x-secondary-button wire:click="$set('confirmingTenantEdit', false)">
+                    {{ __('Cancelar') }}
+                </x-secondary-button>
+
+                <x-primary-button class="ml-3" wire:click="updateTenant">
+                    {{ __('Guardar Cambios') }}
+                </x-primary-button>
+            </div>
+        </div>
+    </x-modal>
+
+    <!-- Modal Cambio de Plan Rápido -->
+    <x-modal name="change-plan-modal" focusable>
+        <div class="p-6">
+            <h2 class="text-lg font-medium text-gray-900">
+                {{ __('Cambiar Plan (Acceso Rápido)') }}
             </h2>
 
             <p class="mt-1 text-sm text-gray-600">
-                Selecciona el nuevo plan para este tenant. Esto actualizará sus límites y fechas de suscripción.
+                Selecciona el nuevo plan para este tenant.
             </p>
 
             <div class="mt-6">
@@ -208,7 +263,7 @@
                 <select wire:model="selectedPlanId" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                     <option value="">Seleccionar Plan...</option>
                     @foreach($plans as $plan)
-                        <option value="{{ $plan->id }}">{{ $plan->name }} - ${{ number_format($plan->price, 2) }} ({{ $plan->duration_in_days }} días)</option>
+                        <option value="{{ $plan->id }}">{{ $plan->name }} - ${{ number_format($plan->price, 2) }}</option>
                     @endforeach
                 </select>
             </div>

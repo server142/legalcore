@@ -11,11 +11,13 @@ class Subscribe extends Component
     public $planSlug;
     public $plan;
     public $clientSecret;
+    public $isFree = false;
 
     public function mount($plan)
     {
         $this->planSlug = $plan;
         $this->plan = Plan::where('slug', $plan)->firstOrFail();
+        $this->isFree = $this->plan->price <= 0 || $this->plan->slug === 'trial';
 
         // Verificar si ya tiene suscripción activa a este plan
         $tenant = Auth::user()->tenant;
@@ -44,7 +46,7 @@ class Subscribe extends Component
             'is_active' => true,
         ]);
 
-        session()->flash('message', '¡Pago procesado con éxito! Bienvenido a LegalCore.');
+        session()->flash('message', '¡Pago procesado con éxito! Bienvenido a Diogenes.');
         return redirect()->route('dashboard');
     }
 

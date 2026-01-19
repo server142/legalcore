@@ -62,6 +62,11 @@ class Index extends Component
     {
         $this->validate();
 
+        if (!auth()->user()->tenant->canAddLawyerUser()) {
+            $this->addError('email', 'Ha alcanzado el límite de abogados permitidos por su plan actual.');
+            return;
+        }
+
         $abogado = User::create([
             'name' => $this->name,
             'email' => $this->email,
@@ -72,8 +77,15 @@ class Index extends Component
 
         $abogado->assignRole('abogado');
 
+        try {
+            $abogado->notify(new \App\Notifications\WelcomeLawyer($this->password));
+        } catch (\Exception $e) {
+            // Log error but don't fail the request
+            \Illuminate\Support\Facades\Log::error('Error sending welcome email: ' . $e->getMessage());
+        }
+
         $this->showModal = false;
-        $this->dispatch('notify', 'Abogado creado exitosamente');
+        $this->dispatch('notify', 'Abogado creado y notificado exitosamente');
     }
 
     public function update()

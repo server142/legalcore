@@ -15,9 +15,13 @@ class Index extends Component
     public $filterStatus = 'all'; // all, trial, active, expired, cancelled
     
     // Modal handling
-    public $confirmingPlanChange = false;
     public $selectedTenantId;
     public $selectedPlanId;
+    
+    // Edit fields
+    public $editName;
+    public $editSlug;
+    public $editIsActive;
 
     public function mount()
     {
@@ -29,7 +33,52 @@ class Index extends Component
         $this->selectedTenantId = $tenantId;
         $tenant = Tenant::find($tenantId);
         $this->selectedPlanId = $tenant->plan_id;
-        $this->confirmingPlanChange = true;
+        $this->dispatch('open-modal', 'change-plan-modal');
+    }
+
+    public function openEditModal($tenantId)
+    {
+        $this->selectedTenantId = $tenantId;
+        $tenant = Tenant::find($tenantId);
+        $this->editName = $tenant->name;
+        $this->editSlug = $tenant->slug;
+        $this->editIsActive = $tenant->is_active;
+        $this->selectedPlanId = $tenant->plan_id;
+        $this->dispatch('open-modal', 'edit-tenant-modal');
+    }
+
+    public function updateTenant()
+    {
+        $this->validate([
+            'editName' => 'required|string|max:255',
+            'editSlug' => 'required|string|max:255|unique:tenants,slug,' . $this->selectedTenantId,
+            'selectedPlanId' => 'required|exists:plans,id',
+        ]);
+
+        $tenant = Tenant::find($this->selectedTenantId);
+        $plan = Plan::find($this->selectedPlanId);
+
+        $tenant->update([
+            'name' => $this->editName,
+            'slug' => $this->editSlug,
+            'is_active' => $this->editIsActive,
+            'plan' => $plan->slug,
+            'plan_id' => $plan->id,
+        ]);
+
+        // Si el plan cambió o se reactivó, asegurar que el status sea correcto
+        if ($tenant->is_active) {
+            if ($tenant->plan === 'trial') {
+                $tenant->update(['subscription_status' => ($tenant->trial_ends_at && $tenant->trial_ends_at->isFuture()) ? 'trial' : 'grace_period']);
+            } else {
+                $tenant->update(['subscription_status' => ($tenant->subscription_ends_at && $tenant->subscription_ends_at->isFuture()) ? 'active' : 'grace_period']);
+            }
+        } else {
+            $tenant->update(['subscription_status' => 'cancelled']);
+        }
+
+        $this->dispatch('close-modal', 'edit-tenant-modal');
+        session()->flash('message', "Tenant '{$tenant->name}' actualizado correctamente.");
     }
 
     public function changePlan()
@@ -41,15 +90,27 @@ class Index extends Component
             return;
         }
 
-        $tenant->update([
+        $data = [
             'plan' => $plan->slug,
             'plan_id' => $plan->id,
-            // Si pasamos de trial a pagado, actualizamos fechas
-            'subscription_ends_at' => now()->addDays($plan->duration_in_days),
             'is_active' => true,
-        ]);
+            'subscription_status' => $plan->slug === 'trial' ? 'trial' : 'active',
+        ];
 
-        $this->confirmingPlanChange = false;
+        // Solo extender fecha si es un cambio de plan real o estaba vencido
+        if ($tenant->plan !== $plan->slug || !$tenant->subscription_ends_at || $tenant->subscription_ends_at->isPast()) {
+            if ($plan->slug === 'trial') {
+                $data['trial_ends_at'] = now()->addDays($plan->duration_in_days);
+                $data['subscription_ends_at'] = null;
+            } else {
+                $data['subscription_ends_at'] = now()->addDays($plan->duration_in_days);
+                $data['trial_ends_at'] = null;
+            }
+        }
+
+        $tenant->update($data);
+
+        $this->dispatch('close-modal', 'change-plan-modal');
         session()->flash('message', "Plan actualizado a {$plan->name} correctamente.");
     }
 

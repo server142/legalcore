@@ -30,7 +30,7 @@ class CheckSubscription
         }
 
         // Rutas exentas (para poder pagar o ver estado)
-        if ($request->routeIs('subscription.*') || $request->routeIs('billing.*') || $request->routeIs('profile.*') || $request->routeIs('logout')) {
+        if ($request->routeIs('subscription.*') || $request->routeIs('billing.*') || $request->routeIs('profile.*') || $request->routeIs('logout') || $request->is('logout')) {
             return $next($request);
         }
 
@@ -42,42 +42,40 @@ class CheckSubscription
         }
 
         // 3. Verificar Estado de Prueba (Trial)
-        if ($tenant->subscription_status === 'trial') {
-            if ($tenant->trial_ends_at && $tenant->trial_ends_at->gt($now)) {
-                // Trial válido
+        if ($tenant->plan === 'trial') {
+            if ($tenant->isOnTrial()) {
                 return $next($request);
             } else {
-                // Trial vencido -> Mover a Grace Period o Expirado
-                $this->handleExpiredTrial($tenant);
+                // Trial vencido -> Mover a Grace Period si no estaba ya
+                if ($tenant->subscription_status !== 'grace_period' && $tenant->subscription_status !== 'cancelled') {
+                    $this->handleExpiredTrial($tenant);
+                }
             }
         }
 
         // 4. Verificar Suscripción Activa
-        if ($tenant->subscription_status === 'active') {
+        if ($tenant->plan !== 'trial' && $tenant->isSubscriptionActive()) {
             return $next($request);
         }
 
         // 5. Verificar Periodo de Gracia (Grace Period)
-        if ($tenant->subscription_status === 'grace_period') {
-            if ($tenant->grace_period_ends_at && $tenant->grace_period_ends_at->gt($now)) {
-                // En periodo de gracia: Solo lectura (GET)
-                if ($request->isMethod('POST') || $request->isMethod('PUT') || $request->isMethod('DELETE') || $request->isMethod('PATCH')) {
-                    // Bloquear acciones de escritura
-                    if ($request->expectsJson()) {
-                        return response()->json(['message' => 'Tu suscripción ha vencido. Estás en periodo de gracia (solo lectura).'], 403);
-                    }
-                    return redirect()->route('subscription.expired')->with('error', 'Modo solo lectura: Tu suscripción ha vencido.');
+        if ($tenant->isOnGracePeriod()) {
+            // En periodo de gracia: Solo lectura (GET)
+            if ($request->isMethod('POST') || $request->isMethod('PUT') || $request->isMethod('DELETE') || $request->isMethod('PATCH')) {
+                // Bloquear acciones de escritura
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => 'Tu suscripción ha vencido. Estás en periodo de gracia (solo lectura).'], 403);
                 }
-                // Permitir GET (ver datos, exportar)
-                session()->flash('warning', 'Tu suscripción ha vencido. Tienes acceso limitado para exportar tus datos.');
-                return $next($request);
-            } else {
-                // Gracia vencida -> Expirado
-                $tenant->update(['subscription_status' => 'cancelled']);
+                return redirect()->route('subscription.expired')->with('error', 'Modo solo lectura: Tu suscripción ha vencido.');
             }
+            // Permitir GET (ver datos, exportar)
+            if (!session()->has('warning')) {
+                session()->flash('warning', 'Tu suscripción ha vencido. Tienes acceso limitado para exportar tus datos.');
+            }
+            return $next($request);
         }
 
-        // 6. Expirado / Cancelado
+        // 6. Expirado / Cancelado / Sin fechas válidas
         return redirect()->route('subscription.expired');
     }
 

@@ -23,9 +23,7 @@
                         </div>
                     @endif
 
-                    <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
-                        Tu periodo de prueba o suscripción ha finalizado. Para continuar disfrutando de todas las funcionalidades de LegalCore y gestionar tus expedientes sin interrupciones, por favor actualiza tu plan.
-                    </p>
+                        Tu periodo de prueba o suscripción ha finalizado. Para continuar disfrutando de todas las funcionalidades de Diogenes y gestionar tus expedientes sin interrupciones, por favor actualiza tu plan.
 
                     <div class="flex justify-center space-x-4">
                         <a href="#" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition duration-150 ease-in-out transform hover:scale-105 shadow-lg flex items-center">
@@ -39,7 +37,7 @@
                     </div>
                     
                     <p class="mt-8 text-sm text-gray-500">
-                        ¿Necesitas ayuda? Contacta a <a href="mailto:soporte@legalcore.com" class="text-indigo-600 hover:underline">soporte@legalcore.com</a>
+                        ¿Necesitas ayuda? Contacta a <a href="mailto:soporte@diogenes.com" class="text-indigo-600 hover:underline">soporte@diogenes.com</a>
                     </p>
                 </div>
             </div>

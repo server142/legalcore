@@ -12,18 +12,42 @@ class Abogado extends Component
     public $misExpedientesCount;
     public $proximasAudienciasCount;
     public $misExpedientes;
+    public $urgentTerminos;
 
     public function mount()
     {
-        $this->misExpedientesCount = Expediente::where('abogado_responsable_id', auth()->id())->count();
-        $this->proximasAudienciasCount = Evento::where('user_id', auth()->id())
+        $userId = auth()->id();
+
+        $expedienteQuery = Expediente::where(function($q) use ($userId) {
+            $q->where('abogado_responsable_id', $userId)
+              ->orWhereHas('assignedUsers', function($query) use ($userId) {
+                  $query->where('user_id', $userId);
+              });
+        });
+
+        $this->misExpedientesCount = (clone $expedienteQuery)->count();
+        
+        $this->proximasAudienciasCount = Evento::where('user_id', $userId)
             ->where('tipo', 'audiencia')
             ->where('start_time', '>=', now())
             ->count();
-        $this->misExpedientes = Expediente::where('abogado_responsable_id', auth()->id())
+            
+        $this->misExpedientes = (clone $expedienteQuery)
             ->with('cliente')
             ->latest()
             ->take(10)
+            ->get();
+
+        $this->urgentTerminos = \App\Models\Actuacion::where('es_plazo', true)
+            ->where('estado', 'pendiente')
+            ->whereHas('expediente', function($q) use ($userId) {
+                $q->where('abogado_responsable_id', $userId)
+                  ->orWhereHas('assignedUsers', function($query) use ($userId) {
+                      $query->where('user_id', $userId);
+                  });
+            })
+            ->orderBy('fecha_vencimiento', 'asc')
+            ->take(5)
             ->get();
     }
 
