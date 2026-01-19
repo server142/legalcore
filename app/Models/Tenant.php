@@ -49,6 +49,11 @@ class Tenant extends Model
 
     public function isOnTrial()
     {
+        // Soporte para datos legados: Si es trial y no tiene fecha, permitir acceso si está activo
+        if ($this->is_active && $this->plan === 'trial' && $this->trial_ends_at === null) {
+            return true;
+        }
+
         return $this->is_active && $this->plan === 'trial' && $this->trial_ends_at && $this->trial_ends_at->isFuture();
     }
 
@@ -65,7 +70,16 @@ class Tenant extends Model
 
     public function isSubscriptionActive()
     {
-        return $this->is_active && $this->subscription_status === 'active' && $this->subscription_ends_at && $this->subscription_ends_at->isFuture();
+        // Soporte para datos legados: Si no es trial y no tiene fecha, permitir acceso si está activo
+        if ($this->is_active && $this->plan !== 'trial' && $this->subscription_ends_at === null) {
+            return true;
+        }
+
+        // Si no es trial y tiene fecha futura, es una suscripción válida
+        return $this->is_active && 
+               $this->plan !== 'trial' && 
+               $this->subscription_ends_at && 
+               $this->subscription_ends_at->isFuture();
     }
 
     public function isOnGracePeriod()

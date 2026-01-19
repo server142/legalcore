@@ -21,7 +21,19 @@ class ReportController extends Controller
 
         $tenant = auth()->user()->tenant;
         $factura->load('cliente');
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', compact('factura', 'tenant'));
+
+        // Convert logo to base64 for better compatibility
+        $logoBase64 = null;
+        if (isset($tenant->settings['logo_path'])) {
+            $path = storage_path('app/public/' . $tenant->settings['logo_path']);
+            if (file_exists($path)) {
+                $type = pathinfo($path, PATHINFO_EXTENSION);
+                $data = file_get_contents($path);
+                $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+            }
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', compact('factura', 'tenant', 'logoBase64'));
         
         return $pdf->download("factura-{$factura->id}.pdf");
     }
@@ -45,7 +57,18 @@ class ReportController extends Controller
         $tenant = auth()->user()->tenant;
         $expediente->load(['cliente', 'abogado', 'actuaciones', 'documentos', 'eventos']);
         
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.expediente', compact('expediente', 'tenant'));
+        // Convert logo to base64 for better compatibility
+        $logoBase64 = null;
+        if (isset($tenant->settings['logo_path'])) {
+            $path = storage_path('app/public/' . $tenant->settings['logo_path']);
+            if (file_exists($path)) {
+                $type = pathinfo($path, PATHINFO_EXTENSION);
+                $data = file_get_contents($path);
+                $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+            }
+        }
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.expediente', compact('expediente', 'tenant', 'logoBase64'));
         
         $filename = str_replace(['/', '\\'], '-', $expediente->numero);
         return $pdf->download("reporte-expediente-{$filename}.pdf");

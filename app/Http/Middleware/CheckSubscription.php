@@ -18,7 +18,7 @@ class CheckSubscription
         $user = $request->user();
 
         // 1. Si no hay usuario o es Super Admin, permitir acceso
-        if (!$user || $user->hasRole('super_admin')) {
+        if (!$user || $user->role === 'super_admin' || $user->hasRole('super_admin')) {
             return $next($request);
         }
 
@@ -30,7 +30,13 @@ class CheckSubscription
         }
 
         // Rutas exentas (para poder pagar o ver estado)
-        if ($request->routeIs('subscription.*') || $request->routeIs('billing.*') || $request->routeIs('profile.*') || $request->routeIs('logout') || $request->is('logout')) {
+        if ($request->routeIs('subscription.*') || 
+            $request->routeIs('billing.*') || 
+            $request->routeIs('profile.*') || 
+            $request->routeIs('logout') || 
+            $request->is('logout') ||
+            $request->is('livewire/update') // Permitir actualizaciones de Livewire (necesario para logout y otros)
+        ) {
             return $next($request);
         }
 
