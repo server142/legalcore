@@ -5,25 +5,12 @@
         </h2>
     </x-slot>
 
-    @push('styles')
-    <style>
-        main { 
-            overflow: hidden !important; 
-            height: calc(100vh - 64px) !important; 
-            display: flex !important;
-            flex-direction: column !important;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-    </style>
-    @endpush
-
-    <div class="flex-1 flex flex-col min-h-0 h-full bg-gray-100" x-data="{ 
-        selectedId: @entangle('selectedConversationId'),
-        get showChat() { return this.selectedId !== null }
-    }">
-        <div class="flex-1 flex flex-col min-h-0 h-full w-full max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
-            <div class="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex-1 flex flex-row min-h-0" wire:poll.15s>
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8" style="height: calc(100vh - 180px);">
+            <div class="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden h-full flex flex-row" wire:poll.15s x-data="{ 
+                selectedId: @entangle('selectedConversationId'),
+                get showChat() { return this.selectedId !== null }
+            }">
                 <!-- Sidebar: Conversaciones -->
                 <div class="w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 flex flex-col bg-white flex-shrink-0" 
                      x-show="!showChat || window.innerWidth >= 768"
