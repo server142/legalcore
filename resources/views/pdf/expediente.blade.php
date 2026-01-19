@@ -100,7 +100,7 @@
     <div class="section-title">RESUMEN DE DOCUMENTOS</div>
     <p>Este expediente cuenta con <strong>{{ $expediente->documentos->count() }}</strong> documentos anexos en el sistema digital.</p>
 
-    @if($tenant->settings['titulares_adjuntos'])
+    @if(is_array($tenant->settings) && isset($tenant->settings['titulares_adjuntos']))
         <div style="margin-top: 30px;">
             <div class="font-bold">Titulares Adjuntos:</div>
             <div style="font-size: 11px;">{{ $tenant->settings['titulares_adjuntos'] }}</div>

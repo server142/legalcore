@@ -5,14 +5,20 @@
         </h2>
     </x-slot>
 
-    <div class="py-4 h-[calc(100vh-160px)]" x-data="{ 
+    @push('styles')
+    <style>
+        main { overflow: hidden !important; height: calc(100vh - 64px) !important; }
+    </style>
+    @endpush
+
+    <div class="h-full" x-data="{ 
         selectedId: @entangle('selectedConversationId'),
         get showChat() { return this.selectedId !== null }
     }">
         <div class="max-w-7xl mx-auto h-full sm:px-6 lg:px-8">
             <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden h-full flex flex-col md:flex-row" wire:poll.10s>
                 <!-- Sidebar: Conversaciones -->
-                <div class="w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 flex flex-col h-full bg-white" 
+                <div class="w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 flex flex-col h-full bg-white flex-shrink-0" 
                      x-show="!showChat || window.innerWidth >= 768"
                      :class="{'hidden md:flex': showChat, 'flex': !showChat}">
                         <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
@@ -73,7 +79,7 @@
                      :class="{'flex': showChat, 'hidden md:flex': !showChat}">
                         @if($selectedConversation)
                             <!-- Header de conversación -->
-                            <div class="p-4 border-b border-gray-200 bg-white flex items-center justify-between shadow-sm z-10">
+                            <div class="p-4 border-b border-gray-200 bg-white flex items-center justify-between shadow-sm z-10 flex-shrink-0">
                                 <div class="flex items-center space-x-3">
                                     <button @click="selectedId = null" class="md:hidden p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full transition">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -150,7 +156,7 @@
                             </div>
 
                             <!-- Input de respuesta -->
-                            <div class="p-4 bg-white border-t border-gray-200">
+                            <div class="p-4 bg-white border-t border-gray-200 flex-shrink-0">
                                 @if($attachment)
                                     <div class="mb-2 p-2 bg-gray-50 rounded-lg flex items-center justify-between">
                                         <div class="flex items-center space-x-2">

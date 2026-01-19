@@ -78,8 +78,8 @@
                 </td>
                 <td class="tenant-info">
                     <div class="tenant-name">{{ $tenant->name }}</div>
-                    <div>{{ $tenant->settings['direccion'] ?? '' }}</div>
-                    <div>Titular: {{ $tenant->settings['titular'] ?? '' }}</div>
+                    <div>{{ data_get($tenant->settings, 'direccion', '') }}</div>
+                    <div>Titular: {{ data_get($tenant->settings, 'titular', '') }}</div>
                 </td>
             </tr>
         </table>
