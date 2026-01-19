@@ -25,17 +25,17 @@
         <div class="flex-1 flex flex-col min-h-0 h-full w-full max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
             <div class="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex-1 flex flex-row min-h-0" wire:poll.15s>
                 <!-- Sidebar: Conversaciones -->
-                <div class="w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 flex flex-col h-full bg-white flex-shrink-0" 
+                <div class="w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 flex flex-col bg-white flex-shrink-0" 
                      x-show="!showChat || window.innerWidth >= 768"
                      :class="{'hidden md:flex': showChat, 'flex': !showChat}">
-                        <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                        <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 flex-shrink-0">
                             <h3 class="font-bold text-gray-900">Conversaciones</h3>
                             <button wire:click="create" class="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             </button>
                         </div>
 
-                        <div class="flex-1 overflow-y-auto">
+                        <div class="flex-1 min-h-0 overflow-y-auto">
                             @forelse($conversations as $conversation)
                                 <div wire:click="selectConversation({{ $conversation->id }})" 
                                      class="p-4 border-b border-gray-100 cursor-pointer transition {{ $selectedConversation && $selectedConversation->id === $conversation->id ? 'bg-indigo-50' : 'hover:bg-gray-50' }}">
@@ -81,7 +81,7 @@
                     </div>
 
                 <!-- Panel de Conversación -->
-                <div class="flex-1 flex flex-col min-h-0 h-full bg-gray-50" 
+                <div class="flex-1 flex flex-col min-h-0 bg-gray-50" 
                      x-show="showChat || window.innerWidth >= 768"
                      :class="{'flex': showChat, 'hidden md:flex': !showChat}">
                         @if($selectedConversation)
