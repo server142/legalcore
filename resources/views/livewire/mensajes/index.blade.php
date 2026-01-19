@@ -11,12 +11,12 @@
     </style>
     @endpush
 
-    <div class="h-full" x-data="{ 
+    <div class="h-[calc(100vh-160px)]" x-data="{ 
         selectedId: @entangle('selectedConversationId'),
         get showChat() { return this.selectedId !== null }
     }">
         <div class="max-w-7xl mx-auto h-full sm:px-6 lg:px-8">
-            <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden h-full flex flex-col md:flex-row" wire:poll.10s>
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden h-full flex flex-row" wire:poll.10s>
                 <!-- Sidebar: Conversaciones -->
                 <div class="w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 flex flex-col h-full bg-white flex-shrink-0" 
                      x-show="!showChat || window.innerWidth >= 768"
@@ -244,9 +244,9 @@
                     <x-input-error :messages="$errors->get('contenido')" class="mt-2" />
                 </div>
             </div>
-            <div class="mt-6 flex justify-end">
+            <div class="mt-6 flex justify-end space-x-3">
                 <x-secondary-button wire:click="$set('showModal', false)">{{ __('Cancelar') }}</x-secondary-button>
-                <x-primary-button class="ml-3" wire:click="send">{{ __('Enviar') }}</x-primary-button>
+                <x-primary-button wire:click="send">{{ __('Enviar Mensaje') }}</x-primary-button>
             </div>
         </div>
     </x-modal-wire>
