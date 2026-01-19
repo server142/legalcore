@@ -16,14 +16,17 @@ class Index extends Component
             abort(403);
         }
 
-        $query = Evento::query();
+        $query = Evento::with('user');
 
         // Si es abogado y no tiene permiso de ver todo, filtrar por sus eventos o sus expedientes
         if (auth()->user()->hasRole('abogado') && !auth()->user()->can('view all expedientes')) {
             $query->where(function($q) {
                 $q->where('user_id', auth()->id())
                   ->orWhereHas('expediente', function($qe) {
-                      $qe->where('abogado_responsable_id', auth()->id());
+                      $qe->where('abogado_responsable_id', auth()->id())
+                         ->orWhereHas('assignedUsers', function($qu) {
+                             $qu->where('users.id', auth()->id());
+                         });
                   });
             });
         }
@@ -36,24 +39,47 @@ class Index extends Component
 
         // Formato para FullCalendar
         $allEvents = $query->get();
+        $isAdmin = auth()->user()->hasRole(['admin', 'super_admin']);
+        
         foreach ($allEvents as $evento) {
             $color = '#3b82f6'; // Default blue
             if ($evento->tipo == 'audiencia') $color = '#ef4444'; // Red
             if ($evento->tipo == 'termino') $color = '#f97316'; // Orange
 
+            // Si es admin, podemos variar el color por usuario o añadir el nombre
+            $title = $evento->titulo;
+            if ($isAdmin && $evento->user_id !== auth()->id()) {
+                $title = "[" . $evento->user->name . "] " . $title;
+                // Opcional: Variar un poco el color si no es suyo
+                $color = $this->adjustColor($color, $evento->user_id);
+            }
+
             $this->calendarEvents[] = [
                 'id' => $evento->id,
-                'title' => $evento->titulo,
+                'title' => $title,
                 'start' => $evento->start_time->toIso8601String(),
                 'end' => $evento->end_time ? $evento->end_time->toIso8601String() : null,
                 'backgroundColor' => $color,
                 'borderColor' => $color,
                 'extendedProps' => [
                     'expediente_id' => $evento->expediente_id,
-                    'tipo' => $evento->tipo
+                    'tipo' => $evento->tipo,
+                    'user_name' => $evento->user->name
                 ]
             ];
         }
+    }
+
+    private function adjustColor($hex, $userId)
+    {
+        // Simple logic to vary color based on user ID for admins
+        // We'll use a set of predefined colors or just shift the hue/brightness
+        $colors = [
+            '#3b82f6', '#ef4444', '#f97316', '#10b981', '#8b5cf6', 
+            '#ec4899', '#06b6d4', '#f59e0b', '#6366f1', '#14b8a6'
+        ];
+        
+        return $colors[$userId % count($colors)];
     }
 
     public $showModal = false;

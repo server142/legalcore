@@ -28,7 +28,8 @@ class Show extends Component
     {
         $user = auth()->user();
         if ($user->hasRole('abogado') && !$user->can('view all expedientes')) {
-            if ($expediente->abogado_responsable_id !== $user->id) {
+            $isAssigned = $expediente->assignedUsers()->where('users.id', $user->id)->exists();
+            if ($expediente->abogado_responsable_id !== $user->id && !$isAssigned) {
                 abort(403);
             }
         }

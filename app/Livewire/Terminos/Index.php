@@ -26,7 +26,7 @@ class Index extends Component
                 $q->whereHas('expediente', function($qe) {
                     $qe->where('abogado_responsable_id', auth()->id())
                        ->orWhereHas('assignedUsers', function($qu) {
-                           $qu->where('user_id', auth()->id());
+                           $qu->where('users.id', auth()->id());
                        });
                 });
             })

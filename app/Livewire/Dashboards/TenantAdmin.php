@@ -28,13 +28,21 @@ class TenantAdmin extends Component
         $actuacionQuery = Actuacion::where('es_plazo', true)->where('estado', 'pendiente');
 
         if ($isAbogado) {
-            $expedienteQuery->where('abogado_responsable_id', $user->id);
+            $expedienteQuery->where(function($q) use ($user) {
+                $q->where('abogado_responsable_id', $user->id)
+                  ->orWhereHas('assignedUsers', function($q2) use ($user) {
+                      $q2->where('users.id', $user->id);
+                  });
+            });
         }
 
         // For terminos, check the specific permission
         if ($user->hasRole('abogado') && !$user->can('view all terminos')) {
             $actuacionQuery->whereHas('expediente', function($q) use ($user) {
-                $q->where('abogado_responsable_id', $user->id);
+                $q->where('abogado_responsable_id', $user->id)
+                  ->orWhereHas('assignedUsers', function($q2) use ($user) {
+                      $q2->where('users.id', $user->id);
+                  });
             });
         }
 

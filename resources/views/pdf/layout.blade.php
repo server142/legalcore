@@ -70,7 +70,7 @@
         <table>
             <tr>
                 <td>
-                    @if(isset($tenant->settings['logo_path']))
+                    @if(isset($tenant->settings['logo_path']) && file_exists(storage_path('app/public/' . $tenant->settings['logo_path'])))
                         <img src="{{ storage_path('app/public/' . $tenant->settings['logo_path']) }}" class="logo">
                     @else
                         <span class="tenant-name">{{ $tenant->name }}</span>

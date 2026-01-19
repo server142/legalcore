@@ -33,10 +33,19 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>Servicios Legales Profesionales</td>
-                <td class="text-right">${{ number_format($factura->total, 2) }} {{ $factura->moneda }}</td>
-            </tr>
+            @if($factura->conceptos && is_array($factura->conceptos))
+                @foreach($factura->conceptos as $concepto)
+                    <tr>
+                        <td>{{ $concepto['descripcion'] ?? 'Servicios Legales' }}</td>
+                        <td class="text-right">${{ number_format($concepto['monto'] ?? $factura->total, 2) }}</td>
+                    </tr>
+                @endforeach
+            @else
+                <tr>
+                    <td>Servicios Legales Profesionales</td>
+                    <td class="text-right">${{ number_format($factura->total, 2) }}</td>
+                </tr>
+            @endif
         </tbody>
         <tfoot>
             <tr>

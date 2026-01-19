@@ -21,14 +21,15 @@ class Index extends Component
     public $showModal = false;
     public $cliente_id;
     public $total;
-    public $moneda = 'MXN';
     public $estado = 'pendiente';
+    public $concepto = 'Servicios Legales Profesionales';
 
     protected $rules = [
         'cliente_id' => 'required|exists:clientes,id',
         'total' => 'required|numeric|min:0',
         'moneda' => 'required|in:MXN,USD',
         'estado' => 'required|in:pendiente,pagada,cancelada',
+        'concepto' => 'required|string|max:255',
     ];
 
     public function create()
@@ -52,6 +53,7 @@ class Index extends Component
             'total' => $this->total,
             'moneda' => $this->moneda,
             'estado' => $this->estado,
+            'conceptos' => [['descripcion' => $this->concepto, 'monto' => $this->total]],
             'fecha_emision' => now(),
             'fecha_vencimiento' => now()->addDays(30),
         ]);
