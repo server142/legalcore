@@ -7,16 +7,23 @@
 
     @push('styles')
     <style>
-        main { overflow: hidden !important; height: calc(100vh - 64px) !important; }
+        main { 
+            overflow: hidden !important; 
+            height: calc(100vh - 64px) !important; 
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
     </style>
     @endpush
 
-    <div class="h-[calc(100vh-160px)]" x-data="{ 
+    <div class="flex-1 flex flex-col min-h-0 h-full bg-gray-100" x-data="{ 
         selectedId: @entangle('selectedConversationId'),
         get showChat() { return this.selectedId !== null }
     }">
-        <div class="max-w-7xl mx-auto h-full sm:px-6 lg:px-8">
-            <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden h-full flex flex-row" wire:poll.10s>
+        <div class="flex-1 flex flex-col min-h-0 h-full w-full max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
+            <div class="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex-1 flex flex-row min-h-0" wire:poll.15s>
                 <!-- Sidebar: Conversaciones -->
                 <div class="w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 flex flex-col h-full bg-white flex-shrink-0" 
                      x-show="!showChat || window.innerWidth >= 768"
@@ -74,7 +81,7 @@
                     </div>
 
                 <!-- Panel de Conversación -->
-                <div class="flex-1 flex flex-col h-full bg-gray-50" 
+                <div class="flex-1 flex flex-col min-h-0 h-full bg-gray-50" 
                      x-show="showChat || window.innerWidth >= 768"
                      :class="{'flex': showChat, 'hidden md:flex': !showChat}">
                         @if($selectedConversation)
@@ -227,27 +234,34 @@
     <x-modal-wire wire:model="showModal">
         <div class="p-6">
             <h2 class="text-lg font-medium text-gray-900">{{ __('Nueva Conversación') }}</h2>
-            <div class="mt-6 space-y-6">
-                <div>
-                    <x-input-label for="receiver_id" :value="__('Destinatario')" />
-                    <select wire:model="receiver_id" id="receiver_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                        <option value="">-- Seleccionar --</option>
-                        @foreach($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->getRoleNames()->first() }})</option>
-                        @endforeach
-                    </select>
-                    <x-input-error :messages="$errors->get('receiver_id')" class="mt-2" />
+            <form wire:submit.prevent="send">
+                <div class="space-y-6">
+                    <div>
+                        <x-input-label for="receiver_id" :value="__('Destinatario')" />
+                        <select wire:model.live="receiver_id" id="receiver_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <option value="">-- Seleccionar --</option>
+                            @foreach($users as $user)
+                                <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->getRoleNames()->first() }})</option>
+                            @endforeach
+                        </select>
+                        <x-input-error :messages="$errors->get('receiver_id')" class="mt-2" />
+                    </div>
+                    <div>
+                        <x-input-label for="contenido" :value="__('Mensaje')" />
+                        <textarea wire:model.live="contenido" id="contenido" rows="4" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" placeholder="Escribe tu primer mensaje..."></textarea>
+                        <x-input-error :messages="$errors->get('contenido')" class="mt-2" />
+                    </div>
                 </div>
-                <div>
-                    <x-input-label for="contenido" :value="__('Mensaje')" />
-                    <textarea wire:model="contenido" id="contenido" rows="4" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"></textarea>
-                    <x-input-error :messages="$errors->get('contenido')" class="mt-2" />
+                <div class="mt-6 flex justify-end space-x-3">
+                    <x-secondary-button x-on:click="show = false">
+                        {{ __('Cancelar') }}
+                    </x-secondary-button>
+                    <x-primary-button type="submit" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="send">{{ __('Enviar Mensaje') }}</span>
+                        <span wire:loading wire:target="send">{{ __('Enviando...') }}</span>
+                    </x-primary-button>
                 </div>
-            </div>
-            <div class="mt-6 flex justify-end space-x-3">
-                <x-secondary-button wire:click="$set('showModal', false)">{{ __('Cancelar') }}</x-secondary-button>
-                <x-primary-button wire:click="send">{{ __('Enviar Mensaje') }}</x-primary-button>
-            </div>
+            </form>
         </div>
     </x-modal-wire>
 
