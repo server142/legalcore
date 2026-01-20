@@ -19,6 +19,11 @@ class Subscribe extends Component
         $this->plan = Plan::where('slug', $plan)->firstOrFail();
         $this->isFree = $this->plan->price <= 0 || $this->plan->slug === 'trial';
 
+        if (!$this->isFree && !$this->plan->stripe_price_id) {
+            session()->flash('error', 'Este plan no tiene un ID de precio de Stripe configurado.');
+            return redirect()->route('dashboard');
+        }
+
         // Verificar si ya tiene suscripción activa a este plan
         $tenant = Auth::user()->tenant;
         if ($tenant->subscription_status === 'active' && $tenant->plan === $plan) {
@@ -27,7 +32,18 @@ class Subscribe extends Component
 
         // Iniciar el SetupIntent de Stripe para capturar el método de pago de forma segura
         if (!$this->isFree) {
-            $this->clientSecret = $tenant->createSetupIntent()->client_secret;
+            if (!config('cashier.secret')) {
+                session()->flash('error', 'La pasarela de pagos no está configurada correctamente. Por favor, contacte al administrador.');
+                return redirect()->route('dashboard');
+            }
+
+            try {
+                $this->clientSecret = $tenant->createSetupIntent()->client_secret;
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Stripe Error: ' . $e->getMessage());
+                session()->flash('error', 'Error al conectar con Stripe. Verifique la configuración.');
+                return redirect()->route('dashboard');
+            }
         }
     }
 

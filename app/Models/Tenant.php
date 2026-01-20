@@ -10,6 +10,16 @@ use Laravel\Cashier\Billable;
 class Tenant extends Model
 {
     use HasFactory, SoftDeletes, Billable;
+    
+    /**
+     * Get the name of the Stripe ID column.
+     *
+     * @return string
+     */
+    public function stripeId()
+    {
+        return $this->stripe_customer_id;
+    }
 
     protected $fillable = [
         'name',
