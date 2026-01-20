@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Mensajes') }}
             </h2>
-            <button wire:click="test" class="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700">
+            <button wire:click="test" onclick="alert('LLAMANDO AL SERVIDOR (TEST)...');" class="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700">
                 BOTÓN DE PRUEBA
             </button>
         </div>
@@ -248,6 +248,7 @@
                     </x-secondary-button>
                     <button type="button" 
                             wire:click.prevent="iniciarConversacion" 
+                            onclick="alert('LLAMANDO AL SERVIDOR (SEND)...');"
                             class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none transition ease-in-out duration-150">
                         {{ __('Enviar Mensaje') }}
                     </button>

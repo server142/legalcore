@@ -31,6 +31,10 @@ class Index extends Component
 
     public function mount()
     {
+        Log::emergency('!!! MOUNT EJECUTADO !!!');
+        // Si esto funciona, la página se pondrá blanca al cargar:
+        // die('CONEXION EXITOSA - EL SERVIDOR ESTA USANDO ESTE CODIGO');
+
         if ($this->selectedMessageId) {
             $message = Mensaje::find($this->selectedMessageId);
             if ($message) {
@@ -186,6 +190,7 @@ class Index extends Component
 
     public function test()
     {
+        Log::emergency('!!! TEST EJECUTADO !!!');
         dd('BOTON DE PRUEBA FUNCIONA - EL SERVIDOR RESPONDE');
     }
 
