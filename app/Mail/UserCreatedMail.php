@@ -15,11 +15,18 @@ class UserCreatedMail extends Mailable
 
     public $user;
     public $password;
+    public $verificationUrl;
 
     public function __construct(User $user, $password)
     {
         $this->user = $user;
         $this->password = $password;
+        
+        $this->verificationUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addDays(3),
+            ['id' => $user->getKey(), 'hash' => sha1($user->getEmailForVerification())]
+        );
     }
 
     public function envelope(): Envelope
