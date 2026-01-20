@@ -12,9 +12,11 @@
             <h3 class="text-lg font-semibold">Usuarios Totales</h3>
             <p class="text-3xl font-bold">{{ $totalUsers }}</p>
         </div>
-        <div class="bg-yellow-600 text-white p-4 rounded-lg shadow">
+        <div class="bg-yellow-600 text-white p-4 rounded-lg shadow relative overflow-hidden">
             <h3 class="text-lg font-semibold">Ingresos Mensuales</h3>
-            <p class="text-3xl font-bold">$45,000 MXN</p>
+            <p class="text-3xl font-bold">${{ number_format($monthlyIncome, 2) }} MXN</p>
+            <a href="{{ route('admin.reports.income') }}" class="text-xs underline hover:text-yellow-100 mt-2 block">Ver reporte detallado</a>
+            <svg class="absolute right-0 bottom-0 w-16 h-16 text-yellow-500 opacity-20 -mb-4 -mr-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"></path></svg>
         </div>
     </div>
 
@@ -24,8 +26,8 @@
         </div>
         
         <!-- Desktop Table -->
-        <div class="hidden md:block overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 hidden md:table">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
@@ -54,7 +56,7 @@
         </div>
 
         <!-- Mobile Cards -->
-        <div class="block md:hidden divide-y divide-gray-200">
+        <div class="md:hidden divide-y divide-gray-200">
             @foreach($tenants as $tenant)
             <div class="p-4 hover:bg-gray-50 transition-colors">
                 <div class="flex justify-between items-start mb-2">

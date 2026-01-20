@@ -136,6 +136,18 @@ class Index extends Component
         session()->flash('message', 'Estado del tenant actualizado.');
     }
 
+    public function deleteTenant($tenantId)
+    {
+        $tenant = Tenant::find($tenantId);
+        if ($tenant) {
+            $name = $tenant->name;
+            // Al usar forceDelete, se activan los cascades de la base de datos
+            // para borrar absolutamente todo lo relacionado.
+            $tenant->forceDelete();
+            session()->flash('message', "Tenant '{$name}' y todos sus datos relacionados han sido eliminados permanentemente.");
+        }
+    }
+
     public function render()
     {
         $query = Tenant::query()->with(['users', 'planRelation']);

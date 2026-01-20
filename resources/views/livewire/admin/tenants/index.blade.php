@@ -117,6 +117,10 @@
                                             <button type="button" wire:click="openPlanChangeModal({{ $tenant->id }})" class="text-blue-600 hover:text-blue-900">
                                                 Plan
                                             </button>
+
+                                            <button type="button" wire:click="deleteTenant({{ $tenant->id }})" wire:confirm="¿ESTÁS SEGURO? Esta acción eliminará permanentemente al tenant '{{ $tenant->name }}' y ABSOLUTAMENTE TODOS sus datos (usuarios, expedientes, documentos, etc). Esta acción no se puede deshacer." class="text-red-600 hover:text-red-900">
+                                                Eliminar
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -181,6 +185,9 @@
                                 </button>
                                 <button type="button" wire:click="openPlanChangeModal({{ $tenant->id }})" class="text-blue-600 font-medium text-sm hover:text-blue-800">
                                     Plan
+                                </button>
+                                <button type="button" wire:click="deleteTenant({{ $tenant->id }})" wire:confirm="¿Eliminar permanentemente '{{ $tenant->name }}' y todos sus datos?" class="text-red-600 font-medium text-sm hover:text-red-800">
+                                    Eliminar
                                 </button>
                             </div>
                         </div>

@@ -32,8 +32,8 @@
             </div>
             
             <!-- Desktop Table -->
-            <div class="hidden md:block overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 hidden md:table">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
@@ -64,7 +64,7 @@
             </div>
 
             <!-- Mobile Cards -->
-            <div class="block md:hidden divide-y divide-gray-200">
+            <div class="md:hidden divide-y divide-gray-200">
                 @foreach($recentExpedientes as $exp)
                 <a href="{{ route('expedientes.show', $exp) }}" class="block p-4 hover:bg-gray-50 transition-colors">
                     <div class="flex justify-between items-start mb-1">
