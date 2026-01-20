@@ -7,8 +7,8 @@ use Livewire\WithPagination;
 use App\Models\Mensaje;
 use App\Models\User;
 use App\Models\AuditLog;
-
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Log;
 
 class Index extends Component
 {
@@ -137,34 +137,49 @@ class Index extends Component
             $attachmentPath = $this->attachment->store('attachments', 'public');
         }
 
-        $receiver = User::find($this->selectedConversationId);
-        $tenantId = auth()->user()->tenant_id ?? ($receiver ? $receiver->tenant_id : null);
+        try {
+            $receiver = User::find($this->selectedConversationId);
+            $tenantId = auth()->user()->tenant_id ?? ($receiver ? $receiver->tenant_id : null);
 
-        $mensaje = Mensaje::create([
-            'tenant_id' => $tenantId,
-            'sender_id' => auth()->id(),
-            'receiver_id' => $this->selectedConversationId,
-            'contenido' => $this->replyContent,
-            'leido' => false,
-            'attachment_path' => $attachmentPath,
-            'attachment_name' => $attachmentName,
-            'attachment_type' => $attachmentType,
-        ]);
+            Log::info('Intentando enviar respuesta', [
+                'sender_id' => auth()->id(),
+                'receiver_id' => $this->selectedConversationId,
+                'tenant_id' => $tenantId
+            ]);
 
-        AuditLog::create([
-            'tenant_id' => $tenantId,
-            'user_id' => auth()->id(),
-            'accion' => 'send_message',
-            'modulo' => 'mensajes',
-            'descripcion' => 'Envió un mensaje a ' . ($receiver ? $receiver->name : 'Usuario desconocido'),
-            'metadatos' => ['mensaje_id' => $mensaje->id],
-            'ip_address' => request()->ip(),
-        ]);
+            $mensaje = Mensaje::create([
+                'tenant_id' => $tenantId,
+                'sender_id' => auth()->id(),
+                'receiver_id' => $this->selectedConversationId,
+                'contenido' => $this->replyContent,
+                'leido' => false,
+                'attachment_path' => $attachmentPath,
+                'attachment_name' => $attachmentName,
+                'attachment_type' => $attachmentType,
+            ]);
 
-        $this->replyContent = '';
-        $this->attachment = null;
-        $this->dispatch('message-sent');
-        $this->dispatch('new-message-received')->to('layout.messages-notification');
+            AuditLog::create([
+                'tenant_id' => $tenantId,
+                'user_id' => auth()->id(),
+                'accion' => 'send_message',
+                'modulo' => 'mensajes',
+                'descripcion' => 'Envió un mensaje a ' . ($receiver ? $receiver->name : 'Usuario desconocido'),
+                'metadatos' => ['mensaje_id' => $mensaje->id],
+                'ip_address' => request()->ip(),
+            ]);
+
+            $this->replyContent = '';
+            $this->attachment = null;
+            $this->dispatch('message-sent');
+            $this->dispatch('new-message-received')->to('layout.messages-notification');
+            
+            Log::info('Respuesta enviada con éxito', ['mensaje_id' => $mensaje->id]);
+        } catch (\Exception $e) {
+            Log::error('Error al enviar respuesta: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            $this->dispatch('notify', 'Error al enviar el mensaje: ' . $e->getMessage());
+        }
     }
 
     public function create()
@@ -187,38 +202,53 @@ class Index extends Component
             $attachmentPath = $this->attachment->store('attachments', 'public');
         }
 
-        $receiver = User::find($this->receiver_id);
-        $tenantId = auth()->user()->tenant_id ?? ($receiver ? $receiver->tenant_id : null);
+        try {
+            $receiver = User::find($this->receiver_id);
+            $tenantId = auth()->user()->tenant_id ?? ($receiver ? $receiver->tenant_id : null);
 
-        $mensaje = Mensaje::create([
-            'tenant_id' => $tenantId,
-            'sender_id' => auth()->id(),
-            'receiver_id' => $this->receiver_id,
-            'contenido' => $this->contenido,
-            'leido' => false,
-            'attachment_path' => $attachmentPath,
-            'attachment_name' => $attachmentName,
-            'attachment_type' => $attachmentType,
-        ]);
+            Log::info('Intentando iniciar nueva conversación', [
+                'sender_id' => auth()->id(),
+                'receiver_id' => $this->receiver_id,
+                'tenant_id' => $tenantId
+            ]);
 
-        AuditLog::create([
-            'tenant_id' => $tenantId,
-            'user_id' => auth()->id(),
-            'accion' => 'send_message',
-            'modulo' => 'mensajes',
-            'descripcion' => 'Envió un mensaje a ' . ($receiver ? $receiver->name : 'Usuario desconocido'),
-            'metadatos' => ['mensaje_id' => $mensaje->id],
-            'ip_address' => request()->ip(),
-        ]);
+            $mensaje = Mensaje::create([
+                'tenant_id' => $tenantId,
+                'sender_id' => auth()->id(),
+                'receiver_id' => $this->receiver_id,
+                'contenido' => $this->contenido,
+                'leido' => false,
+                'attachment_path' => $attachmentPath,
+                'attachment_name' => $attachmentName,
+                'attachment_type' => $attachmentType,
+            ]);
 
-        $this->showModal = false;
-        $this->selectedConversationId = $this->receiver_id;
-        $this->reset(['receiver_id', 'contenido', 'attachment']);
-        
-        $this->dispatch('notify', 'Mensaje enviado exitosamente');
-        $this->dispatch('message-sent');
-        $this->dispatch('new-message-received')->to('layout.messages-notification');
-        $this->selectConversation($this->selectedConversationId);
+            AuditLog::create([
+                'tenant_id' => $tenantId,
+                'user_id' => auth()->id(),
+                'accion' => 'send_message',
+                'modulo' => 'mensajes',
+                'descripcion' => 'Envió un mensaje a ' . ($receiver ? $receiver->name : 'Usuario desconocido'),
+                'metadatos' => ['mensaje_id' => $mensaje->id],
+                'ip_address' => request()->ip(),
+            ]);
+
+            $this->showModal = false;
+            $this->selectedConversationId = $this->receiver_id;
+            $this->reset(['receiver_id', 'contenido', 'attachment']);
+            
+            $this->dispatch('notify', 'Mensaje enviado exitosamente');
+            $this->dispatch('message-sent');
+            $this->dispatch('new-message-received')->to('layout.messages-notification');
+            $this->selectConversation($this->selectedConversationId);
+
+            Log::info('Nueva conversación iniciada con éxito', ['mensaje_id' => $mensaje->id]);
+        } catch (\Exception $e) {
+            Log::error('Error al iniciar conversación: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            $this->dispatch('notify', 'Error al iniciar conversación: ' . $e->getMessage());
+        }
     }
 
     public function markAsRead($id)
