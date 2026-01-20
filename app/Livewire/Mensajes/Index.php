@@ -74,7 +74,7 @@ class Index extends Component
 
     public function getConversations()
     {
-        return User::where('tenant_id', auth()->user()->tenant_id)
+        $query = User::where('tenant_id', auth()->user()->tenant_id)
             ->where('id', '!=', auth()->id())
             ->where(function($query) {
                 $query->whereHas('sentMessages', function($q) {
@@ -83,8 +83,11 @@ class Index extends Component
                 ->orWhereHas('receivedMessages', function($q) {
                     $q->where('sender_id', auth()->id());
                 });
-            })
-            ->withCount(['receivedMessages as unread_count' => function($q) {
+            });
+
+        Log::info('Conversaciones obtenidas', ['count' => $query->count()]);
+
+        return $query->withCount(['receivedMessages as unread_count' => function($q) {
                 $q->where('receiver_id', auth()->id())->where('leido', false);
             }])
             ->get()
@@ -190,6 +193,12 @@ class Index extends Component
 
     public function send()
     {
+        Log::info('Metodo send() iniciado', [
+            'receiver_id' => $this->receiver_id,
+            'contenido' => $this->contenido,
+            'sender_id' => auth()->id()
+        ]);
+
         $this->validate();
 
         $attachmentPath = null;
@@ -240,13 +249,17 @@ class Index extends Component
             $this->dispatch('notify', 'Mensaje enviado exitosamente');
             $this->dispatch('message-sent');
             $this->dispatch('new-message-received')->to('layout.messages-notification');
+            
+            // Forzar la selección de la conversación para que aparezca en la vista
             $this->selectConversation($this->selectedConversationId);
 
             Log::info('Nueva conversación iniciada con éxito', ['mensaje_id' => $mensaje->id]);
         } catch (\Exception $e) {
-            Log::error('Error al iniciar conversación: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
+            if (class_exists('Illuminate\Support\Facades\Log')) {
+                Log::error('Error al iniciar conversación: ' . $e->getMessage(), [
+                    'trace' => $e->getTraceAsString()
+                ]);
+            }
             $this->dispatch('notify', 'Error al iniciar conversación: ' . $e->getMessage());
         }
     }

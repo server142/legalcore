@@ -10,10 +10,12 @@ trait BelongsToTenant
     protected static function bootBelongsToTenant()
     {
         static::creating(function ($model) {
-            if (session()->has('tenant_id')) {
-                $model->tenant_id = session()->get('tenant_id');
-            } elseif (auth()->check() && auth()->user()->tenant_id) {
-                $model->tenant_id = auth()->user()->tenant_id;
+            if (empty($model->tenant_id)) {
+                if (session()->has('tenant_id')) {
+                    $model->tenant_id = session()->get('tenant_id');
+                } elseif (auth()->check() && auth()->user()->tenant_id) {
+                    $model->tenant_id = auth()->user()->tenant_id;
+                }
             }
         });
 
