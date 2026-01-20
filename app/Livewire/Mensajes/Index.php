@@ -47,9 +47,14 @@ class Index extends Component
     public function render()
     {
         $conversations = $this->getConversations();
-        $users = User::where('tenant_id', auth()->user()->tenant_id)
-            ->where('id', '!=', auth()->id())
-            ->get();
+        $user = auth()->user();
+        $usersQuery = User::where('id', '!=', $user->id);
+        
+        if ($user->role !== 'super_admin') {
+            $usersQuery->where('tenant_id', $user->tenant_id);
+        }
+        
+        $users = $usersQuery->get();
 
         $messages = [];
         $selectedConversation = null;
@@ -64,6 +69,12 @@ class Index extends Component
             })->orderBy('created_at', 'asc')->get();
         }
 
+        Log::info('Rendering Mensajes Index', [
+            'selectedConversationId' => $this->selectedConversationId,
+            'showModal' => $this->showModal,
+            'receiver_id' => $this->receiver_id
+        ]);
+
         return view('livewire.mensajes.index', [
             'conversations' => $conversations,
             'users' => $users,
@@ -74,35 +85,48 @@ class Index extends Component
 
     public function getConversations()
     {
-        $query = User::where('tenant_id', auth()->user()->tenant_id)
-            ->where('id', '!=', auth()->id())
-            ->where(function($query) {
-                $query->whereHas('sentMessages', function($q) {
-                    $q->where('receiver_id', auth()->id());
+        $user = auth()->user();
+        
+        $query = User::query();
+
+        // Si no es super_admin, filtrar por tenant
+        if ($user->role !== 'super_admin') {
+            $query->where('tenant_id', $user->tenant_id);
+        }
+
+        $query->where('id', '!=', $user->id)
+            ->where(function($q) use ($user) {
+                $q->whereHas('sentMessages', function($sq) use ($user) {
+                    $sq->where('receiver_id', $user->id);
                 })
-                ->orWhereHas('receivedMessages', function($q) {
-                    $q->where('sender_id', auth()->id());
+                ->orWhereHas('receivedMessages', function($sq) use ($user) {
+                    $sq->where('sender_id', $user->id);
                 });
             });
 
-        Log::info('Conversaciones obtenidas', ['count' => $query->count()]);
+        Log::info('Consultando conversaciones', [
+            'user_id' => $user->id,
+            'role' => $user->role,
+            'tenant_id' => $user->tenant_id,
+            'count' => $query->count()
+        ]);
 
-        return $query->withCount(['receivedMessages as unread_count' => function($q) {
-                $q->where('receiver_id', auth()->id())->where('leido', false);
+        return $query->withCount(['receivedMessages as unread_count' => function($q) use ($user) {
+                $q->where('receiver_id', $user->id)->where('leido', false);
             }])
             ->get()
-            ->map(function($user) {
-                $user->last_message = Mensaje::where(function($q) use ($user) {
-                    $q->where(function($sub) use ($user) {
-                        $sub->where('sender_id', auth()->id())->where('receiver_id', $user->id);
-                    })->orWhere(function($sub) use ($user) {
-                        $sub->where('sender_id', $user->id)->where('receiver_id', auth()->id());
+            ->map(function($contact) use ($user) {
+                $contact->last_message = Mensaje::where(function($q) use ($contact, $user) {
+                    $q->where(function($sub) use ($contact, $user) {
+                        $sub->where('sender_id', $user->id)->where('receiver_id', $contact->id);
+                    })->orWhere(function($sub) use ($contact, $user) {
+                        $sub->where('sender_id', $contact->id)->where('receiver_id', $user->id);
                     });
                 })->latest()->first();
-                return $user;
+                return $contact;
             })
-            ->sortByDesc(function($user) {
-                return $user->last_message?->created_at;
+            ->sortByDesc(function($contact) {
+                return $contact->last_message?->created_at;
             });
     }
 
@@ -271,5 +295,29 @@ class Index extends Component
             $mensaje->update(['leido' => true]);
             $this->dispatch('message-read');
         }
+    }
+
+    protected function exceptionHandler($e)
+    {
+        Log::error('Excepción en Mensajes Index: ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString()
+        ]);
+    }
+
+    public function updated($propertyName)
+    {
+        $this->validateOnly($propertyName);
+    }
+
+    protected function onValidationFailed()
+    {
+        Log::warning('Validación fallida en Mensajes Index', [
+            'errors' => $this->getErrorBag()->toArray(),
+            'data' => [
+                'receiver_id' => $this->receiver_id,
+                'contenido' => $this->contenido,
+                'replyContent' => $this->replyContent
+            ]
+        ]);
     }
 }
