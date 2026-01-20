@@ -56,9 +56,11 @@ class Index extends Component
         if ($this->selectedConversationId) {
             $selectedConversation = User::find($this->selectedConversationId);
             $messages = Mensaje::where(function($q) {
-                $q->where('sender_id', auth()->id())->where('receiver_id', $this->selectedConversationId);
-            })->orWhere(function($q) {
-                $q->where('sender_id', $this->selectedConversationId)->where('receiver_id', auth()->id());
+                $q->where(function($sub) {
+                    $sub->where('sender_id', auth()->id())->where('receiver_id', $this->selectedConversationId);
+                })->orWhere(function($sub) {
+                    $sub->where('sender_id', $this->selectedConversationId)->where('receiver_id', auth()->id());
+                });
             })->orderBy('created_at', 'asc')->get();
         }
 
@@ -88,9 +90,11 @@ class Index extends Component
             ->get()
             ->map(function($user) {
                 $user->last_message = Mensaje::where(function($q) use ($user) {
-                    $q->where('sender_id', auth()->id())->where('receiver_id', $user->id);
-                })->orWhere(function($q) use ($user) {
-                    $q->where('sender_id', $user->id)->where('receiver_id', auth()->id());
+                    $q->where(function($sub) use ($user) {
+                        $sub->where('sender_id', auth()->id())->where('receiver_id', $user->id);
+                    })->orWhere(function($sub) use ($user) {
+                        $sub->where('sender_id', $user->id)->where('receiver_id', auth()->id());
+                    });
                 })->latest()->first();
                 return $user;
             })
@@ -204,9 +208,12 @@ class Index extends Component
         ]);
 
         $this->showModal = false;
+        $this->selectedConversationId = $this->receiver_id;
+        $this->reset(['receiver_id', 'contenido', 'attachment']);
+        
         $this->dispatch('notify', 'Mensaje enviado exitosamente');
         $this->dispatch('message-sent');
-        $this->selectConversation($this->receiver_id);
+        $this->markConversationAsRead($this->selectedConversationId);
     }
 
     public function markAsRead($id)
