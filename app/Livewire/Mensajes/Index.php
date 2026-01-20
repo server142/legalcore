@@ -217,7 +217,8 @@ class Index extends Component
         
         $this->dispatch('notify', 'Mensaje enviado exitosamente');
         $this->dispatch('message-sent');
-        $this->markConversationAsRead($this->selectedConversationId);
+        $this->dispatch('new-message-received')->to('layout.messages-notification');
+        $this->selectConversation($this->selectedConversationId);
     }
 
     public function markAsRead($id)
