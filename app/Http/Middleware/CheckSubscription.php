@@ -88,7 +88,7 @@ class CheckSubscription
     protected function handleExpiredTrial($tenant)
     {
         // Obtener configuración de días de gracia (default 3)
-        $graceDays = \DB::table('global_settings')->where('key', 'grace_period_days')->value('value') ?? 3;
+        $graceDays = \Illuminate\Support\Facades\DB::table('global_settings')->where('key', 'grace_period_days')->value('value') ?? 3;
         
         $tenant->update([
             'subscription_status' => 'grace_period',

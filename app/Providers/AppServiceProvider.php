@@ -49,15 +49,20 @@ class AppServiceProvider extends ServiceProvider
                     ->toArray();
 
                 if (!empty($stripeSettings)) {
-                    config([
-                        'cashier.key' => $stripeSettings['stripe_key'] ?? config('cashier.key'),
-                        'cashier.secret' => $stripeSettings['stripe_secret'] ?? config('cashier.secret'),
-                        'cashier.webhook.secret' => $stripeSettings['stripe_webhook_secret'] ?? config('cashier.webhook.secret'),
-                    ]);
+                    if (isset($stripeSettings['stripe_key'])) {
+                        config(['cashier.key' => $stripeSettings['stripe_key']]);
+                    }
+                    if (isset($stripeSettings['stripe_secret'])) {
+                        config(['cashier.secret' => $stripeSettings['stripe_secret']]);
+                    }
+                    if (isset($stripeSettings['stripe_webhook_secret'])) {
+                        config(['cashier.webhook.secret' => $stripeSettings['stripe_webhook_secret']]);
+                    }
                 }
             }
-        } catch (\Exception $e) {
-            // Fail silently if DB not ready
+        } catch (\Throwable $e) {
+            // Fail silently if DB not ready or any error occurs
+            \Illuminate\Support\Facades\Log::warning('AppServiceProvider boot error: ' . $e->getMessage());
         }
     }
 }
