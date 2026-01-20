@@ -85,6 +85,13 @@ class Index extends Component
 
         $user->syncRoles($this->selectedRoles);
 
+        // Enviar correo con los datos de acceso
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\UserCreatedMail($user, $this->password));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error enviando correo de bienvenida: ' . $e->getMessage());
+        }
+
         $this->showModal = false;
         $this->dispatch('notify', 'Usuario creado exitosamente');
     }

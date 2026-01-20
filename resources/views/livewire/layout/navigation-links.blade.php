@@ -58,6 +58,10 @@
         <x-sidebar-link :href="route('admin.plans.index')" :active="request()->routeIs('admin.plans.*')" icon="collection">
             {{ __('Planes') }}
         </x-sidebar-link>
+
+        <x-sidebar-link :href="route('admin.global-settings')" :active="request()->routeIs('admin.global-settings')" icon="settings">
+            {{ __('Configuración Global') }}
+        </x-sidebar-link>
     </div>
     @endif
 
