@@ -24,19 +24,33 @@ class AppServiceProvider extends ServiceProvider
         // Override Mail Config from DB
         try {
             if (\Illuminate\Support\Facades\Schema::hasTable('global_settings')) {
-                $settings = \Illuminate\Support\Facades\DB::table('global_settings')
+                // Mail Settings
+                $mailSettings = \Illuminate\Support\Facades\DB::table('global_settings')
                     ->where('key', 'like', 'mail_%')
                     ->pluck('value', 'key');
 
-                if ($settings->isNotEmpty()) {
+                if ($mailSettings->isNotEmpty()) {
                     config([
-                        'mail.mailers.smtp.host' => $settings['mail_host'] ?? config('mail.mailers.smtp.host'),
-                        'mail.mailers.smtp.port' => $settings['mail_port'] ?? config('mail.mailers.smtp.port'),
-                        'mail.mailers.smtp.encryption' => $settings['mail_encryption'] ?? config('mail.mailers.smtp.encryption'),
-                        'mail.mailers.smtp.username' => $settings['mail_username'] ?? config('mail.mailers.smtp.username'),
-                        'mail.mailers.smtp.password' => $settings['mail_password'] ?? config('mail.mailers.smtp.password'),
-                        'mail.from.address' => $settings['mail_from_address'] ?? config('mail.from.address'),
-                        'mail.from.name' => $settings['mail_from_name'] ?? config('mail.from.name'),
+                        'mail.mailers.smtp.host' => $mailSettings['mail_host'] ?? config('mail.mailers.smtp.host'),
+                        'mail.mailers.smtp.port' => $mailSettings['mail_port'] ?? config('mail.mailers.smtp.port'),
+                        'mail.mailers.smtp.encryption' => $mailSettings['mail_encryption'] ?? config('mail.mailers.smtp.encryption'),
+                        'mail.mailers.smtp.username' => $mailSettings['mail_username'] ?? config('mail.mailers.smtp.username'),
+                        'mail.mailers.smtp.password' => $mailSettings['mail_password'] ?? config('mail.mailers.smtp.password'),
+                        'mail.from.address' => $mailSettings['mail_from_address'] ?? config('mail.from.address'),
+                        'mail.from.name' => $mailSettings['mail_from_name'] ?? config('mail.from.name'),
+                    ]);
+                }
+
+                // Stripe Settings
+                $stripeSettings = \Illuminate\Support\Facades\DB::table('global_settings')
+                    ->whereIn('key', ['stripe_key', 'stripe_secret', 'stripe_webhook_secret'])
+                    ->pluck('value', 'key');
+
+                if ($stripeSettings->isNotEmpty()) {
+                    config([
+                        'cashier.key' => $stripeSettings['stripe_key'] ?? config('cashier.key'),
+                        'cashier.secret' => $stripeSettings['stripe_secret'] ?? config('cashier.secret'),
+                        'cashier.webhook.secret' => $stripeSettings['stripe_webhook_secret'] ?? config('cashier.webhook.secret'),
                     ]);
                 }
             }

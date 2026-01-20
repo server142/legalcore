@@ -25,6 +25,14 @@
                                 <x-input-error :messages="$errors->get('slug')" class="mt-2" />
                             </div>
 
+                            <!-- Stripe Price ID -->
+                            <div>
+                                <x-input-label for="stripe_price_id" :value="__('Stripe Price ID (price_...)')" />
+                                <x-text-input wire:model="stripe_price_id" id="stripe_price_id" class="block mt-1 w-full" type="text" placeholder="price_1Q..." />
+                                <p class="text-xs text-gray-500 mt-1">Obtenlo del catálogo de productos en Stripe.</p>
+                                <x-input-error :messages="$errors->get('stripe_price_id')" class="mt-2" />
+                            </div>
+
                             <!-- Precio -->
                             <div>
                                 <x-input-label for="price" :value="__('Precio (MXN)')" />

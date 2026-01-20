@@ -73,4 +73,4 @@ LegalCore SAAS es una plataforma integral diseñada para despachos jurídicos en
 - Manejo de términos y plazos procesales mexicanos.
 
 ---
-Desarrollado por Carlos Segura Yoquigue para LegalCore.
+Desarrollado por Carlos Segura para LegalCore.

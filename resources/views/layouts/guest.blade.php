@@ -74,7 +74,7 @@
                 <div class="flex justify-center mb-8">
                     <!-- Logo -->
                     <a href="/" class="text-3xl font-bold text-gray-900 tracking-wider hover:text-indigo-600 transition">
-                        DESPACHO
+                        DIOGENES
                     </a>
                 </div>
 

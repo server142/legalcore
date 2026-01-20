@@ -14,6 +14,7 @@ class Manage extends Component
     // Form fields
     public $name = '';
     public $slug = '';
+    public $stripe_price_id = '';
     public $price = 0.00;
     public $duration_in_days = 30;
     public $max_admin_users = 1;
@@ -30,6 +31,7 @@ class Manage extends Component
             $this->plan = $plan;
             $this->name = $plan->name;
             $this->slug = $plan->slug;
+            $this->stripe_price_id = $plan->stripe_price_id;
             $this->price = $plan->price;
             $this->duration_in_days = $plan->duration_in_days;
             $this->max_admin_users = $plan->max_admin_users;
@@ -71,6 +73,7 @@ class Manage extends Component
         $this->validate([
             'name' => 'required|string|max:255',
             'slug' => ['required', 'string', 'max:255', Rule::unique('plans')->ignore($this->plan)],
+            'stripe_price_id' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
             'duration_in_days' => 'required|integer|min:1',
             'max_admin_users' => 'required|integer|min:1',
@@ -81,6 +84,7 @@ class Manage extends Component
         $data = [
             'name' => $this->name,
             'slug' => $this->slug,
+            'stripe_price_id' => $this->stripe_price_id,
             'price' => $this->price,
             'duration_in_days' => $this->duration_in_days,
             'max_admin_users' => $this->max_admin_users,

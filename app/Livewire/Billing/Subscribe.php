@@ -25,29 +25,43 @@ class Subscribe extends Component
             return redirect()->route('dashboard');
         }
 
-        // Aquí iniciaríamos el SetupIntent de Stripe si tuviéramos las llaves
-        // $this->clientSecret = $tenant->createSetupIntent()->client_secret;
+        // Iniciar el SetupIntent de Stripe para capturar el método de pago de forma segura
+        if (!$this->isFree) {
+            $this->clientSecret = $tenant->createSetupIntent()->client_secret;
+        }
     }
 
-    public function processPayment()
+    public function processPayment($paymentMethod = null)
     {
-        // SIMULACIÓN DE PAGO EXITOSO (Para MVP sin llaves de Stripe reales configuradas)
-        // En producción, esto se maneja via Stripe.js y luego webhook o confirmación server-side
-        
         $tenant = Auth::user()->tenant;
-        
-        // Actualizar Tenant
-        $tenant->update([
-            'plan' => $this->plan->slug,
-            'plan_id' => $this->plan->id,
-            'subscription_status' => 'active',
-            'subscription_ends_at' => now()->addDays($this->plan->duration_in_days),
-            'trial_ends_at' => null, // Fin del trial si existía
-            'is_active' => true,
-        ]);
 
-        session()->flash('message', '¡Pago procesado con éxito! Bienvenido a Diogenes.');
-        return redirect()->route('dashboard');
+        try {
+            if (!$this->isFree) {
+                if (!$paymentMethod) {
+                    throw new \Exception("No se proporcionó un método de pago válido.");
+                }
+
+                // Crear la suscripción en Stripe
+                $tenant->newSubscription('default', $this->plan->stripe_price_id)
+                    ->create($paymentMethod);
+            }
+            
+            // Actualizar datos locales del Tenant
+            $tenant->update([
+                'plan' => $this->plan->slug,
+                'plan_id' => $this->plan->id,
+                'subscription_status' => 'active',
+                'subscription_ends_at' => now()->addDays($this->plan->duration_in_days),
+                'trial_ends_at' => null,
+                'is_active' => true,
+            ]);
+
+            session()->flash('message', '¡Suscripción activada con éxito! Bienvenido a Diogenes.');
+            return redirect()->route('dashboard');
+
+        } catch (\Exception $e) {
+            $this->addError('payment', 'Error al procesar el pago: ' . $e->getMessage());
+        }
     }
 
     public function render()
