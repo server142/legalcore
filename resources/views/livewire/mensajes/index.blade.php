@@ -1,8 +1,13 @@
 <div>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Mensajes') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Mensajes') }}
+            </h2>
+            <button wire:click="test" class="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700">
+                BOTÓN DE PRUEBA
+            </button>
+        </div>
     </x-slot>
 
     <div class="py-6">

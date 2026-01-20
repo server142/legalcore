@@ -43,6 +43,7 @@ class Index extends Component
 
     public function render()
     {
+        Log::emergency('!!! RENDER EJECUTADO !!!');
         $conversations = $this->getConversations();
         $user = auth()->user();
         $users = User::where('tenant_id', $user->tenant_id)
@@ -183,8 +184,14 @@ class Index extends Component
         $this->showModal = true;
     }
 
+    public function test()
+    {
+        dd('BOTON DE PRUEBA FUNCIONA - EL SERVIDOR RESPONDE');
+    }
+
     public function iniciarConversacion()
     {
+        Log::emergency('!!! iniciarConversacion() LLAMADO !!!');
         // Si esto llega al servidor, verás una pantalla blanca con este mensaje:
         dd('SERVIDOR ALCANZADO - Destinatario: ' . $this->receiver_id . ' - Contenido: ' . $this->contenido);
 
