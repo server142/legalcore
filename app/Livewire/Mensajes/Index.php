@@ -185,24 +185,13 @@ class Index extends Component
         $this->showModal = true;
     }
 
-    public function send()
+    public function iniciarConversacion()
     {
-        Log::info('!!! CLICK EN SEND DETECTADO EN EL SERVIDOR !!!', [
-            'receiver_id' => $this->receiver_id,
-            'contenido' => $this->contenido,
-            'auth_id' => auth()->id(),
-            'auth_tenant' => auth()->user()->tenant_id
-        ]);
+        // Si esto llega al servidor, verás una pantalla blanca con este mensaje:
+        dd('SERVIDOR ALCANZADO - Destinatario: ' . $this->receiver_id . ' - Contenido: ' . $this->contenido);
 
         try {
-            $this->validate([
-                'receiver_id' => 'required',
-                'contenido' => 'required|string',
-            ]);
-            
             $tenantId = auth()->user()->tenant_id;
-            
-            Log::info('Validación exitosa, intentando crear mensaje', ['tenant_id' => $tenantId]);
 
             $mensaje = Mensaje::create([
                 'tenant_id' => $tenantId,
@@ -210,18 +199,6 @@ class Index extends Component
                 'receiver_id' => $this->receiver_id,
                 'contenido' => $this->contenido,
                 'leido' => false,
-            ]);
-
-            Log::info('Mensaje creado ID: ' . $mensaje->id);
-
-            AuditLog::create([
-                'tenant_id' => $tenantId,
-                'user_id' => auth()->id(),
-                'accion' => 'send_message',
-                'modulo' => 'mensajes',
-                'descripcion' => 'Inició una conversación',
-                'metadatos' => ['mensaje_id' => $mensaje->id],
-                'ip_address' => request()->ip(),
             ]);
 
             $this->showModal = false;
@@ -233,13 +210,8 @@ class Index extends Component
             $this->dispatch('new-message-received')->to('layout.messages-notification');
             $this->selectConversation($this->selectedConversationId);
 
-            Log::info('Fin de send() exitoso');
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('FALLO DE VALIDACION:', $e->errors());
-            throw $e;
         } catch (\Exception $e) {
-            Log::error('ERROR CRITICO EN SEND: ' . $e->getMessage());
+            Log::error('ERROR EN iniciarConversacion: ' . $e->getMessage());
             $this->dispatch('notify', 'Error: ' . $e->getMessage());
         }
     }

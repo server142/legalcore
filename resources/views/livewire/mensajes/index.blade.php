@@ -244,12 +244,10 @@
                         {{ __('Cancelar') }}
                     </x-secondary-button>
                     <button type="button" 
-                            wire:click="send" 
-                            onclick="console.log('Botón Enviar presionado');"
-                            wire:loading.attr="disabled"
-                            class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
-                        <span wire:loading.remove wire:target="send">{{ __('Enviar Mensaje') }}</span>
-                        <span wire:loading wire:target="send">{{ __('Enviando...') }}</span>
+                            wire:click="iniciarConversacion" 
+                            onclick="console.log('Intentando llamar a iniciarConversacion...');"
+                            class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 transition ease-in-out duration-150">
+                        {{ __('Enviar Mensaje') }}
                     </button>
                 </div>
         </div>
