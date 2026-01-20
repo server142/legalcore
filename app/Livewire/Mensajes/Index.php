@@ -26,10 +26,8 @@ class Index extends Component
 
     protected $queryString = ['selectedMessageId' => ['as' => 'message']];
 
-    protected $rules = [
-        'receiver_id' => 'required|exists:users,id',
-        'contenido' => 'required|string|max:1000',
-    ];
+    // Eliminamos las reglas automáticas para evitar bloqueos silenciosos
+    protected $rules = [];
 
     public function mount()
     {
@@ -225,8 +223,5 @@ class Index extends Component
         }
     }
 
-    public function updated($propertyName)
-    {
-        $this->validateOnly($propertyName);
-    }
+    // Eliminamos el validador en tiempo real para evitar conflictos
 }
