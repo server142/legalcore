@@ -16,10 +16,7 @@
                      x-show="!showChat || window.innerWidth >= 768"
                      :class="{'hidden md:flex': showChat, 'flex': !showChat}">
                         <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 flex-shrink-0">
-                            <div class="flex items-center space-x-2">
-                                <h3 class="font-bold text-gray-900">Chats</h3>
-                                <button wire:click="test" onclick="alert('CLICK EN TEST');" class="text-[10px] bg-red-600 text-white px-2 py-1 rounded">TEST</button>
-                            </div>
+                            <h3 class="font-bold text-gray-900">Conversaciones</h3>
                             <button wire:click="create" class="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             </button>
@@ -246,7 +243,6 @@
                     </x-secondary-button>
                     <button type="button" 
                             wire:click.prevent="iniciarConversacion" 
-                            onclick="alert('LLAMANDO AL SERVIDOR (SEND)...');"
                             class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none transition ease-in-out duration-150">
                         {{ __('Enviar Mensaje') }}
                     </button>

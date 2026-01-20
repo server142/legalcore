@@ -31,10 +31,6 @@ class Index extends Component
 
     public function mount()
     {
-        Log::emergency('!!! MOUNT EJECUTADO !!!');
-        // Si esto funciona, la página se pondrá blanca al cargar:
-        // die('CONEXION EXITOSA - EL SERVIDOR ESTA USANDO ESTE CODIGO');
-
         if ($this->selectedMessageId) {
             $message = Mensaje::find($this->selectedMessageId);
             if ($message) {
@@ -47,7 +43,6 @@ class Index extends Component
 
     public function render()
     {
-        Log::emergency('!!! RENDER EJECUTADO !!!');
         $conversations = $this->getConversations();
         $user = auth()->user();
         $users = User::where('tenant_id', $user->tenant_id)
@@ -188,17 +183,12 @@ class Index extends Component
         $this->showModal = true;
     }
 
-    public function test()
-    {
-        Log::emergency('!!! TEST EJECUTADO !!!');
-        dd('BOTON DE PRUEBA FUNCIONA - EL SERVIDOR RESPONDE');
-    }
-
     public function iniciarConversacion()
     {
-        Log::emergency('!!! iniciarConversacion() LLAMADO !!!');
-        // Si esto llega al servidor, verás una pantalla blanca con este mensaje:
-        dd('SERVIDOR ALCANZADO - Destinatario: ' . $this->receiver_id . ' - Contenido: ' . $this->contenido);
+        $this->validate([
+            'receiver_id' => 'required|exists:users,id',
+            'contenido' => 'required|string|max:1000',
+        ]);
 
         try {
             $tenantId = auth()->user()->tenant_id;
@@ -209,6 +199,16 @@ class Index extends Component
                 'receiver_id' => $this->receiver_id,
                 'contenido' => $this->contenido,
                 'leido' => false,
+            ]);
+
+            AuditLog::create([
+                'tenant_id' => $tenantId,
+                'user_id' => auth()->id(),
+                'accion' => 'send_message',
+                'modulo' => 'mensajes',
+                'descripcion' => 'Inició una conversación',
+                'metadatos' => ['mensaje_id' => $mensaje->id],
+                'ip_address' => request()->ip(),
             ]);
 
             $this->showModal = false;
