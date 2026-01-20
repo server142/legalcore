@@ -30,28 +30,57 @@
             <div class="p-4 border-b">
                 <h3 class="text-lg font-semibold">Últimos Expedientes</h3>
             </div>
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Título</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach($recentExpedientes as $exp)
-                    <tr>
-                        <td class="px-4 py-2 text-sm">{{ $exp->numero }}</td>
-                        <td class="px-4 py-2 text-sm">{{ $exp->titulo }}</td>
-                        <td class="px-4 py-2 text-sm">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                {{ $exp->estado_procesal }}
-                            </span>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            
+            <!-- Desktop Table -->
+            <div class="hidden md:block overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Título</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($recentExpedientes as $exp)
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-2 text-sm font-medium text-indigo-600">
+                                <a href="{{ route('expedientes.show', $exp) }}">{{ $exp->numero }}</a>
+                            </td>
+                            <td class="px-4 py-2 text-sm text-gray-700">{{ $exp->titulo }}</td>
+                            <td class="px-4 py-2 text-sm">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    {{ $exp->estado_procesal }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-2 text-sm font-medium">
+                                <a href="{{ route('expedientes.show', $exp) }}" class="text-indigo-600 hover:text-indigo-900">Ver</a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div class="block md:hidden divide-y divide-gray-200">
+                @foreach($recentExpedientes as $exp)
+                <a href="{{ route('expedientes.show', $exp) }}" class="block p-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-xs font-bold text-indigo-600 uppercase">{{ $exp->numero }}</span>
+                        <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-100 text-blue-800">
+                            {{ $exp->estado_procesal }}
+                        </span>
+                    </div>
+                    <h4 class="text-sm font-bold text-gray-900">{{ $exp->titulo }}</h4>
+                    <div class="mt-2 flex items-center text-xs text-indigo-600 font-medium">
+                        Ver detalles
+                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                </a>
+                @endforeach
+            </div>
         </div>
 
         <div class="bg-white rounded-lg shadow overflow-hidden">
