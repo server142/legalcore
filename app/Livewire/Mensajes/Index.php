@@ -29,7 +29,6 @@ class Index extends Component
     protected $rules = [
         'receiver_id' => 'required|exists:users,id',
         'contenido' => 'required|string|max:1000',
-        'attachment' => 'nullable|file|max:10240', // 10MB max
     ];
 
     public function mount()
@@ -125,6 +124,11 @@ class Index extends Component
 
     public function sendReply()
     {
+        Log::info('Iniciando sendReply()', [
+            'selectedConversationId' => $this->selectedConversationId,
+            'replyContent' => $this->replyContent
+        ]);
+
         $this->validate([
             'replyContent' => 'required|string|max:1000',
             'attachment' => 'nullable|file|max:10240',
@@ -183,9 +187,15 @@ class Index extends Component
 
     public function send()
     {
-        $this->validate();
+        Log::info('Iniciando send() - Intento de primer mensaje', [
+            'receiver_id' => $this->receiver_id,
+            'contenido' => $this->contenido,
+            'sender_id' => auth()->id()
+        ]);
 
         try {
+            $this->validate();
+            
             $tenantId = auth()->user()->tenant_id;
 
             $mensaje = Mensaje::create([
@@ -195,6 +205,8 @@ class Index extends Component
                 'contenido' => $this->contenido,
                 'leido' => false,
             ]);
+
+            Log::info('Mensaje creado exitosamente', ['mensaje_id' => $mensaje->id]);
 
             AuditLog::create([
                 'tenant_id' => $tenantId,
@@ -215,7 +227,15 @@ class Index extends Component
             $this->dispatch('new-message-received')->to('layout.messages-notification');
             $this->selectConversation($this->selectedConversationId);
 
+            Log::info('Proceso de send() completado');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Validación fallida en send()', ['errors' => $e->errors()]);
+            throw $e;
         } catch (\Exception $e) {
+            Log::error('Error crítico en send(): ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
             $this->dispatch('notify', 'Error al iniciar conversación: ' . $e->getMessage());
         }
     }

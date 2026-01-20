@@ -244,7 +244,7 @@
                     <x-secondary-button x-on:click="show = false">
                         {{ __('Cancelar') }}
                     </x-secondary-button>
-                    <x-primary-button type="submit" wire:loading.attr="disabled">
+                    <x-primary-button type="button" wire:click="send" wire:loading.attr="disabled" wire:key="btn-send-main">
                         <span wire:loading.remove wire:target="send">{{ __('Enviar Mensaje') }}</span>
                         <span wire:loading wire:target="send">{{ __('Enviando...') }}</span>
                     </x-primary-button>
