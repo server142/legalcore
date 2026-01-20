@@ -187,16 +187,22 @@ class Index extends Component
 
     public function send()
     {
-        Log::info('Iniciando send() - Intento de primer mensaje', [
+        Log::info('!!! CLICK EN SEND DETECTADO EN EL SERVIDOR !!!', [
             'receiver_id' => $this->receiver_id,
             'contenido' => $this->contenido,
-            'sender_id' => auth()->id()
+            'auth_id' => auth()->id(),
+            'auth_tenant' => auth()->user()->tenant_id
         ]);
 
         try {
-            $this->validate();
+            $this->validate([
+                'receiver_id' => 'required',
+                'contenido' => 'required|string',
+            ]);
             
             $tenantId = auth()->user()->tenant_id;
+            
+            Log::info('Validación exitosa, intentando crear mensaje', ['tenant_id' => $tenantId]);
 
             $mensaje = Mensaje::create([
                 'tenant_id' => $tenantId,
@@ -206,7 +212,7 @@ class Index extends Component
                 'leido' => false,
             ]);
 
-            Log::info('Mensaje creado exitosamente', ['mensaje_id' => $mensaje->id]);
+            Log::info('Mensaje creado ID: ' . $mensaje->id);
 
             AuditLog::create([
                 'tenant_id' => $tenantId,
@@ -227,16 +233,14 @@ class Index extends Component
             $this->dispatch('new-message-received')->to('layout.messages-notification');
             $this->selectConversation($this->selectedConversationId);
 
-            Log::info('Proceso de send() completado');
+            Log::info('Fin de send() exitoso');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('Validación fallida en send()', ['errors' => $e->errors()]);
+            Log::warning('FALLO DE VALIDACION:', $e->errors());
             throw $e;
         } catch (\Exception $e) {
-            Log::error('Error crítico en send(): ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
-            $this->dispatch('notify', 'Error al iniciar conversación: ' . $e->getMessage());
+            Log::error('ERROR CRITICO EN SEND: ' . $e->getMessage());
+            $this->dispatch('notify', 'Error: ' . $e->getMessage());
         }
     }
 

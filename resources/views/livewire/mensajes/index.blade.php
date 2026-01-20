@@ -222,11 +222,10 @@
     <x-modal-wire wire:model="showModal">
         <div class="p-6">
             <h2 class="text-lg font-medium text-gray-900">{{ __('Nueva Conversación') }}</h2>
-            <form wire:submit.prevent="send">
                 <div class="space-y-6">
                     <div>
                         <x-input-label for="receiver_id" :value="__('Destinatario')" />
-                        <select wire:model.live="receiver_id" id="receiver_id" wire:key="select-receiver" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                        <select wire:model="receiver_id" id="receiver_id" wire:key="select-receiver" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                             <option value="">-- Seleccionar --</option>
                             @foreach($users as $user)
                                 <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->getRoleNames()->first() }})</option>
@@ -236,7 +235,7 @@
                     </div>
                     <div>
                         <x-input-label for="contenido" :value="__('Mensaje')" />
-                        <textarea wire:model.live="contenido" id="contenido" wire:key="textarea-contenido" rows="4" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" placeholder="Escribe tu primer mensaje..."></textarea>
+                        <textarea wire:model="contenido" id="contenido" wire:key="textarea-contenido" rows="4" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" placeholder="Escribe tu primer mensaje..."></textarea>
                         <x-input-error :messages="$errors->get('contenido')" class="mt-2" />
                     </div>
                 </div>
@@ -244,12 +243,15 @@
                     <x-secondary-button x-on:click="show = false">
                         {{ __('Cancelar') }}
                     </x-secondary-button>
-                    <x-primary-button type="button" wire:click="send" wire:loading.attr="disabled" wire:key="btn-send-main">
+                    <button type="button" 
+                            wire:click="send" 
+                            onclick="console.log('Botón Enviar presionado');"
+                            wire:loading.attr="disabled"
+                            class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
                         <span wire:loading.remove wire:target="send">{{ __('Enviar Mensaje') }}</span>
                         <span wire:loading wire:target="send">{{ __('Enviando...') }}</span>
-                    </x-primary-button>
+                    </button>
                 </div>
-            </form>
         </div>
     </x-modal-wire>
 
