@@ -27,9 +27,10 @@ class AppServiceProvider extends ServiceProvider
                 // Mail Settings
                 $mailSettings = \Illuminate\Support\Facades\DB::table('global_settings')
                     ->where('key', 'like', 'mail_%')
-                    ->pluck('value', 'key');
+                    ->pluck('value', 'key')
+                    ->toArray();
 
-                if ($mailSettings->isNotEmpty()) {
+                if (!empty($mailSettings)) {
                     config([
                         'mail.mailers.smtp.host' => $mailSettings['mail_host'] ?? config('mail.mailers.smtp.host'),
                         'mail.mailers.smtp.port' => $mailSettings['mail_port'] ?? config('mail.mailers.smtp.port'),
@@ -44,9 +45,10 @@ class AppServiceProvider extends ServiceProvider
                 // Stripe Settings
                 $stripeSettings = \Illuminate\Support\Facades\DB::table('global_settings')
                     ->whereIn('key', ['stripe_key', 'stripe_secret', 'stripe_webhook_secret'])
-                    ->pluck('value', 'key');
+                    ->pluck('value', 'key')
+                    ->toArray();
 
-                if ($stripeSettings->isNotEmpty()) {
+                if (!empty($stripeSettings)) {
                     config([
                         'cashier.key' => $stripeSettings['stripe_key'] ?? config('cashier.key'),
                         'cashier.secret' => $stripeSettings['stripe_secret'] ?? config('cashier.secret'),
