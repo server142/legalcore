@@ -74,11 +74,13 @@ class Index extends Component
     {
         return User::where('tenant_id', auth()->user()->tenant_id)
             ->where('id', '!=', auth()->id())
-            ->whereHas('sentMessages', function($q) {
-                $q->where('receiver_id', auth()->id());
-            })
-            ->orWhereHas('receivedMessages', function($q) {
-                $q->where('sender_id', auth()->id());
+            ->where(function($query) {
+                $query->whereHas('sentMessages', function($q) {
+                    $q->where('receiver_id', auth()->id());
+                })
+                ->orWhereHas('receivedMessages', function($q) {
+                    $q->where('sender_id', auth()->id());
+                });
             })
             ->withCount(['receivedMessages as unread_count' => function($q) {
                 $q->where('receiver_id', auth()->id())->where('leido', false);
@@ -142,11 +144,13 @@ class Index extends Component
             'attachment_type' => $attachmentType,
         ]);
 
+        $receiver = User::find($this->selectedConversationId);
+        
         AuditLog::create([
             'user_id' => auth()->id(),
             'accion' => 'send_message',
             'modulo' => 'mensajes',
-            'descripcion' => 'Envió un mensaje a ' . User::find($this->selectedConversationId)->name,
+            'descripcion' => 'Envió un mensaje a ' . ($receiver ? $receiver->name : 'Usuario desconocido'),
             'metadatos' => ['mensaje_id' => $mensaje->id],
             'ip_address' => request()->ip(),
         ]);
@@ -188,11 +192,13 @@ class Index extends Component
             'attachment_type' => $attachmentType,
         ]);
 
+        $receiver = User::find($this->receiver_id);
+
         AuditLog::create([
             'user_id' => auth()->id(),
             'accion' => 'send_message',
             'modulo' => 'mensajes',
-            'descripcion' => 'Envió un mensaje a ' . User::find($this->receiver_id)->name,
+            'descripcion' => 'Envió un mensaje a ' . ($receiver ? $receiver->name : 'Usuario desconocido'),
             'metadatos' => ['mensaje_id' => $mensaje->id],
             'ip_address' => request()->ip(),
         ]);

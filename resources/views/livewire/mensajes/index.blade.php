@@ -166,12 +166,13 @@
                                 <form wire:submit.prevent="sendReply" class="flex items-end space-x-2">
                                     <div class="flex-1 relative">
                                         <textarea 
-                                            wire:model="replyContent" 
+                                            wire:model.live="replyContent" 
                                             rows="1" 
                                             placeholder="Escribe un mensaje..."
                                             class="w-full border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-indigo-500 resize-none pr-10"
                                             @keydown.enter.prevent="if(!event.shiftKey) { $wire.sendReply(); }"
                                         ></textarea>
+                                        <x-input-error :messages="$errors->get('replyContent')" class="mt-1" />
                                         
                                         <div class="absolute bottom-2 right-2" x-data="{ showEmojis: false }">
                                             <button type="button" @click="showEmojis = !showEmojis" class="text-gray-400 hover:text-gray-600 focus:outline-none">
@@ -180,7 +181,7 @@
                                             
                                             <div x-show="showEmojis" @click.away="showEmojis = false" class="absolute bottom-10 right-0 bg-white border shadow-lg rounded-lg p-2 grid grid-cols-6 gap-1 w-64 z-50" style="display: none;">
                                                 @foreach(['😀','😂','😍','👍','👎','🎉','🔥','❤️','🤔','😢','👋','🙏','🤝','👀','✅','❌','💼','⚖️'] as $emoji)
-                                                    <button type="button" @click="$wire.set('replyContent', $wire.replyContent + '{{ $emoji }}'); showEmojis = false;" class="text-xl hover:bg-gray-100 p-1 rounded transition">
+                                                    <button type="button" @click="$wire.replyContent = $wire.replyContent + '{{ $emoji }}'; showEmojis = false;" class="text-xl hover:bg-gray-100 p-1 rounded transition">
                                                         {{ $emoji }}
                                                     </button>
                                                 @endforeach
