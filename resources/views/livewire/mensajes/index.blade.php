@@ -226,7 +226,7 @@
                 <div class="space-y-6">
                     <div>
                         <x-input-label for="receiver_id" :value="__('Destinatario')" />
-                        <select wire:model.live="receiver_id" id="receiver_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                        <select wire:model.live="receiver_id" id="receiver_id" wire:key="select-receiver" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                             <option value="">-- Seleccionar --</option>
                             @foreach($users as $user)
                                 <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->getRoleNames()->first() }})</option>
@@ -236,7 +236,7 @@
                     </div>
                     <div>
                         <x-input-label for="contenido" :value="__('Mensaje')" />
-                        <textarea wire:model.live="contenido" id="contenido" rows="4" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" placeholder="Escribe tu primer mensaje..."></textarea>
+                        <textarea wire:model.live="contenido" id="contenido" wire:key="textarea-contenido" rows="4" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" placeholder="Escribe tu primer mensaje..."></textarea>
                         <x-input-error :messages="$errors->get('contenido')" class="mt-2" />
                     </div>
                 </div>

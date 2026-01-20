@@ -48,13 +48,9 @@ class Index extends Component
     {
         $conversations = $this->getConversations();
         $user = auth()->user();
-        $usersQuery = User::where('id', '!=', $user->id);
-        
-        if ($user->role !== 'super_admin') {
-            $usersQuery->where('tenant_id', $user->tenant_id);
-        }
-        
-        $users = $usersQuery->get();
+        $users = User::where('tenant_id', $user->tenant_id)
+            ->where('id', '!=', $user->id)
+            ->get();
 
         $messages = [];
         $selectedConversation = null;
@@ -69,12 +65,6 @@ class Index extends Component
             })->orderBy('created_at', 'asc')->get();
         }
 
-        Log::info('Rendering Mensajes Index', [
-            'selectedConversationId' => $this->selectedConversationId,
-            'showModal' => $this->showModal,
-            'receiver_id' => $this->receiver_id
-        ]);
-
         return view('livewire.mensajes.index', [
             'conversations' => $conversations,
             'users' => $users,
@@ -87,14 +77,8 @@ class Index extends Component
     {
         $user = auth()->user();
         
-        $query = User::query();
-
-        // Si no es super_admin, filtrar por tenant
-        if ($user->role !== 'super_admin') {
-            $query->where('tenant_id', $user->tenant_id);
-        }
-
-        $query->where('id', '!=', $user->id)
+        return User::where('tenant_id', $user->tenant_id)
+            ->where('id', '!=', $user->id)
             ->where(function($q) use ($user) {
                 $q->whereHas('sentMessages', function($sq) use ($user) {
                     $sq->where('receiver_id', $user->id);
@@ -102,16 +86,8 @@ class Index extends Component
                 ->orWhereHas('receivedMessages', function($sq) use ($user) {
                     $sq->where('sender_id', $user->id);
                 });
-            });
-
-        Log::info('Consultando conversaciones', [
-            'user_id' => $user->id,
-            'role' => $user->role,
-            'tenant_id' => $user->tenant_id,
-            'count' => $query->count()
-        ]);
-
-        return $query->withCount(['receivedMessages as unread_count' => function($q) use ($user) {
+            })
+            ->withCount(['receivedMessages as unread_count' => function($q) use ($user) {
                 $q->where('receiver_id', $user->id)->where('leido', false);
             }])
             ->get()
@@ -166,13 +142,7 @@ class Index extends Component
 
         try {
             $receiver = User::find($this->selectedConversationId);
-            $tenantId = auth()->user()->tenant_id ?? ($receiver ? $receiver->tenant_id : null);
-
-            Log::info('Intentando enviar respuesta', [
-                'sender_id' => auth()->id(),
-                'receiver_id' => $this->selectedConversationId,
-                'tenant_id' => $tenantId
-            ]);
+            $tenantId = auth()->user()->tenant_id;
 
             $mensaje = Mensaje::create([
                 'tenant_id' => $tenantId,
@@ -200,11 +170,7 @@ class Index extends Component
             $this->dispatch('message-sent');
             $this->dispatch('new-message-received')->to('layout.messages-notification');
             
-            Log::info('Respuesta enviada con éxito', ['mensaje_id' => $mensaje->id]);
         } catch (\Exception $e) {
-            Log::error('Error al enviar respuesta: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
             $this->dispatch('notify', 'Error al enviar el mensaje: ' . $e->getMessage());
         }
     }
@@ -217,33 +183,10 @@ class Index extends Component
 
     public function send()
     {
-        Log::info('Metodo send() iniciado', [
-            'receiver_id' => $this->receiver_id,
-            'contenido' => $this->contenido,
-            'sender_id' => auth()->id()
-        ]);
-
         $this->validate();
 
-        $attachmentPath = null;
-        $attachmentName = null;
-        $attachmentType = null;
-
-        if ($this->attachment) {
-            $attachmentName = $this->attachment->getClientOriginalName();
-            $attachmentType = $this->attachment->getMimeType();
-            $attachmentPath = $this->attachment->store('attachments', 'public');
-        }
-
         try {
-            $receiver = User::find($this->receiver_id);
-            $tenantId = auth()->user()->tenant_id ?? ($receiver ? $receiver->tenant_id : null);
-
-            Log::info('Intentando iniciar nueva conversación', [
-                'sender_id' => auth()->id(),
-                'receiver_id' => $this->receiver_id,
-                'tenant_id' => $tenantId
-            ]);
+            $tenantId = auth()->user()->tenant_id;
 
             $mensaje = Mensaje::create([
                 'tenant_id' => $tenantId,
@@ -251,9 +194,6 @@ class Index extends Component
                 'receiver_id' => $this->receiver_id,
                 'contenido' => $this->contenido,
                 'leido' => false,
-                'attachment_path' => $attachmentPath,
-                'attachment_name' => $attachmentName,
-                'attachment_type' => $attachmentType,
             ]);
 
             AuditLog::create([
@@ -261,7 +201,7 @@ class Index extends Component
                 'user_id' => auth()->id(),
                 'accion' => 'send_message',
                 'modulo' => 'mensajes',
-                'descripcion' => 'Envió un mensaje a ' . ($receiver ? $receiver->name : 'Usuario desconocido'),
+                'descripcion' => 'Inició una conversación',
                 'metadatos' => ['mensaje_id' => $mensaje->id],
                 'ip_address' => request()->ip(),
             ]);
@@ -273,17 +213,9 @@ class Index extends Component
             $this->dispatch('notify', 'Mensaje enviado exitosamente');
             $this->dispatch('message-sent');
             $this->dispatch('new-message-received')->to('layout.messages-notification');
-            
-            // Forzar la selección de la conversación para que aparezca en la vista
             $this->selectConversation($this->selectedConversationId);
 
-            Log::info('Nueva conversación iniciada con éxito', ['mensaje_id' => $mensaje->id]);
         } catch (\Exception $e) {
-            if (class_exists('Illuminate\Support\Facades\Log')) {
-                Log::error('Error al iniciar conversación: ' . $e->getMessage(), [
-                    'trace' => $e->getTraceAsString()
-                ]);
-            }
             $this->dispatch('notify', 'Error al iniciar conversación: ' . $e->getMessage());
         }
     }
@@ -297,27 +229,8 @@ class Index extends Component
         }
     }
 
-    protected function exceptionHandler($e)
-    {
-        Log::error('Excepción en Mensajes Index: ' . $e->getMessage(), [
-            'trace' => $e->getTraceAsString()
-        ]);
-    }
-
     public function updated($propertyName)
     {
         $this->validateOnly($propertyName);
-    }
-
-    protected function onValidationFailed()
-    {
-        Log::warning('Validación fallida en Mensajes Index', [
-            'errors' => $this->getErrorBag()->toArray(),
-            'data' => [
-                'receiver_id' => $this->receiver_id,
-                'contenido' => $this->contenido,
-                'replyContent' => $this->replyContent
-            ]
-        ]);
     }
 }
