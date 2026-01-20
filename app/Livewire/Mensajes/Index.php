@@ -137,8 +137,11 @@ class Index extends Component
             $attachmentPath = $this->attachment->store('attachments', 'public');
         }
 
+        $receiver = User::find($this->selectedConversationId);
+        $tenantId = auth()->user()->tenant_id ?? ($receiver ? $receiver->tenant_id : null);
+
         $mensaje = Mensaje::create([
-            'tenant_id' => auth()->user()->tenant_id,
+            'tenant_id' => $tenantId,
             'sender_id' => auth()->id(),
             'receiver_id' => $this->selectedConversationId,
             'contenido' => $this->replyContent,
@@ -148,9 +151,8 @@ class Index extends Component
             'attachment_type' => $attachmentType,
         ]);
 
-        $receiver = User::find($this->selectedConversationId);
-        
         AuditLog::create([
+            'tenant_id' => $tenantId,
             'user_id' => auth()->id(),
             'accion' => 'send_message',
             'modulo' => 'mensajes',
@@ -185,8 +187,11 @@ class Index extends Component
             $attachmentPath = $this->attachment->store('attachments', 'public');
         }
 
+        $receiver = User::find($this->receiver_id);
+        $tenantId = auth()->user()->tenant_id ?? ($receiver ? $receiver->tenant_id : null);
+
         $mensaje = Mensaje::create([
-            'tenant_id' => auth()->user()->tenant_id,
+            'tenant_id' => $tenantId,
             'sender_id' => auth()->id(),
             'receiver_id' => $this->receiver_id,
             'contenido' => $this->contenido,
@@ -196,9 +201,8 @@ class Index extends Component
             'attachment_type' => $attachmentType,
         ]);
 
-        $receiver = User::find($this->receiver_id);
-
         AuditLog::create([
+            'tenant_id' => $tenantId,
             'user_id' => auth()->id(),
             'accion' => 'send_message',
             'modulo' => 'mensajes',
