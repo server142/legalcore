@@ -17,19 +17,18 @@
         </div>
         <div class="flex flex-wrap gap-2 w-full md:w-auto">
             @can('manage users')
-                <a href="{{ route('expedientes.assignments', $expediente) }}" wire:navigate class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none whitespace-nowrap">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <a href="{{ route('expedientes.assignments', $expediente) }}" wire:navigate class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none whitespace-nowrap text-sm">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                     Gestionar
                 </a>
             @endcan
-            <a href="{{ route('reportes.expediente', $expediente) }}" target="_blank" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none transition shadow-sm">
-                <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                Imprimir Reporte
+            <a href="{{ route('reportes.expediente', $expediente) }}" target="_blank" class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none transition shadow-sm text-sm">
+                <svg class="w-4 h-4 mr-1.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Imprimir
             </a>
-            <button wire:click="edit" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex-1 md:flex-none">Editar</button>
-            <button wire:click="toggleAddActuacion" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex-1 md:flex-none whitespace-nowrap">
-                <span class="md:hidden">+</span>
-                <span class="hidden md:inline">+ Actuación</span>
+            <button wire:click="edit" class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-50 flex-1 md:flex-none text-sm">Editar</button>
+            <button wire:click="toggleAddActuacion" class="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 flex-1 md:flex-none whitespace-nowrap text-sm font-bold">
+                + Actuación
             </button>
         </div>
     </div>
@@ -73,14 +72,14 @@
         <!-- Main Content (Tabs) -->
         <div class="lg:col-span-2">
             <div class="bg-white rounded-lg shadow overflow-hidden">
-                <div class="flex border-b">
-                    <button wire:click="setTab('actuaciones')" class="px-6 py-3 text-sm font-medium {{ $activeTab == 'actuaciones' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
+                <div class="flex border-b overflow-x-auto scrollbar-hide">
+                    <button wire:click="setTab('actuaciones')" class="px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap {{ $activeTab == 'actuaciones' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
                         Actuaciones
                     </button>
-                    <button wire:click="setTab('documentos')" class="px-6 py-3 text-sm font-medium {{ $activeTab == 'documentos' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
+                    <button wire:click="setTab('documentos')" class="px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap {{ $activeTab == 'documentos' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
                         Documentos
                     </button>
-                    <button wire:click="setTab('agenda')" class="px-6 py-3 text-sm font-medium {{ $activeTab == 'agenda' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
+                    <button wire:click="setTab('agenda')" class="px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap {{ $activeTab == 'agenda' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
                         Agenda
                     </button>
                 </div>
