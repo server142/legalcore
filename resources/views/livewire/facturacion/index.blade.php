@@ -14,19 +14,19 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
             <h3 class="text-xs font-bold text-gray-500 uppercase">Total Cobrado</h3>
-            <p class="text-2xl font-bold text-gray-800">$0.00</p>
+            <p class="text-2xl font-bold text-gray-800">${{ number_format($totalCobrado, 2) }}</p>
         </div>
         <div class="bg-white p-4 rounded-lg shadow border-l-4 border-orange-500">
             <h3 class="text-xs font-bold text-gray-500 uppercase">Pendiente</h3>
-            <p class="text-2xl font-bold text-gray-800">$0.00</p>
+            <p class="text-2xl font-bold text-gray-800">${{ number_format($totalPendiente, 2) }}</p>
         </div>
         <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
             <h3 class="text-xs font-bold text-gray-500 uppercase">Facturas Mes</h3>
-            <p class="text-2xl font-bold text-gray-800">0</p>
+            <p class="text-2xl font-bold text-gray-800">{{ $facturasMes }}</p>
         </div>
         <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
             <h3 class="text-xs font-bold text-gray-500 uppercase">Vencidas</h3>
-            <p class="text-2xl font-bold text-gray-800">0</p>
+            <p class="text-2xl font-bold text-gray-800">{{ $facturasVencidas }}</p>
         </div>
     </div>
 
@@ -53,11 +53,18 @@
                             {{ ucfirst($factura->estado) }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="{{ route('reportes.factura', $factura) }}" target="_blank" class="inline-flex items-center px-3 py-1 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                            Imprimir
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
+                        <a href="{{ route('reportes.factura', $factura) }}" target="_blank" title="Imprimir" class="p-1.5 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                         </a>
+                        @if($factura->estado == 'pendiente')
+                            <button wire:click="markAsPaid({{ $factura->id }})" wire:confirm="¿Estás seguro de marcar esta factura como PAGADA?" title="Marcar como Pagada" class="p-1.5 bg-green-50 text-green-700 rounded-md hover:bg-green-100 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            </button>
+                            <button wire:click="markAsCancelled({{ $factura->id }})" wire:confirm="¿Estás seguro de CANCELAR esta factura?" title="Cancelar Factura" class="p-1.5 bg-red-50 text-red-700 rounded-md hover:bg-red-100 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        @endif
                     </td>
                 </tr>
                 @empty
@@ -85,11 +92,21 @@
                     </div>
                 </div>
                 
-                <div class="flex justify-end mt-3 pt-3 border-t border-gray-100">
-                    <a href="{{ route('reportes.factura', $factura) }}" target="_blank" class="flex items-center text-indigo-600 font-bold text-sm hover:text-indigo-800 transition">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                        Imprimir Recibo
+                <div class="flex justify-end mt-3 pt-3 border-t border-gray-100 space-x-4">
+                    <a href="{{ route('reportes.factura', $factura) }}" target="_blank" class="flex items-center text-indigo-600 font-bold text-xs hover:text-indigo-800 transition">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        Imprimir
                     </a>
+                    @if($factura->estado == 'pendiente')
+                        <button wire:click="markAsPaid({{ $factura->id }})" wire:confirm="¿Marcar como PAGADA?" class="flex items-center text-green-600 font-bold text-xs hover:text-green-800 transition">
+                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            Pagar
+                        </button>
+                        <button wire:click="markAsCancelled({{ $factura->id }})" wire:confirm="¿CANCELAR factura?" class="flex items-center text-red-600 font-bold text-xs hover:text-red-800 transition">
+                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            Cancelar
+                        </button>
+                    @endif
                 </div>
             </div>
             @empty
