@@ -23,10 +23,13 @@ class UploadDocument extends Component
 
     protected function rules()
     {
-        $maxSize = \Illuminate\Support\Facades\DB::table('global_settings')
+        $maxSizeSetting = \Illuminate\Support\Facades\DB::table('global_settings')
             ->where('key', 'max_file_size_mb')
-            ->value('value') ?? 100;
+            ->value('value');
             
+        $maxSize = is_numeric($maxSizeSetting) ? (int)$maxSizeSetting : 100;
+        if ($maxSize <= 0) $maxSize = 100;
+
         $maxSizeInKb = $maxSize * 1024;
 
         return [

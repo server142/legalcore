@@ -61,9 +61,12 @@ class AppServiceProvider extends ServiceProvider
                 }
 
                 // File Upload Settings
-                $maxFileSize = \Illuminate\Support\Facades\DB::table('global_settings')
+                $maxFileSizeSetting = \Illuminate\Support\Facades\DB::table('global_settings')
                     ->where('key', 'max_file_size_mb')
-                    ->value('value') ?? 100;
+                    ->value('value');
+
+                $maxFileSize = is_numeric($maxFileSizeSetting) ? (int)$maxFileSizeSetting : 100;
+                if ($maxFileSize <= 0) $maxFileSize = 100;
 
                 $maxFileSizeInKb = $maxFileSize * 1024;
                 config([
