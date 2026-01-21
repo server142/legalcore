@@ -21,9 +21,18 @@ class UploadDocument extends Component
         $this->expediente = $expediente;
     }
 
-    protected $rules = [
-        'files.*' => 'required|file', // Sin límite de peso por archivo
-    ];
+    protected function rules()
+    {
+        $maxSize = \Illuminate\Support\Facades\DB::table('global_settings')
+            ->where('key', 'max_file_size_mb')
+            ->value('value') ?? 100;
+            
+        $maxSizeInKb = $maxSize * 1024;
+
+        return [
+            'files.*' => "required|file|max:{$maxSizeInKb}",
+        ];
+    }
 
     public function save()
     {

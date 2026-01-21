@@ -59,6 +59,16 @@ class AppServiceProvider extends ServiceProvider
                         config(['cashier.webhook.secret' => $stripeSettings['stripe_webhook_secret']]);
                     }
                 }
+
+                // File Upload Settings
+                $maxFileSize = \Illuminate\Support\Facades\DB::table('global_settings')
+                    ->where('key', 'max_file_size_mb')
+                    ->value('value') ?? 100;
+
+                $maxFileSizeInKb = $maxFileSize * 1024;
+                config([
+                    'livewire.temporary_file_upload.rules' => ['required', 'file', "max:{$maxFileSizeInKb}"]
+                ]);
             }
         } catch (\Throwable $e) {
             // Fail silently if DB not ready or any error occurs

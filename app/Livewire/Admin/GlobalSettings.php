@@ -28,6 +28,9 @@ class GlobalSettings extends Component
     public $mail_from_address;
     public $mail_from_name;
 
+    // File Upload Settings
+    public $max_file_size_mb = 100;
+
     public function mount()
     {
         $this->loadSettings();
@@ -53,6 +56,8 @@ class GlobalSettings extends Component
         $this->mail_encryption = $settings['mail_encryption'] ?? 'tls';
         $this->mail_from_address = $settings['mail_from_address'] ?? '';
         $this->mail_from_name = $settings['mail_from_name'] ?? '';
+
+        $this->max_file_size_mb = $settings['max_file_size_mb'] ?? 100;
     }
 
     public function save()
@@ -72,6 +77,7 @@ class GlobalSettings extends Component
             'mail_encryption' => $this->mail_encryption,
             'mail_from_address' => $this->mail_from_address,
             'mail_from_name' => $this->mail_from_name,
+            'max_file_size_mb' => $this->max_file_size_mb,
         ];
 
         foreach ($data as $key => $value) {

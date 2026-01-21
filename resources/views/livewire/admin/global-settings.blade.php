@@ -25,6 +25,7 @@
                     <button @click="$dispatch('set-tab', 'stripe')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Configuración Stripe</button>
                     <button @click="$dispatch('set-tab', 'sms')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Configuración SMS</button>
                     <button @click="$dispatch('set-tab', 'mail')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Servidor de Correo</button>
+                    <button @click="$dispatch('set-tab', 'general')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Configuración General</button>
                 </div>
             </div>
 
@@ -125,6 +126,23 @@
                             <div>
                                 <x-input-label for="mail_from_name" value="From Name" />
                                 <x-text-input wire:model="mail_from_name" id="mail_from_name" class="mt-1 block w-full" type="text" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- General Settings -->
+                    <div x-show="tab === 'general'" class="bg-white rounded-lg shadow p-6 space-y-4" style="display: none;">
+                        <h3 class="text-lg font-bold text-gray-800 border-b pb-2">Configuración General</h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <x-input-label for="max_file_size_mb" value="Tamaño Máximo de Archivo (MB)" />
+                                <x-text-input wire:model="max_file_size_mb" id="max_file_size_mb" class="mt-1 block w-full" type="number" min="1" />
+                                <p class="text-xs text-gray-500 mt-1">Define el tamaño máximo permitido para cada archivo subido al sistema.</p>
+                                <div class="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                    <p class="text-[10px] text-amber-700 font-medium">
+                                        <strong>Nota importante:</strong> Para que este cambio sea efectivo con archivos muy grandes (ej. > 100MB), también debes asegurarte de que tu servidor (PHP y Nginx) permita esos tamaños en sus configuraciones (`upload_max_filesize`, `post_max_size` y `client_max_body_size`).
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
