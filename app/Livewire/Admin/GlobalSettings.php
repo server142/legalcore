@@ -84,6 +84,69 @@ class GlobalSettings extends Component
         session()->flash('message', 'Configuraciones globales actualizadas correctamente.');
     }
 
+    public function testStripe()
+    {
+        if (empty($this->stripe_secret)) {
+            session()->flash('error', 'Debe configurar la Secret Key de Stripe primero.');
+            return;
+        }
+
+        try {
+            $stripe = new \Stripe\StripeClient($this->stripe_secret);
+            $stripe->customers->all(['limit' => 1]);
+            session()->flash('message', 'Conexión con Stripe exitosa.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error de Stripe: ' . $e->getMessage());
+        }
+    }
+
+    public function testSMS()
+    {
+        if (empty($this->sms_sid) || empty($this->sms_token) || empty($this->sms_from)) {
+            session()->flash('error', 'Debe configurar SID, Token y Número de origen primero.');
+            return;
+        }
+
+        try {
+            $twilio = new \Twilio\Rest\Client($this->sms_sid, $this->sms_token);
+            // Solo probamos la autenticación listando mensajes (sin enviar para no gastar saldo)
+            $twilio->messages->read([], 1);
+            session()->flash('message', 'Conexión con Twilio exitosa.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error de SMS: ' . $e->getMessage());
+        }
+    }
+
+    public function testMail()
+    {
+        if (empty($this->mail_host) || empty($this->mail_username) || empty($this->mail_password)) {
+            session()->flash('error', 'Debe configurar los datos del servidor SMTP primero.');
+            return;
+        }
+
+        try {
+            // Configurar temporalmente el mailer para la prueba
+            config([
+                'mail.mailers.smtp.host' => $this->mail_host,
+                'mail.mailers.smtp.port' => $this->mail_port,
+                'mail.mailers.smtp.encryption' => $this->mail_encryption === 'none' ? null : $this->mail_encryption,
+                'mail.mailers.smtp.username' => $this->mail_username,
+                'mail.mailers.smtp.password' => $this->mail_password,
+                'mail.from.address' => $this->mail_from_address,
+                'mail.from.name' => $this->mail_from_name,
+            ]);
+
+            \Illuminate\Support\Facades\Mail::raw('Esta es una prueba de configuración de correo desde Diogenes.', function ($message) {
+                $message->to(auth()->user()->email)
+                    ->subject('Prueba de Configuración de Correo');
+            });
+
+            session()->flash('message', 'Correo de prueba enviado a ' . auth()->user()->email);
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error de Correo: ' . $e->getMessage());
+        }
+    }
+
     public function render()
     {
         return view('livewire.admin.global-settings')->layout('layouts.app');

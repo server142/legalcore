@@ -7,8 +7,14 @@
 
     <div class="max-w-7xl mx-auto">
         @if (session()->has('message'))
-            <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
-                {{ session('message') }}
+            <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative shadow-sm">
+                <span class="block sm:inline">{{ session('message') }}</span>
+            </div>
+        @endif
+
+        @if (session()->has('error'))
+            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-sm">
+                <span class="block sm:inline">{{ session('error') }}</span>
             </div>
         @endif
 
@@ -27,7 +33,13 @@
                 <form wire:submit.prevent="save">
                     <!-- Stripe Settings -->
                     <div x-show="tab === 'stripe'" class="bg-white rounded-lg shadow p-6 space-y-4">
-                        <h3 class="text-lg font-bold text-gray-800 border-b pb-2">Pasarela de Pagos (Stripe)</h3>
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <h3 class="text-lg font-bold text-gray-800">Pasarela de Pagos (Stripe)</h3>
+                            <button type="button" wire:click="testStripe" wire:loading.attr="disabled" class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold hover:bg-indigo-200 transition">
+                                <span wire:loading.remove wire:target="testStripe">Probar Conexión</span>
+                                <span wire:loading wire:target="testStripe">Probando...</span>
+                            </button>
+                        </div>
                         <div class="grid grid-cols-1 gap-4">
                             <div>
                                 <x-input-label for="stripe_key" value="Stripe Publishable Key" />
@@ -46,7 +58,13 @@
 
                     <!-- SMS Settings -->
                     <div x-show="tab === 'sms'" class="bg-white rounded-lg shadow p-6 space-y-4" style="display: none;">
-                        <h3 class="text-lg font-bold text-gray-800 border-b pb-2">Alertas SMS (Twilio)</h3>
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <h3 class="text-lg font-bold text-gray-800">Alertas SMS (Twilio)</h3>
+                            <button type="button" wire:click="testSMS" wire:loading.attr="disabled" class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold hover:bg-indigo-200 transition">
+                                <span wire:loading.remove wire:target="testSMS">Probar Conexión</span>
+                                <span wire:loading wire:target="testSMS">Probando...</span>
+                            </button>
+                        </div>
                         <div class="grid grid-cols-1 gap-4">
                             <div>
                                 <x-input-label for="sms_sid" value="Account SID" />
@@ -65,7 +83,13 @@
 
                     <!-- Mail Settings -->
                     <div x-show="tab === 'mail'" class="bg-white rounded-lg shadow p-6 space-y-4" style="display: none;">
-                        <h3 class="text-lg font-bold text-gray-800 border-b pb-2">Configuración de Correo (SMTP)</h3>
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <h3 class="text-lg font-bold text-gray-800">Configuración de Correo (SMTP)</h3>
+                            <button type="button" wire:click="testMail" wire:loading.attr="disabled" class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold hover:bg-indigo-200 transition">
+                                <span wire:loading.remove wire:target="testMail">Enviar Correo de Prueba</span>
+                                <span wire:loading wire:target="testMail">Enviando...</span>
+                            </button>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="md:col-span-2">
                                 <x-input-label for="mail_host" value="SMTP Host" />
