@@ -23,10 +23,15 @@ class SuperAdmin extends Component
         $this->tenants = Tenant::latest()->take(10)->get();
         
         // Calcular ingresos del mes actual
-        $this->monthlyIncome = \App\Models\Payment::whereMonth('payment_date', now()->month)
-            ->whereYear('payment_date', now()->year)
-            ->where('status', 'completed')
-            ->sum('amount');
+        try {
+            $this->monthlyIncome = \App\Models\Payment::whereMonth('payment_date', now()->month)
+                ->whereYear('payment_date', now()->year)
+                ->where('status', 'completed')
+                ->sum('amount');
+        } catch (\Throwable $e) {
+            $this->monthlyIncome = 0;
+            \Illuminate\Support\Facades\Log::warning('SuperAdmin Dashboard: Error al calcular ingresos. ' . $e->getMessage());
+        }
     }
 
     public function render()

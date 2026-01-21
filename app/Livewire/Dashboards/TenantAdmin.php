@@ -63,11 +63,18 @@ class TenantAdmin extends Component
         
         // Financial Stats - Only for those who can manage billing
         if ($user->can('manage billing')) {
-            $this->totalCobrado = \App\Models\Factura::where('estado', 'pagada')->sum('total');
-            $this->pendienteCobro = \App\Models\Factura::where('estado', 'pendiente')->sum('total');
-            $this->facturasMes = \App\Models\Factura::whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year)
-                ->count();
+            try {
+                $this->totalCobrado = \App\Models\Factura::where('estado', 'pagada')->sum('total');
+                $this->pendienteCobro = \App\Models\Factura::where('estado', 'pendiente')->sum('total');
+                $this->facturasMes = \App\Models\Factura::whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year)
+                    ->count();
+            } catch (\Throwable $e) {
+                $this->totalCobrado = 0;
+                $this->pendienteCobro = 0;
+                $this->facturasMes = 0;
+                \Illuminate\Support\Facades\Log::warning('TenantAdmin Dashboard: Error al calcular estadísticas financieras. ' . $e->getMessage());
+            }
         } else {
             $this->totalCobrado = 0;
             $this->pendienteCobro = 0;
