@@ -19,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \App\Models\Evento::observe(\App\Observers\EventoObserver::class);
+
         \Illuminate\Support\Facades\Schema::defaultStringLength(191);
 
         // Override Mail Config from DB

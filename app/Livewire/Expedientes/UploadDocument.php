@@ -42,24 +42,36 @@ class UploadDocument extends Component
         $this->validate();
 
         $user = auth()->user();
-        $tenant = $user->tenant;
-        $plan = $tenant->plan_model ?? \App\Models\Plan::where('slug', $tenant->plan)->first();
+        $isSuperAdmin = $user->hasRole('super_admin') || $user->role === 'super_admin';
+        
+        // El documento siempre pertenece al tenant del expediente
+        $tenantId = $this->expediente->tenant_id;
+        $tenant = \App\Models\Tenant::find($tenantId);
 
-        if (!$plan) {
-            session()->flash('error', 'No se pudo determinar el plan del tenant.');
-            return;
-        }
+        if (!$isSuperAdmin) {
+            if (!$tenant) {
+                session()->flash('error', 'No se pudo determinar el tenant del expediente.');
+                return;
+            }
 
-        // Calcular tamaño total de los nuevos archivos
-        $totalNewSize = 0;
-        foreach ($this->files as $file) {
-            $totalNewSize += $file->getSize();
-        }
+            $plan = $tenant->plan_model ?? \App\Models\Plan::where('slug', $tenant->plan)->first();
 
-        // Verificar límite de almacenamiento
-        if (!$plan->hasStorageAvailable($tenant, $totalNewSize)) {
-            session()->flash('error', "No tienes suficiente espacio de almacenamiento. Tu plan permite {$plan->storage_limit_gb}GB.");
-            return;
+            if (!$plan) {
+                session()->flash('error', 'No se pudo determinar el plan del tenant.');
+                return;
+            }
+
+            // Calcular tamaño total de los nuevos archivos
+            $totalNewSize = 0;
+            foreach ($this->files as $file) {
+                $totalNewSize += $file->getSize();
+            }
+
+            // Verificar límite de almacenamiento
+            if (!$plan->hasStorageAvailable($tenant, $totalNewSize)) {
+                session()->flash('error', "No tienes suficiente espacio de almacenamiento. Tu plan permite {$plan->storage_limit_gb}GB.");
+                return;
+            }
         }
 
         foreach ($this->files as $file) {
@@ -78,7 +90,7 @@ class UploadDocument extends Component
             $path = $file->store('documentos/' . $this->expediente->id, 'local');
 
             Documento::create([
-                'tenant_id' => $tenant->id,
+                'tenant_id' => $tenantId,
                 'expediente_id' => $this->expediente->id,
                 'nombre' => $nombreOriginal,
                 'path' => $path,
