@@ -117,8 +117,13 @@ class GlobalSettings extends Component
         }
     }
 
-    public function testMail()
+    public function testMail($testEmail)
     {
+        if (empty($testEmail)) {
+            session()->flash('error', 'Debe proporcionar un correo electrónico para la prueba.');
+            return;
+        }
+
         if (empty($this->mail_host) || empty($this->mail_username) || empty($this->mail_password)) {
             session()->flash('error', 'Debe configurar los datos del servidor SMTP primero.');
             return;
@@ -136,12 +141,12 @@ class GlobalSettings extends Component
                 'mail.from.name' => $this->mail_from_name,
             ]);
 
-            \Illuminate\Support\Facades\Mail::raw('Esta es una prueba de configuración de correo desde Diogenes.', function ($message) {
-                $message->to(auth()->user()->email)
+            \Illuminate\Support\Facades\Mail::raw('Esta es una prueba de configuración de correo desde Diogenes.', function ($message) use ($testEmail) {
+                $message->to($testEmail)
                     ->subject('Prueba de Configuración de Correo');
             });
 
-            session()->flash('message', 'Correo de prueba enviado a ' . auth()->user()->email);
+            session()->flash('message', 'Correo de prueba enviado a ' . $testEmail);
         } catch (\Exception $e) {
             session()->flash('error', 'Error de Correo: ' . $e->getMessage());
         }

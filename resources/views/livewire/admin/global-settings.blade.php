@@ -85,7 +85,10 @@
                     <div x-show="tab === 'mail'" class="bg-white rounded-lg shadow p-6 space-y-4" style="display: none;">
                         <div class="flex justify-between items-center border-b pb-2">
                             <h3 class="text-lg font-bold text-gray-800">Configuración de Correo (SMTP)</h3>
-                            <button type="button" wire:click="testMail" wire:loading.attr="disabled" class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold hover:bg-indigo-200 transition">
+                            <button type="button" 
+                                    @click="let email = prompt('Ingrese el correo electrónico para la prueba:', '{{ auth()->user()->email }}'); if(email) $wire.testMail(email)" 
+                                    wire:loading.attr="disabled" 
+                                    class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold hover:bg-indigo-200 transition">
                                 <span wire:loading.remove wire:target="testMail">Enviar Correo de Prueba</span>
                                 <span wire:loading wire:target="testMail">Enviando...</span>
                             </button>
