@@ -18,6 +18,7 @@ class Plan extends Model
         'features',
         'max_admin_users',
         'max_lawyer_users',
+        'storage_limit_gb',
         'is_active',
     ];
 
@@ -27,6 +28,7 @@ class Plan extends Model
         'price' => 'decimal:2',
         'max_admin_users' => 'integer',
         'max_lawyer_users' => 'integer',
+        'storage_limit_gb' => 'integer',
     ];
 
     public function tenants()
@@ -85,5 +87,29 @@ class Plan extends Model
         })->count();
 
         return max(0, $this->max_lawyer_users - $currentLawyerCount);
+    }
+
+    /**
+     * Verificar si un tenant tiene espacio disponible
+     */
+    public function hasStorageAvailable(Tenant $tenant, $bytesToAdd = 0): bool
+    {
+        $limitBytes = $this->storage_limit_gb * 1024 * 1024 * 1024;
+        $usedBytes = Documento::where('tenant_id', $tenant->id)->sum('size');
+
+        return ($usedBytes + $bytesToAdd) <= $limitBytes;
+    }
+
+    /**
+     * Obtener el porcentaje de almacenamiento usado
+     */
+    public function getStorageUsagePercentage(Tenant $tenant): float
+    {
+        $limitBytes = $this->storage_limit_gb * 1024 * 1024 * 1024;
+        if ($limitBytes <= 0) return 0;
+        
+        $usedBytes = Documento::where('tenant_id', $tenant->id)->sum('size');
+
+        return round(($usedBytes / $limitBytes) * 100, 2);
     }
 }

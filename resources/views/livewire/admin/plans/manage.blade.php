@@ -61,6 +61,14 @@
                                 <p class="text-xs text-gray-500 mt-1">Dejar en blanco para usuarios ilimitados.</p>
                                 <x-input-error :messages="$errors->get('max_lawyer_users')" class="mt-2" />
                             </div>
+
+                            <!-- Límite de Almacenamiento -->
+                            <div>
+                                <x-input-label for="storage_limit_gb" :value="__('Límite de Almacenamiento (GB)')" />
+                                <x-text-input wire:model="storage_limit_gb" id="storage_limit_gb" class="block mt-1 w-full" type="number" min="1" required />
+                                <p class="text-xs text-gray-500 mt-1">Espacio total disponible para documentos (en Gigabytes).</p>
+                                <x-input-error :messages="$errors->get('storage_limit_gb')" class="mt-2" />
+                            </div>
                         </div>
 
                         <!-- Características -->

@@ -29,6 +29,27 @@ class UploadDocument extends Component
     {
         $this->validate();
 
+        $user = auth()->user();
+        $tenant = $user->tenant;
+        $plan = $tenant->plan_model ?? \App\Models\Plan::where('slug', $tenant->plan)->first();
+
+        if (!$plan) {
+            session()->flash('error', 'No se pudo determinar el plan del tenant.');
+            return;
+        }
+
+        // Calcular tamaño total de los nuevos archivos
+        $totalNewSize = 0;
+        foreach ($this->files as $file) {
+            $totalNewSize += $file->getSize();
+        }
+
+        // Verificar límite de almacenamiento
+        if (!$plan->hasStorageAvailable($tenant, $totalNewSize)) {
+            session()->flash('error', "No tienes suficiente espacio de almacenamiento. Tu plan permite {$plan->storage_limit_gb}GB.");
+            return;
+        }
+
         foreach ($this->files as $file) {
             $extension = strtolower($file->getClientOriginalExtension());
             $nombreOriginal = $file->getClientOriginalName();
@@ -45,12 +66,14 @@ class UploadDocument extends Component
             $path = $file->store('documentos/' . $this->expediente->id, 'local');
 
             Documento::create([
+                'tenant_id' => $tenant->id,
                 'expediente_id' => $this->expediente->id,
                 'nombre' => $nombreOriginal,
                 'path' => $path,
                 'extension' => $extension,
                 'tipo' => $tipo,
                 'version' => 1,
+                'size' => $file->getSize(),
                 'uploaded_by' => auth()->id(),
             ]);
 

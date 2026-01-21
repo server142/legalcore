@@ -19,6 +19,7 @@ class Documento extends Model
         'extension',
         'tipo',
         'version',
+        'size',
         'uploaded_by',
     ];
 

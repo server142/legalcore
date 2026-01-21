@@ -123,21 +123,29 @@
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-bold text-gray-900 truncate">{{ $doc->nombre }}</p>
-                                        <p class="text-[10px] text-gray-500 uppercase mb-2">{{ $doc->extension }} | {{ $doc->created_at->diffForHumans() }}</p>
+                                        <p class="text-[10px] text-gray-500 uppercase mb-2">
+                                            {{ $doc->extension }} | {{ $doc->created_at->locale('es')->diffForHumans() }}
+                                        </p>
                                         
-                                        <div class="flex space-x-3">
-                                            <button wire:click="openViewer({{ $doc->id }})" class="flex items-center text-xs font-bold text-indigo-600 hover:text-indigo-800 transition">
+                                        <div class="flex flex-wrap gap-y-2 gap-x-4">
+                                            <button wire:click="openViewer({{ $doc->id }})" class="flex items-center text-xs font-bold text-indigo-600 hover:text-indigo-800 transition whitespace-nowrap">
                                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                                 Ver
                                             </button>
-                                            <a href="{{ route('documentos.show', $doc) }}" download class="flex items-center text-xs font-bold text-green-600 hover:text-green-800 transition">
+                                            <a href="{{ route('documentos.show', $doc) }}" download class="flex items-center text-xs font-bold text-green-600 hover:text-green-800 transition whitespace-nowrap">
                                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                                                 Descargar
                                             </a>
-                                            <button wire:click="deleteDocument({{ $doc->id }})" wire:confirm="¿Estás seguro de eliminar este documento?" class="flex items-center text-xs font-bold text-red-600 hover:text-red-800 transition">
+                                            <button wire:click="deleteDocument({{ $doc->id }})" wire:confirm="¿Estás seguro de eliminar este documento?" class="flex items-center text-xs font-bold text-red-600 hover:text-red-800 transition whitespace-nowrap">
                                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                 Eliminar
                                             </button>
+                                        </div>
+
+                                        <div class="mt-2 pt-2 border-t border-gray-100">
+                                            <p class="text-[9px] text-gray-400 truncate">
+                                                Subido por: <span class="font-medium text-gray-600">{{ $doc->uploader->name ?? 'Sistema' }}</span>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

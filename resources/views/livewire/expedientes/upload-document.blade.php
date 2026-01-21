@@ -9,6 +9,13 @@
      x-on:livewire-upload-progress="progress = $event.detail.progress"
      :class="{ 'bg-indigo-50 border-indigo-500': isDropping }">
     
+    @if (session()->has('error'))
+        <div class="absolute top-2 left-2 right-2 z-20 bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded text-[10px] shadow-sm flex justify-between items-center">
+            <span>{{ session('error') }}</span>
+            <button @click="this.parentElement.remove()" class="text-red-900 font-bold ml-2">&times;</button>
+        </div>
+    @endif
+
     <div class="text-center py-2">
         <div class="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:scale-105 transition-transform">
             <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,12 +31,12 @@
             <input type="file" wire:model="files" multiple class="hidden">
         </label>
 
-        <!-- Barra de Progreso de Carga -->
+        <!-- Barra de Progreso de Carga (Livewire Upload) -->
         <div x-show="progress > 0 && progress < 100" class="mt-4 px-10">
             <div class="bg-gray-200 rounded-full h-1.5 mb-1">
                 <div class="bg-indigo-600 h-1.5 rounded-full transition-all duration-300" :style="'width: ' + progress + '%'"></div>
             </div>
-            <span class="text-[10px] font-bold text-indigo-600" x-text="'Cargando al servidor: ' + progress + '%'"></span>
+            <span class="text-[10px] font-bold text-indigo-600" x-text="'Anexando archivos: ' + progress + '%'"></span>
         </div>
 
         @if($files)
@@ -55,12 +62,19 @@
             </div>
         @endif
 
-        <div wire:loading wire:target="save" class="absolute inset-0 bg-white bg-opacity-80 flex flex-col items-center justify-center rounded-xl z-10">
-            <svg class="animate-spin h-8 w-8 text-indigo-600 mb-2" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span class="text-xs font-bold text-indigo-600">Guardando en el sistema...</span>
+        <!-- Overlay de Guardado -->
+        <div wire:loading wire:target="save, files" class="absolute inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center rounded-xl z-10">
+            <div class="relative">
+                <svg class="animate-spin h-10 w-10 text-indigo-600 mb-2" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-[8px] font-bold text-indigo-600" x-show="progress > 0" x-text="progress + '%'"></span>
+                </div>
+            </div>
+            <span class="text-xs font-bold text-indigo-600 animate-pulse">Procesando archivos...</span>
+            <p class="text-[9px] text-gray-400 mt-1">Por favor, no cierres esta ventana</p>
         </div>
 
         @error('files.*') <p class="mt-1 text-[10px] text-red-500">{{ $message }}</p> @enderror

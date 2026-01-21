@@ -57,6 +57,14 @@ class Tenant extends Model
         return $this->belongsTo(Plan::class, 'plan_id');
     }
 
+    public function getPlanModelAttribute()
+    {
+        if ($this->plan_id) {
+            return $this->planRelation;
+        }
+        return Plan::where('slug', $this->plan)->first();
+    }
+
     public function isOnTrial()
     {
         // Soporte para datos legados: Si es trial y no tiene fecha, permitir acceso si está activo
