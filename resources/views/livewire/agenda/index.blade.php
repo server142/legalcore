@@ -14,8 +14,8 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <!-- Sidebar: Próximos Eventos -->
-                <div class="lg:col-span-1 space-y-6">
+                <!-- Sidebar: Próximos Eventos (Oculto en móvil para priorizar el calendario) -->
+                <div class="hidden lg:block lg:col-span-1 space-y-6">
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                         <h3 class="text-sm font-bold text-gray-400 uppercase mb-4">Próximos 7 días</h3>
                         <div class="space-y-4">
@@ -56,39 +56,69 @@
 
                 <!-- Main: Calendario Interactivo -->
                 <div class="lg:col-span-3">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 min-h-[600px]">
+                    <div class="bg-white p-2 md:p-6 rounded-xl shadow-sm border border-gray-100 min-h-[500px] md:min-h-[600px]">
                         <div id="calendar" 
                              x-data="{ events: @js($calendarEvents) }"
                              x-init="
-                                const init = () => {
-                                    if (typeof FullCalendar !== 'undefined') {
-                                        var calendar = new FullCalendar.Calendar($el, {
-                                            initialView: 'dayGridMonth',
-                                            locale: 'es',
-                                            headerToolbar: {
-                                                left: 'prev,next today',
-                                                center: 'title',
-                                                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                                            },
-                                            events: events,
-                                            eventClick: function(info) {
-                                                @this.edit(info.event.id);
-                                            },
-                                            buttonText: {
-                                                today: 'Hoy',
-                                                month: 'Mes',
-                                                week: 'Semana',
-                                                day: 'Día'
-                                            }
-                                        });
-                                        calendar.render();
-                                    } else {
-                                        setTimeout(init, 100);
-                                    }
-                                };
-                                init();
+                                 const init = () => {
+                                     if (typeof FullCalendar !== 'undefined') {
+                                         var calendar = new FullCalendar.Calendar($el, {
+                                             initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
+                                             locale: 'es',
+                                             headerToolbar: {
+                                                 left: window.innerWidth < 768 ? 'prev,next' : 'prev,next today',
+                                                 center: 'title',
+                                                 right: window.innerWidth < 768 ? 'listWeek,dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay'
+                                             },
+                                             height: 'auto',
+                                             events: events,
+                                             eventClick: function(info) {
+                                                 @this.edit(info.event.id);
+                                             },
+                                             buttonText: {
+                                                 today: 'Hoy',
+                                                 month: 'Mes',
+                                                 week: 'Semana',
+                                                 day: 'Día',
+                                                 list: 'Lista'
+                                             }
+                                         });
+                                         calendar.render();
+                                     } else {
+                                         setTimeout(init, 100);
+                                     }
+                                 };
+                                 init();
                              " 
                              wire:ignore></div>
+                    </div>
+                </div>
+
+                <!-- Sidebar en móvil (al final) -->
+                <div class="lg:hidden space-y-6 mt-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase mb-4">Próximos 7 días</h3>
+                        <div class="space-y-4">
+                            @forelse($eventos as $evento)
+                                <div class="flex items-start space-x-3 p-2 hover:bg-gray-50 rounded-lg transition group">
+                                    <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-indigo-50 flex flex-col items-center justify-center text-indigo-600">
+                                        <span class="text-[10px] font-bold uppercase">{{ $evento->start_time->format('M') }}</span>
+                                        <span class="text-sm font-bold">{{ $evento->start_time->format('d') }}</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-bold text-gray-800 truncate">{{ $evento->titulo }}</p>
+                                        <p class="text-xs text-gray-500">{{ $evento->start_time->format('H:i') }}</p>
+                                    </div>
+                                    <div class="flex space-x-1">
+                                        <button wire:click="edit({{ $evento->id }})" class="p-1 text-indigo-600 hover:bg-indigo-50 rounded">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="text-xs text-gray-400 italic">No hay eventos próximos.</p>
+                            @endforelse
+                        </div>
                     </div>
                 </div>
             </div>
@@ -203,6 +233,15 @@
             padding: 2px 4px;
             border-radius: 4px;
             border: none;
+        }
+        @media (max-width: 767px) {
+            .fc .fc-toolbar {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .fc .fc-toolbar-title {
+                font-size: 1rem;
+            }
         }
     </style>
     @endpush

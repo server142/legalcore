@@ -22,6 +22,7 @@ class Index extends Component
     public $cliente_id;
     public $total;
     public $estado = 'pendiente';
+    public $moneda = 'MXN';
     public $concepto = 'Servicios Legales Profesionales';
 
     protected $rules = [
