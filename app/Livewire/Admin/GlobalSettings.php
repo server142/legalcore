@@ -130,25 +130,36 @@ class GlobalSettings extends Component
         }
 
         try {
+            // Forzar la limpieza del mailer para que tome la nueva configuración
+            \Illuminate\Support\Facades\Mail::purge('smtp');
+
             // Configurar temporalmente el mailer para la prueba
             config([
+                'mail.default' => 'smtp',
+                'mail.mailers.smtp.transport' => 'smtp',
                 'mail.mailers.smtp.host' => $this->mail_host,
                 'mail.mailers.smtp.port' => $this->mail_port,
                 'mail.mailers.smtp.encryption' => $this->mail_encryption === 'none' ? null : $this->mail_encryption,
                 'mail.mailers.smtp.username' => $this->mail_username,
                 'mail.mailers.smtp.password' => $this->mail_password,
+                'mail.mailers.smtp.timeout' => 5, // Timeout corto para la prueba
                 'mail.from.address' => $this->mail_from_address,
                 'mail.from.name' => $this->mail_from_name,
             ]);
 
-            \Illuminate\Support\Facades\Mail::raw('Esta es una prueba de configuración de correo desde Diogenes.', function ($message) use ($testEmail) {
+            $fromAddress = $this->mail_from_address;
+            $fromName = $this->mail_from_name;
+
+            \Illuminate\Support\Facades\Mail::mailer('smtp')->raw('Esta es una prueba de configuración de correo desde Diogenes. Si recibes esto, tu configuración SMTP es correcta.', function ($message) use ($testEmail, $fromAddress, $fromName) {
                 $message->to($testEmail)
-                    ->subject('Prueba de Configuración de Correo');
+                    ->from($fromAddress, $fromName)
+                    ->subject('Prueba de Configuración de Correo - Diogenes');
             });
 
-            session()->flash('message', 'Correo de prueba enviado a ' . $testEmail);
-        } catch (\Exception $e) {
-            session()->flash('error', 'Error de Correo: ' . $e->getMessage());
+            session()->flash('message', '¡Éxito! El servidor SMTP aceptó el correo y lo envió a ' . $testEmail);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Mail Test Error: ' . $e->getMessage());
+            session()->flash('error', 'Fallo en el envío: ' . $e->getMessage());
         }
     }
 
