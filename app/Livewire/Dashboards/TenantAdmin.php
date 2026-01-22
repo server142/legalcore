@@ -18,6 +18,7 @@ class TenantAdmin extends Component
     public $totalCobrado;
     public $pendienteCobro;
     public $facturasMes;
+    public $eventos;
 
     public function mount()
     {
@@ -59,6 +60,25 @@ class TenantAdmin extends Component
         $this->urgentTerminos = (clone $actuacionQuery)
             ->orderBy('fecha_vencimiento', 'asc')
             ->take(5)
+            ->get();
+
+        // Logic for "Próximos 7 días" (Agenda)
+        $agendaQuery = \App\Models\Evento::with('user');
+        if ($user->hasRole('abogado') && !$user->can('view all expedientes')) {
+            $agendaQuery->where(function($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhereHas('expediente', function($qe) use ($user) {
+                      $qe->where('abogado_responsable_id', $user->id)
+                         ->orWhereHas('assignedUsers', function($qu) use ($user) {
+                             $qu->where('users.id', $user->id);
+                         });
+                  });
+            });
+        }
+        $this->eventos = (clone $agendaQuery)->where('start_time', '>=', now()->startOfDay())
+            ->where('start_time', '<=', now()->addDays(7)->endOfDay())
+            ->orderBy('start_time')
+            ->take(10)
             ->get();
         
         // Financial Stats - Only for those who can manage billing

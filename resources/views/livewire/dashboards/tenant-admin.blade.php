@@ -111,5 +111,34 @@
                 @endforelse
             </div>
         </div>
+
+        @if(!auth()->user()->hasRole('super_admin'))
+        <div class="bg-white rounded-lg shadow overflow-hidden mt-6 md:mt-0">
+            <div class="p-4 border-b flex justify-between items-center bg-indigo-50">
+                <h3 class="text-lg font-semibold text-indigo-800">Próximos 7 días</h3>
+                <a href="{{ route('agenda.index') }}" class="text-xs text-indigo-600 hover:underline font-bold">Ver Agenda</a>
+            </div>
+            <div class="divide-y divide-gray-100">
+                @forelse($eventos as $evento)
+                    <div class="p-4 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-indigo-100 flex flex-col items-center justify-center text-indigo-600">
+                                <span class="text-[10px] font-bold uppercase">{{ $evento->start_time->format('M') }}</span>
+                                <span class="text-sm font-bold">{{ $evento->start_time->format('d') }}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-gray-800 truncate">{{ $evento->titulo }}</p>
+                                <p class="text-xs text-gray-500">{{ $evento->start_time->format('H:i') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-8 text-center text-gray-500 italic">
+                        No hay eventos próximos.
+                    </div>
+                @endforelse
+            </div>
+        </div>
+        @endif
     </div>
 </div>
