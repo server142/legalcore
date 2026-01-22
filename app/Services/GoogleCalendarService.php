@@ -100,9 +100,12 @@ class GoogleCalendarService
             ];
 
             // Si usamos Service Account, AGREGAMOS al usuario como invitado
-            if ($usingServiceAccount && $user->email) {
+            // Usamos el email específico si viene en los datos, si no, el del usuario
+            $attendeeEmail = $eventData['attendee_email'] ?? $user->email;
+            
+            if ($usingServiceAccount && $attendeeEmail) {
                 $eventParams['attendees'] = [
-                    ['email' => $user->email]
+                    ['email' => $attendeeEmail]
                 ];
             }
 

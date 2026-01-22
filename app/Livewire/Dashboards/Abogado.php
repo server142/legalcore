@@ -13,6 +13,7 @@ class Abogado extends Component
     public $proximasAudienciasCount;
     public $misExpedientes;
     public $urgentTerminos;
+    public $eventos;
 
     public function mount()
     {
@@ -48,6 +49,25 @@ class Abogado extends Component
             })
             ->orderBy('fecha_vencimiento', 'asc')
             ->take(5)
+            ->get();
+
+        // Logic for "Próximos 7 días" (Agenda)
+        $agendaQuery = Evento::with('user');
+        if (auth()->user()->hasRole('abogado') && !auth()->user()->can('view all expedientes')) {
+            $agendaQuery->where(function($q) use ($userId) {
+                $q->where('user_id', $userId)
+                  ->orWhereHas('expediente', function($qe) use ($userId) {
+                      $qe->where('abogado_responsable_id', $userId)
+                         ->orWhereHas('assignedUsers', function($qu) use ($userId) {
+                             $qu->where('users.id', $userId);
+                         });
+                  });
+            });
+        }
+        $this->eventos = (clone $agendaQuery)->where('start_time', '>=', now()->startOfDay())
+            ->where('start_time', '<=', now()->addDays(7)->endOfDay())
+            ->orderBy('start_time')
+            ->take(10)
             ->get();
     }
 

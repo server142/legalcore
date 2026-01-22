@@ -25,15 +25,25 @@ class EventoObserver
         // Verificar si tenemos Service Account configurada
         $hasServiceAccount = config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'));
 
-        // Sincronizar si: (Hay Service Account Y usuario tiene email) O (Usuario tiene token OAuth)
-        if (($hasServiceAccount && $user->email) || ($user && $user->google_access_token)) {
+        // Sincronizar si: (Hay Service Account Y usuario tiene email válido) O (Usuario tiene token OAuth)
+        // Prioridad: calendar_email > email
+        $targetEmail = $user->calendar_email ?? $user->email;
+
+        if (($hasServiceAccount && $targetEmail) || ($user && $user->google_access_token)) {
             try {
-                $googleEventId = $this->googleService->createEvent($user, [
+                // Si usamos Service Account, pasamos el email objetivo explícitamente
+                $eventData = [
                     'title' => $evento->titulo,
                     'description' => $evento->descripcion,
                     'start' => $evento->start_time,
                     'end' => $evento->end_time,
-                ]);
+                ];
+
+                if ($hasServiceAccount) {
+                    $eventData['attendee_email'] = $targetEmail;
+                }
+
+                $googleEventId = $this->googleService->createEvent($user, $eventData);
 
                 if ($googleEventId) {
                     // Opcional: Guardar el ID del evento de Google en la base de datos si quisieras actualizarlo después

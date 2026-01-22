@@ -8,7 +8,7 @@
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Expedientes</h2>
         <a href="{{ route('expedientes.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
-            + Nuevo Expediente
+            Nuevo
         </a>
     </div>
 
@@ -33,10 +33,12 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($expedientes as $exp)
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $exp->numero }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $exp->titulo }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $exp->cliente->nombre }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $exp->abogado->name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
+                            <a href="{{ route('expedientes.show', $exp) }}" class="hover:underline">{{ $exp->numero }}</a>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title="{{ $exp->titulo }}">{{ $exp->titulo }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate" title="{{ $exp->cliente->nombre }}">{{ $exp->cliente->nombre }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate" title="{{ $exp->abogado->name }}">{{ $exp->abogado->name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                 {{ $exp->estado_procesal }}
@@ -58,16 +60,14 @@
             @foreach($expedientes as $exp)
             <div class="p-4 border-b border-gray-200 hover:bg-gray-50 transition">
                 <div class="flex justify-between items-start mb-2">
-                    <div>
-                        <span class="text-xs font-bold text-indigo-600 uppercase tracking-wide">{{ $exp->numero }}</span>
-                        <h3 class="text-lg font-bold text-gray-900">{{ $exp->titulo }}</h3>
-                    </div>
+                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wide">{{ $exp->numero }}</span>
                     <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                         {{ $exp->estado_procesal }}
                     </span>
                 </div>
                 
                 <div class="space-y-1 mb-4">
+                    <h3 class="text-md font-bold text-gray-900 mb-2">{{ $exp->titulo }}</h3>
                     <div class="flex items-center text-sm text-gray-600">
                         <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                         {{ $exp->cliente->nombre }}

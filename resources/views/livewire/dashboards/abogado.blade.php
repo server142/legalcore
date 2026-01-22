@@ -80,6 +80,28 @@
         </div>
     </div>
 
+    @if(!auth()->user()->hasRole('super_admin'))
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
+        <h3 class="text-sm font-bold text-gray-400 uppercase mb-4">Próximos 7 días</h3>
+        <div class="space-y-4">
+            @forelse($eventos as $evento)
+                <div class="flex items-start space-x-3 p-2 hover:bg-gray-50 rounded-lg transition group">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-indigo-50 flex flex-col items-center justify-center text-indigo-600">
+                        <span class="text-[10px] font-bold uppercase">{{ $evento->start_time->format('M') }}</span>
+                        <span class="text-sm font-bold">{{ $evento->start_time->format('d') }}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-gray-800 truncate">{{ $evento->titulo }}</p>
+                        <p class="text-xs text-gray-500">{{ $evento->start_time->format('H:i') }}</p>
+                    </div>
+                </div>
+            @empty
+                <p class="text-xs text-gray-400 italic">No hay eventos próximos.</p>
+            @endforelse
+        </div>
+    </div>
+    @endif
+
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="p-4 border-b flex justify-between items-center">
             <h3 class="text-lg font-semibold">Mis Expedientes Asignados</h3>

@@ -10,6 +10,7 @@ new class extends Component
 {
     public string $name = '';
     public string $email = '';
+    public string $calendar_email = '';
 
     /**
      * Mount the component.
@@ -18,6 +19,7 @@ new class extends Component
     {
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
+        $this->calendar_email = Auth::user()->calendar_email ?? '';
     }
 
     /**
@@ -30,6 +32,7 @@ new class extends Component
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
+            'calendar_email' => ['nullable', 'string', 'email', 'max:255'],
         ]);
 
         $user->fill($validated);
@@ -102,6 +105,15 @@ new class extends Component
                     @endif
                 </div>
             @endif
+        </div>
+
+        <div>
+            <x-input-label for="calendar_email" :value="__('Calendar Email (Optional)')" />
+            <x-text-input wire:model="calendar_email" id="calendar_email" name="calendar_email" type="email" class="mt-1 block w-full" placeholder="personal@gmail.com" />
+            <x-input-error class="mt-2" :messages="$errors->get('calendar_email')" />
+            <p class="mt-1 text-sm text-gray-500">
+                {{ __('If you want to receive calendar invitations on a different email (e.g. your personal Gmail), enter it here.') }}
+            </p>
         </div>
 
         <div class="flex items-center gap-4">
