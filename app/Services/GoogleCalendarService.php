@@ -16,12 +16,21 @@ class GoogleCalendarService
     public function __construct()
     {
         $this->client = new Client();
-        $this->client->setClientId(config('services.google.client_id'));
-        $this->client->setClientSecret(config('services.google.client_secret'));
-        $this->client->setRedirectUri(config('services.google.redirect'));
-        $this->client->setAccessType('offline'); // Important for refresh tokens
-        $this->client->setPrompt('consent'); // Force consent to get refresh token
-        $this->client->addScope(Calendar::CALENDAR);
+        
+        // Opción A: Cuenta de Servicio (Prioridad)
+        if (config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'))) {
+            $this->client->setAuthConfig(config('services.google.service_account_json'));
+            $this->client->addScope(Calendar::CALENDAR);
+        } 
+        // Opción B: OAuth (Respaldo / Legacy)
+        else {
+            $this->client->setClientId(config('services.google.client_id'));
+            $this->client->setClientSecret(config('services.google.client_secret'));
+            $this->client->setRedirectUri(config('services.google.redirect'));
+            $this->client->setAccessType('offline');
+            $this->client->setPrompt('consent');
+            $this->client->addScope(Calendar::CALENDAR);
+        }
     }
 
     public function getAuthUrl()
@@ -64,14 +73,20 @@ class GoogleCalendarService
 
     public function createEvent(User $user, $eventData)
     {
-        if (!$this->setupClientForUser($user)) {
-            return false;
+        // Determinar modo de operación
+        $usingServiceAccount = config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'));
+
+        if (!$usingServiceAccount) {
+            // Modo Legacy: OAuth Personal
+            if (!$this->setupClientForUser($user)) {
+                return false;
+            }
         }
 
         try {
             $service = new Calendar($this->client);
 
-            $event = new Event([
+            $eventParams = [
                 'summary' => $eventData['title'],
                 'description' => $eventData['description'] ?? '',
                 'start' => [
@@ -82,7 +97,16 @@ class GoogleCalendarService
                     'dateTime' => Carbon::parse($eventData['end'])->toRfc3339String(),
                     'timeZone' => config('app.timezone'),
                 ],
-            ]);
+            ];
+
+            // Si usamos Service Account, AGREGAMOS al usuario como invitado
+            if ($usingServiceAccount && $user->email) {
+                $eventParams['attendees'] = [
+                    ['email' => $user->email]
+                ];
+            }
+
+            $event = new Event($eventParams);
 
             $calendarId = 'primary';
             $event = $service->events->insert($calendarId, $event);
@@ -92,9 +116,8 @@ class GoogleCalendarService
         } catch (\Exception $e) {
             Log::error('Google Calendar Create Event Error: ' . $e->getMessage());
             
-            // If error is invalid_grant, token might be revoked
-            if (str_contains($e->getMessage(), 'invalid_grant')) {
-                // Clear tokens so user knows they need to reconnect
+            // Solo limpiar tokens si estamos en modo OAuth y falla por permisos
+            if (!$usingServiceAccount && str_contains($e->getMessage(), 'invalid_grant')) {
                 $user->update([
                     'google_access_token' => null,
                     'google_refresh_token' => null,

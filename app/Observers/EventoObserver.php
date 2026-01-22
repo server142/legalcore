@@ -20,10 +20,13 @@ class EventoObserver
      */
     public function created(Evento $evento): void
     {
-        // Solo sincronizar si el usuario tiene token de Google
         $user = $evento->user;
+        
+        // Verificar si tenemos Service Account configurada
+        $hasServiceAccount = config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'));
 
-        if ($user && $user->google_access_token) {
+        // Sincronizar si: (Hay Service Account Y usuario tiene email) O (Usuario tiene token OAuth)
+        if (($hasServiceAccount && $user->email) || ($user && $user->google_access_token)) {
             try {
                 $googleEventId = $this->googleService->createEvent($user, [
                     'title' => $evento->titulo,
