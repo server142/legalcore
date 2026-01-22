@@ -109,7 +109,8 @@ class GoogleCalendarService
             $event = new Event($eventParams);
 
             $calendarId = 'primary';
-            $event = $service->events->insert($calendarId, $event);
+            $optParams = ['sendUpdates' => 'all']; // Forzar envío de correo de invitación
+            $event = $service->events->insert($calendarId, $event, $optParams);
 
             return $event->id;
 
