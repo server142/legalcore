@@ -1,6 +1,6 @@
 <x-slot name="header">
     <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        {{ $expediente->numero }} - {{ $expediente->titulo }}
+        {{ $expediente->numero }}
     </h2>
 </x-slot>
 
@@ -48,6 +48,10 @@
                     <div>
                         <p class="text-xs text-gray-500 uppercase font-bold">Estado Procesal</p>
                         <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">{{ $expediente->estado_procesal }}</span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">Título / Carátula</p>
+                        <p class="text-sm font-medium">{{ $expediente->titulo }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-gray-500 uppercase font-bold">Cliente</p>
