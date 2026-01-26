@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('moneda')->default('MXN');
             $table->string('estado')->default('pendiente'); // pendiente, pagada, cancelada
             $table->string('uuid_fiscal')->nullable();
-            $table->text('conceptos')->nullable();
+            $table->json('conceptos')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
