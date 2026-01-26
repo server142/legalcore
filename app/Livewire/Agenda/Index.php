@@ -46,11 +46,14 @@ class Index extends Component
             if ($evento->tipo == 'audiencia') $color = '#ef4444'; // Red
             if ($evento->tipo == 'termino') $color = '#f97316'; // Orange
 
-            // Si es admin, podemos variar el color por usuario o añadir el nombre
             $title = $evento->titulo;
+            
+            // Icono según si es de expediente o personal
+            $icon = $evento->expediente_id ? "📂 " : "👤 ";
+            $title = $icon . $title;
+
             if ($isAdmin && $evento->user_id !== auth()->id()) {
                 $title = "[" . $evento->user->name . "] " . $title;
-                // Opcional: Variar un poco el color si no es suyo
                 $color = $this->adjustColor($color, $evento->user_id);
             }
 

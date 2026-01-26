@@ -26,7 +26,9 @@
                                         <span class="text-sm font-bold">{{ $evento->start_time->format('d') }}</span>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-bold text-gray-800 truncate">{{ $evento->titulo }}</p>
+                                        <p class="text-sm font-bold text-gray-800 truncate">
+                                            {{ $evento->expediente_id ? "📂 " : "👤 " }}{{ $evento->titulo }}
+                                        </p>
                                         <p class="text-xs text-gray-500">{{ $evento->start_time->format('H:i') }}</p>
                                     </div>
                                     <div class="flex space-x-1 opacity-0 group-hover:opacity-100 transition">
@@ -106,7 +108,9 @@
                                         <span class="text-sm font-bold">{{ $evento->start_time->format('d') }}</span>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-bold text-gray-800 truncate">{{ $evento->titulo }}</p>
+                                        <p class="text-sm font-bold text-gray-800 truncate">
+                                            {{ $evento->expediente_id ? "📂 " : "👤 " }}{{ $evento->titulo }}
+                                        </p>
                                         <p class="text-xs text-gray-500">{{ $evento->start_time->format('H:i') }}</p>
                                     </div>
                                     <div class="flex space-x-1">
@@ -168,11 +172,14 @@
                     <div>
                         <x-input-label for="expediente_id" :value="__('Expediente Relacionado')" />
                         <select wire:model="expediente_id" id="expediente_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                            <option value="">-- Ninguno --</option>
+                            <option value="">-- Ninguno (Evento Personal) --</option>
                             @foreach($expedientes as $expediente)
                                 <option value="{{ $expediente->id }}">{{ $expediente->numero }} - {{ $expediente->titulo }}</option>
                             @endforeach
                         </select>
+                        <p class="mt-1 text-[10px] text-gray-500 italic">
+                            * Los eventos sin expediente son privados y solo tú podrás verlos. Los eventos con expediente son compartidos con el equipo asignado.
+                        </p>
                         <x-input-error :messages="$errors->get('expediente_id')" class="mt-2" />
                     </div>
                 </div>

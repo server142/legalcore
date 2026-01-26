@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('telefono')->nullable();
             $table->text('direccion')->nullable();
-            $table->json('datos_fiscales')->nullable();
+            $table->text('datos_fiscales')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

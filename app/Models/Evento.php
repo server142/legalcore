@@ -20,6 +20,7 @@ class Evento extends Model
         'tipo',
         'user_id',
         'expediente_id',
+        'google_event_id',
     ];
 
     protected $casts = [

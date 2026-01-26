@@ -20,7 +20,7 @@ return new class extends Migration
                 $table->string('stripe_price_id')->nullable(); // ID del precio en Stripe
                 $table->decimal('price', 10, 2);
                 $table->integer('duration_in_days')->default(30); // 30 días por defecto
-                $table->json('features')->nullable(); // Lista de características
+                $table->text('features')->nullable(); // Lista de características
                 $table->boolean('is_active')->default(true);
                 $table->timestamps();
             });
