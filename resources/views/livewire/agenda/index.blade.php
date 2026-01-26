@@ -189,6 +189,25 @@
                         </p>
                         <x-input-error :messages="$errors->get('expediente_id')" class="mt-2" />
                     </div>
+
+                    <!-- Invited Lawyers -->
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <x-input-label :value="__('Invitar Abogados Específicos')" class="mb-2" />
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-40 overflow-y-auto p-2">
+                            @foreach($abogados as $abogado)
+                                <label class="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition cursor-pointer border border-transparent hover:border-gray-200">
+                                    <input type="checkbox" wire:model="selectedUsers" value="{{ $abogado->id }}" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                    <span class="text-sm text-gray-700">{{ $abogado->name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                        @if(count($abogados) == 0)
+                            <p class="text-xs text-gray-500 italic">No hay otros abogados disponibles para invitar.</p>
+                        @endif
+                        <p class="mt-2 text-[10px] text-gray-500 italic">
+                            * Estos abogados recibirán una invitación en su Google Calendar independientemente de si están asignados al expediente o no.
+                        </p>
+                    </div>
                 </div>
 
                 <div class="mt-6 flex justify-end">

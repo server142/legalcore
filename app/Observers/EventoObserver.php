@@ -37,9 +37,9 @@ class EventoObserver
                 ];
 
                 // Si hay expediente, invitar a todos los asignados
+                $emails = [];
+                
                 if ($evento->expediente_id && $evento->expediente) {
-                    $emails = [];
-                    
                     // Responsable
                     if ($evento->expediente->abogado) {
                         $emails[] = $evento->expediente->abogado->calendar_email ?? $evento->expediente->abogado->email;
@@ -54,7 +54,19 @@ class EventoObserver
                             }
                         }
                     }
-                    
+                }
+
+                // Sumar invitados manuales
+                if ($evento->invitedUsers) {
+                    foreach ($evento->invitedUsers as $invitedUser) {
+                        $email = $invitedUser->calendar_email ?? $invitedUser->email;
+                        if ($email) {
+                            $emails[] = $email;
+                        }
+                    }
+                }
+
+                if (!empty($emails)) {
                     $eventData['attendees'] = array_unique(array_filter($emails));
                 } else {
                     $eventData['attendee_email'] = $user->calendar_email ?? $user->email;
@@ -96,9 +108,9 @@ class EventoObserver
                 'end' => $evento->end_time,
             ];
 
+            $emails = [];
+
             if ($evento->expediente_id && $evento->expediente) {
-                $emails = [];
-                
                 if ($evento->expediente->abogado) {
                     $emails[] = $evento->expediente->abogado->calendar_email ?? $evento->expediente->abogado->email;
                 }
@@ -111,7 +123,19 @@ class EventoObserver
                         }
                     }
                 }
-                
+            }
+
+            // Sumar invitados manuales
+            if ($evento->invitedUsers) {
+                foreach ($evento->invitedUsers as $invitedUser) {
+                    $email = $invitedUser->calendar_email ?? $invitedUser->email;
+                    if ($email) {
+                        $emails[] = $email;
+                    }
+                }
+            }
+
+            if (!empty($emails)) {
                 $eventData['attendees'] = array_unique(array_filter($emails));
             } else {
                 $eventData['attendee_email'] = $user->calendar_email ?? $user->email;

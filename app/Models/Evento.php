@@ -37,4 +37,9 @@ class Evento extends Model
     {
         return $this->belongsTo(Expediente::class);
     }
+
+    public function invitedUsers()
+    {
+        return $this->belongsToMany(User::class, 'evento_user');
+    }
 }

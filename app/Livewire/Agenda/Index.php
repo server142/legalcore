@@ -94,6 +94,7 @@ class Index extends Component
     public $end;
     public $type = 'audiencia';
     public $expediente_id;
+    public $selectedUsers = [];
 
     protected $rules = [
         'title' => 'required|string|max:255',
@@ -102,11 +103,13 @@ class Index extends Component
         'end' => 'nullable|date|after:start',
         'type' => 'required|in:audiencia,termino,cita',
         'expediente_id' => 'nullable|exists:expedientes,id',
+        'selectedUsers' => 'nullable|array',
+        'selectedUsers.*' => 'exists:users,id',
     ];
 
     public function create()
     {
-        $this->reset(['title', 'description', 'start', 'end', 'type', 'expediente_id', 'eventId', 'editMode']);
+        $this->reset(['title', 'description', 'start', 'end', 'type', 'expediente_id', 'eventId', 'editMode', 'selectedUsers']);
         $this->showModal = true;
     }
 
@@ -114,7 +117,7 @@ class Index extends Component
     {
         $this->editMode = true;
         $this->eventId = $id;
-        $evento = Evento::findOrFail($id);
+        $evento = Evento::with('invitedUsers')->findOrFail($id);
         
         $this->title = $evento->titulo;
         $this->description = $evento->descripcion;
@@ -122,6 +125,7 @@ class Index extends Component
         $this->end = $evento->end_time ? $evento->end_time->format('Y-m-d\TH:i') : null;
         $this->type = $evento->tipo;
         $this->expediente_id = $evento->expediente_id;
+        $this->selectedUsers = $evento->invitedUsers->pluck('id')->toArray();
         
         $this->showModal = true;
     }
@@ -130,7 +134,7 @@ class Index extends Component
     {
         $this->validate();
 
-        Evento::create([
+        $evento = Evento::create([
             'tenant_id' => auth()->user()->tenant_id,
             'titulo' => $this->title,
             'descripcion' => $this->description,
@@ -140,6 +144,10 @@ class Index extends Component
             'expediente_id' => $this->expediente_id ?: null,
             'user_id' => auth()->id(),
         ]);
+
+        if (!empty($this->selectedUsers)) {
+            $evento->invitedUsers()->sync($this->selectedUsers);
+        }
 
         $this->showModal = false;
         $this->dispatch('notify', 'Evento creado exitosamente');
@@ -160,6 +168,8 @@ class Index extends Component
             'expediente_id' => $this->expediente_id ?: null,
         ]);
 
+        $evento->invitedUsers()->sync($this->selectedUsers);
+
         $this->showModal = false;
         $this->dispatch('notify', 'Evento actualizado exitosamente');
         $this->redirect(route('agenda.index'), navigate: true);
@@ -177,6 +187,7 @@ class Index extends Component
     public function delete()
     {
         $evento = Evento::findOrFail($this->itemToDeleteId);
+        $evento->invitedUsers()->detach();
         $evento->delete();
         $this->confirmingDeletion = false;
         $this->dispatch('notify', 'Evento eliminado exitosamente');
@@ -186,7 +197,10 @@ class Index extends Component
     public function render()
     {
         return view('livewire.agenda.index', [
-            'expedientes' => \App\Models\Expediente::where('tenant_id', auth()->user()->tenant_id)->get()
+            'expedientes' => \App\Models\Expediente::where('tenant_id', auth()->user()->tenant_id)->get(),
+            'abogados' => \App\Models\User::where('tenant_id', auth()->user()->tenant_id)
+                ->where('id', '!=', auth()->id())
+                ->get()
         ]);
     }
 }
