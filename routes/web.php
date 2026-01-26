@@ -35,6 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin - Tenant Management
     Route::get('/admin/tenants', \App\Livewire\Admin\Tenants\Index::class)->name('admin.tenants.index')->middleware('can:manage tenants');
     Route::get('/admin/users', \App\Livewire\Admin\Users\Index::class)->name('admin.users.index')->middleware('can:manage users');
+    Route::get('/admin/users/calendar-status', \App\Livewire\Admin\Users\CalendarStatus::class)->name('admin.users.calendar-status')->middleware('can:manage users');
     Route::get('/admin/roles', \App\Livewire\Admin\Roles\Index::class)->name('admin.roles.index')->middleware('can:manage users');
     Route::get('/admin/materias', \App\Livewire\Admin\Materias\Index::class)->name('admin.materias.index')->middleware('can:manage users');
     Route::get('/admin/juzgados', \App\Livewire\Admin\Juzgados\Index::class)->name('admin.juzgados.index')->middleware('can:manage users');
