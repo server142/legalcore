@@ -97,5 +97,11 @@
     "validation.unique": "El :attribute ya ha sido registrado.",
     "validation.uploaded": "El campo :attribute no se pudo subir.",
     "validation.url": "El formato del campo :attribute es inválido.",
-    "validation.uuid": "El campo :attribute debe ser un UUID válido."
+    "validation.uuid": "El campo :attribute debe ser un UUID válido.",
+    "Profile": "Perfil",
+    "Google Calendar": "Calendario de Google",
+    "Connect your account to sync events automatically with Google Calendar.": "Conecta tu cuenta para sincronizar eventos automáticamente con Google Calendar.",
+    "Connected": "Conectado",
+    "Disconnect": "Desconectar",
+    "Connect with Google Calendar": "Conectar con Google Calendar"
 }

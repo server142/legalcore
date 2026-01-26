@@ -89,6 +89,7 @@ class Index extends Component
     public $editMode = false;
     public $eventId;
     public $title;
+    public $description;
     public $start;
     public $end;
     public $type = 'audiencia';
@@ -96,6 +97,7 @@ class Index extends Component
 
     protected $rules = [
         'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
         'start' => 'required|date',
         'end' => 'nullable|date|after:start',
         'type' => 'required|in:audiencia,termino,cita',
@@ -104,7 +106,7 @@ class Index extends Component
 
     public function create()
     {
-        $this->reset(['title', 'start', 'end', 'type', 'expediente_id', 'eventId', 'editMode']);
+        $this->reset(['title', 'description', 'start', 'end', 'type', 'expediente_id', 'eventId', 'editMode']);
         $this->showModal = true;
     }
 
@@ -115,6 +117,7 @@ class Index extends Component
         $evento = Evento::findOrFail($id);
         
         $this->title = $evento->titulo;
+        $this->description = $evento->descripcion;
         $this->start = $evento->start_time->format('Y-m-d\TH:i');
         $this->end = $evento->end_time ? $evento->end_time->format('Y-m-d\TH:i') : null;
         $this->type = $evento->tipo;
@@ -130,6 +133,7 @@ class Index extends Component
         Evento::create([
             'tenant_id' => auth()->user()->tenant_id,
             'titulo' => $this->title,
+            'descripcion' => $this->description,
             'start_time' => $this->start,
             'end_time' => $this->end,
             'tipo' => $this->type,
@@ -149,6 +153,7 @@ class Index extends Component
         $evento = Evento::findOrFail($this->eventId);
         $evento->update([
             'titulo' => $this->title,
+            'descripcion' => $this->description,
             'start_time' => $this->start,
             'end_time' => $this->end,
             'tipo' => $this->type,

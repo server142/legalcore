@@ -143,6 +143,13 @@
                         <x-input-error :messages="$errors->get('title')" class="mt-2" />
                     </div>
 
+                    <!-- Description -->
+                    <div>
+                        <x-input-label for="description" :value="__('Descripción')" />
+                        <textarea wire:model="description" id="description" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" rows="3"></textarea>
+                        <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                    </div>
+
                     <!-- Type -->
                     <div>
                         <x-input-label for="type" :value="__('Tipo')" />
