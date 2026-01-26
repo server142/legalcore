@@ -80,6 +80,9 @@
         <x-sidebar-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" icon="user-group">
             {{ __('Usuarios') }}
         </x-sidebar-link>
+        <x-sidebar-link :href="route('admin.users.calendar-status')" :active="request()->routeIs('admin.users.calendar-status')" icon="calendar">
+            {{ __('Estado Calendarios') }}
+        </x-sidebar-link>
         <x-sidebar-link :href="route('admin.roles.index')" :active="request()->routeIs('admin.roles.*')" icon="user-group">
             {{ __('Roles') }}
         </x-sidebar-link>
