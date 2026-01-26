@@ -21,6 +21,10 @@ class EventoObserver
     public function created(Evento $evento): void
     {
         $user = $evento->user;
+        if (!$user) {
+            return;
+        }
+
         $hasServiceAccount = config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'));
 
         if ($hasServiceAccount || ($user && $user->google_access_token)) {
@@ -33,14 +37,24 @@ class EventoObserver
                 ];
 
                 // Si hay expediente, invitar a todos los asignados
-                if ($evento->expediente_id) {
+                if ($evento->expediente_id && $evento->expediente) {
                     $emails = [];
+                    
                     // Responsable
-                    $emails[] = $evento->expediente->abogado->calendar_email ?? $evento->expediente->abogado->email;
-                    // Asignados
-                    foreach ($evento->expediente->assignedUsers as $assignedUser) {
-                        $emails[] = $assignedUser->calendar_email ?? $assignedUser->email;
+                    if ($evento->expediente->abogado) {
+                        $emails[] = $evento->expediente->abogado->calendar_email ?? $evento->expediente->abogado->email;
                     }
+                    
+                    // Asignados
+                    if ($evento->expediente->assignedUsers) {
+                        foreach ($evento->expediente->assignedUsers as $assignedUser) {
+                            $email = $assignedUser->calendar_email ?? $assignedUser->email;
+                            if ($email) {
+                                $emails[] = $email;
+                            }
+                        }
+                    }
+                    
                     $eventData['attendees'] = array_unique(array_filter($emails));
                 } else {
                     $eventData['attendee_email'] = $user->calendar_email ?? $user->email;
@@ -70,6 +84,10 @@ class EventoObserver
         }
 
         $user = $evento->user;
+        if (!$user) {
+            return;
+        }
+
         try {
             $eventData = [
                 'title' => $evento->titulo,
@@ -78,12 +96,22 @@ class EventoObserver
                 'end' => $evento->end_time,
             ];
 
-            if ($evento->expediente_id) {
+            if ($evento->expediente_id && $evento->expediente) {
                 $emails = [];
-                $emails[] = $evento->expediente->abogado->calendar_email ?? $evento->expediente->abogado->email;
-                foreach ($evento->expediente->assignedUsers as $assignedUser) {
-                    $emails[] = $assignedUser->calendar_email ?? $assignedUser->email;
+                
+                if ($evento->expediente->abogado) {
+                    $emails[] = $evento->expediente->abogado->calendar_email ?? $evento->expediente->abogado->email;
                 }
+                
+                if ($evento->expediente->assignedUsers) {
+                    foreach ($evento->expediente->assignedUsers as $assignedUser) {
+                        $email = $assignedUser->calendar_email ?? $assignedUser->email;
+                        if ($email) {
+                            $emails[] = $email;
+                        }
+                    }
+                }
+                
                 $eventData['attendees'] = array_unique(array_filter($emails));
             } else {
                 $eventData['attendee_email'] = $user->calendar_email ?? $user->email;
