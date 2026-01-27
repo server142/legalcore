@@ -270,7 +270,6 @@
                                 </div>
                             @endif
                         @endif
-                    @endif
         @empty
             <div class="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
                 <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
