@@ -57,6 +57,10 @@ class Index extends Component
                 $color = $this->adjustColor($color, $evento->user_id);
             }
 
+            if ($evento->google_event_id) {
+                $title .= ' ☁️';
+            }
+
             $this->calendarEvents[] = [
                 'id' => $evento->id,
                 'title' => $title,
