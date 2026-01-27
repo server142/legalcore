@@ -36,6 +36,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/agenda', \App\Livewire\Agenda\Index::class)->name('agenda.index');
     Route::get('/terminos', \App\Livewire\Terminos\Index::class)->name('terminos.index');
     Route::get('/facturacion', \App\Livewire\Facturacion\Index::class)->name('facturacion.index');
+    
+    // Asesorías
+    Route::get('/asesorias', \App\Livewire\Asesorias\Index::class)->name('asesorias.index');
+    Route::get('/asesorias/nueva', \App\Livewire\Asesorias\Form::class)->name('asesorias.create');
+    Route::get('/asesorias/{asesoria}/editar', \App\Livewire\Asesorias\Form::class)->name('asesorias.edit');
 
     Route::get('/documentos/{documento}', [\App\Http\Controllers\DocumentController::class, 'show'])->name('documentos.show');
     Route::get('/bitacora', \App\Livewire\Audit\Index::class)->name('audit.index');

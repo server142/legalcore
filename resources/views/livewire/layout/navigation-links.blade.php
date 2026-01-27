@@ -29,6 +29,10 @@
         </x-sidebar-link>
         @endcan
 
+        <x-sidebar-link :href="route('asesorias.index')" :active="request()->routeIs('asesorias.*')" icon="chat">
+            {{ __('Asesorías') }}
+        </x-sidebar-link>
+
         @can('manage billing')
         <x-sidebar-link :href="route('facturacion.index')" :active="request()->routeIs('facturacion.*')" icon="billing">
             {{ __('Facturación') }}
