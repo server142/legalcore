@@ -113,36 +113,36 @@
                     </div>
                 </div>
 
-                {{-- Contadores móviles --}}
-                <div class="grid grid-cols-4 gap-2 mb-4 p-3 bg-gray-50 rounded-lg">
-                    <div class="text-center">
-                        <div class="text-xs text-gray-500 mb-1">Actuaciones</div>
-                        <div class="text-lg font-bold text-gray-900">{{ $exp->actuaciones_count }}</div>
+                {{-- Contadores móviles horizontales --}}
+                <div class="flex justify-between items-center mb-4 p-3 bg-gray-50 rounded-lg text-center">
+                    <div class="flex-1 border-r border-gray-200 last:border-0">
+                        <div class="text-[10px] text-gray-500 uppercase font-bold">Actuaciones</div>
+                        <div class="text-base font-bold text-gray-900">{{ $exp->actuaciones_count }}</div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-xs text-gray-500 mb-1">Documentos</div>
-                        <div class="text-lg font-bold text-gray-900">{{ $exp->documentos_count }}</div>
+                    <div class="flex-1 border-r border-gray-200 last:border-0">
+                        <div class="text-[10px] text-gray-500 uppercase font-bold">Docs</div>
+                        <div class="text-base font-bold text-gray-900">{{ $exp->documentos_count }}</div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-xs text-gray-500 mb-1">Eventos</div>
-                        <div class="text-lg font-bold text-gray-900">{{ $exp->eventos_count }}</div>
+                    <div class="flex-1 border-r border-gray-200 last:border-0">
+                        <div class="text-[10px] text-gray-500 uppercase font-bold">Eventos</div>
+                        <div class="text-base font-bold text-gray-900">{{ $exp->eventos_count }}</div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-xs text-gray-500 mb-1">Comentarios</div>
-                        <div class="text-lg font-bold text-gray-900">{{ $exp->comentarios_count }}</div>
+                    <div class="flex-1">
+                        <div class="text-[10px] text-gray-500 uppercase font-bold">Coments</div>
+                        <div class="text-base font-bold text-gray-900">{{ $exp->comentarios_count }}</div>
                     </div>
                 </div>
 
-                <div class="flex flex-wrap gap-2">
-                    <a href="{{ route('expedientes.show', $exp) }}" class="flex-1 text-center bg-indigo-600 text-white px-3 py-2 rounded-lg font-medium text-sm hover:bg-indigo-700 transition">
+                <div class="flex justify-end space-x-4 pt-2 border-t border-gray-100">
+                    <a href="{{ route('expedientes.show', $exp) }}" class="text-indigo-600 font-bold text-sm hover:text-indigo-800 hover:underline">
                         Ver
                     </a>
                     @can('manage users')
-                        <a href="{{ route('expedientes.assignments', $exp) }}" class="flex-1 text-center bg-green-600 text-white px-3 py-2 rounded-lg font-medium text-sm hover:bg-green-700 transition">
+                        <a href="{{ route('expedientes.assignments', $exp) }}" class="text-green-600 font-bold text-sm hover:text-green-800 hover:underline">
                             Gestionar
                         </a>
                     @endcan
-                    <button wire:click="cerrar({{ $exp->id }})" wire:confirm="¿Estás seguro de cerrar este expediente?" class="flex-1 bg-red-600 text-white px-3 py-2 rounded-lg font-medium text-sm hover:bg-red-700 transition">
+                    <button wire:click="cerrar({{ $exp->id }})" wire:confirm="¿Estás seguro de cerrar este expediente?" class="text-red-600 font-bold text-sm hover:text-red-800 hover:underline">
                         Cerrar
                     </button>
                 </div>

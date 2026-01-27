@@ -118,22 +118,25 @@
                             </div>
                             
                             {{-- Metadata y acciones --}}
-                            <div class="mt-2 px-4 flex items-center justify-between">
-                                <div class="flex items-center space-x-4 text-xs text-gray-500">
-                                    <span class="font-medium">{{ $comentario->created_at->locale('es')->diffForHumans() }}</span>
-                                    @if($comentario->created_at != $comentario->updated_at)
-                                        <span class="text-gray-400">• Editado</span>
-                                    @endif
+                            <div class="mt-2 px-4">
+                                {{-- Fila 1: Timestamp y Contador --}}
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2 text-xs text-gray-500">
+                                        <span class="font-medium">{{ $comentario->created_at->locale('es')->diffForHumans() }}</span>
+                                        @if($comentario->created_at != $comentario->updated_at)
+                                            <span class="text-gray-400">• Editado</span>
+                                        @endif
+                                    </div>
                                     
-                                    {{-- Contador de reacciones --}}
                                     @if($comentario->reacciones->count() > 0)
-                                        <span class="text-indigo-600 font-medium">
+                                        <span class="text-indigo-600 text-xs font-medium bg-indigo-50 px-2 py-0.5 rounded-full">
                                             {{ $comentario->reacciones->count() }} {{ $comentario->reacciones->count() === 1 ? 'reacción' : 'reacciones' }}
                                         </span>
                                     @endif
                                 </div>
 
-                                <div class="flex items-center space-x-3">
+                                {{-- Fila 2: Botones de Acción --}}
+                                <div class="flex items-center space-x-4 border-t border-gray-100 pt-2">
                                     {{-- Botones de reacción --}}
                                     <div class="flex items-center space-x-1">
                                         @php
@@ -142,20 +145,20 @@
                                         
                                         <button 
                                             wire:click="toggleReaccion({{ $comentario->id }}, 'like')"
-                                            class="p-1 rounded hover:bg-gray-100 transition {{ $miReaccion && $miReaccion->tipo === 'like' ? 'text-blue-600' : 'text-gray-400' }}"
+                                            class="p-1.5 rounded-full hover:bg-gray-100 transition {{ $miReaccion && $miReaccion->tipo === 'like' ? 'text-blue-600 bg-blue-50' : 'text-gray-500' }}"
                                             title="Me gusta"
                                         >
-                                            <svg class="w-4 h-4" fill="{{ $miReaccion && $miReaccion->tipo === 'like' ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-5 h-5" fill="{{ $miReaccion && $miReaccion->tipo === 'like' ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
                                             </svg>
                                         </button>
                                         
                                         <button 
                                             wire:click="toggleReaccion({{ $comentario->id }}, 'love')"
-                                            class="p-1 rounded hover:bg-gray-100 transition {{ $miReaccion && $miReaccion->tipo === 'love' ? 'text-red-600' : 'text-gray-400' }}"
+                                            class="p-1.5 rounded-full hover:bg-gray-100 transition {{ $miReaccion && $miReaccion->tipo === 'love' ? 'text-red-600 bg-red-50' : 'text-gray-500' }}"
                                             title="Me encanta"
                                         >
-                                            <svg class="w-4 h-4" fill="{{ $miReaccion && $miReaccion->tipo === 'love' ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-5 h-5" fill="{{ $miReaccion && $miReaccion->tipo === 'love' ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                             </svg>
                                         </button>
@@ -164,8 +167,9 @@
                                     {{-- Botón responder --}}
                                     <button 
                                         wire:click="responder({{ $comentario->id }})"
-                                        class="text-xs font-medium text-gray-600 hover:text-indigo-600 transition"
+                                        class="text-sm font-medium text-gray-600 hover:text-indigo-600 transition flex items-center"
                                     >
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
                                         Responder
                                     </button>
                                 </div>
