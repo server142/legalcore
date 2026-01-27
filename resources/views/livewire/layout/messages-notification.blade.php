@@ -18,7 +18,7 @@
              x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100 scale-100"
              x-transition:leave-end="opacity-0 scale-95"
-             class="absolute right-0 mt-2 w-80 max-w-[90vw] bg-white rounded-lg shadow-xl border border-gray-200 z-50"
+             class="absolute right-0 mt-2 w-screen max-w-[300px] sm:w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 transform -translate-x-1/2 left-1/2 sm:left-auto sm:translate-x-0 sm:right-0"
              style="display: none;">
             
             <div class="p-4 border-b border-gray-200 flex justify-between items-center">

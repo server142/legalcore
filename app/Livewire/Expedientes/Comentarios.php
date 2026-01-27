@@ -78,7 +78,12 @@ class Comentarios extends Component
         
         // Determine parent ID (flatten to max 1 level of nesting)
         $targetComment = Comentario::find($this->respondiendo);
-        if (!$targetComment) return;
+        
+        if (!$targetComment) {
+            $this->dispatch('notify-error', 'El comentario al que intentas responder ya no existe.');
+            $this->cancelarRespuesta();
+            return;
+        }
 
         $parentId = $targetComment->parent_id ?? $targetComment->id;
         
