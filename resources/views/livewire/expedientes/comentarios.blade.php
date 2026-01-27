@@ -168,7 +168,7 @@
 
                             {{-- Formulario de respuesta inline --}}
                             @if($respondiendo === $comentario->id)
-                                <div class="mt-3 ml-10">
+                                <div class="mt-3">
                                     <textarea 
                                         wire:model="replyContent" 
                                         rows="2" 
@@ -245,7 +245,7 @@
                                             
                                             {{-- Formulario de respuesta inline para respuesta --}}
                                             @if($respondiendo === $respuesta->id)
-                                                <div class="w-full mt-2 ml-10">
+                                                <div class="mt-2">
                                                     <textarea 
                                                         wire:model="replyContent" 
                                                         rows="2" 
