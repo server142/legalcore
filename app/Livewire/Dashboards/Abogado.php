@@ -61,6 +61,9 @@ class Abogado extends Component
                          ->orWhereHas('assignedUsers', function($qu) use ($userId) {
                              $qu->where('users.id', $userId);
                          });
+                  })
+                  ->orWhereHas('invitedUsers', function($qi) use ($userId) {
+                      $qi->where('users.id', $userId);
                   });
             });
         }

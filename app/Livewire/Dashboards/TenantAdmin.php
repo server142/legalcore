@@ -72,6 +72,9 @@ class TenantAdmin extends Component
                          ->orWhereHas('assignedUsers', function($qu) use ($user) {
                              $qu->where('users.id', $user->id);
                          });
+                  })
+                  ->orWhereHas('invitedUsers', function($qi) use ($user) {
+                      $qi->where('users.id', $user->id);
                   });
             });
         }
