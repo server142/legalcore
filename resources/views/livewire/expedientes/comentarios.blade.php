@@ -8,21 +8,12 @@
                 </div>
             </div>
             <div class="flex-1">
-                @if($respondiendo)
-                    <div class="mb-2 p-2 bg-blue-50 rounded-lg flex items-center justify-between">
-                        <span class="text-sm text-blue-700">Respondiendo a un comentario...</span>
-                        <button wire:click="cancelarRespuesta" class="text-blue-600 hover:text-blue-800">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
-                @endif
+
                 <textarea 
                     wire:model="nuevoComentario" 
                     rows="3" 
                     class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg resize-none"
-                    placeholder="{{ $respondiendo ? 'Escribe tu respuesta...' : 'Escribe un comentario sobre este expediente...' }}"
+                    placeholder="Escribe un comentario sobre este expediente..."
                 ></textarea>
                 @error('nuevoComentario')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -36,7 +27,7 @@
                         wire:loading.attr="disabled"
                         class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <span wire:loading.remove wire:target="agregarComentario">{{ $respondiendo ? 'Responder' : 'Publicar' }}</span>
+                        <span wire:loading.remove wire:target="agregarComentario">Publicar</span>
                         <span wire:loading wire:target="agregarComentario">Publicando...</span>
                     </button>
                 </div>
@@ -175,6 +166,26 @@
                                 </div>
                             </div>
 
+                            {{-- Formulario de respuesta inline --}}
+                            @if($respondiendo === $comentario->id)
+                                <div class="mt-3 ml-10">
+                                    <textarea 
+                                        wire:model="replyContent" 
+                                        rows="2" 
+                                        class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg resize-none text-sm"
+                                        placeholder="Escribe tu respuesta..."
+                                    ></textarea>
+                                    <div class="flex justify-end space-x-2 mt-2">
+                                        <button wire:click="cancelarRespuesta" class="px-3 py-1 text-xs text-gray-600 hover:text-gray-800">
+                                            Cancelar
+                                        </button>
+                                        <button wire:click="publicarRespuesta" class="px-3 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold">
+                                            Responder
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
+
                             {{-- Respuestas --}}
                             @if($comentario->respuestas->count() > 0)
                                 <div class="mt-4 ml-8 space-y-3 border-l-2 border-gray-200 pl-4">
@@ -208,14 +219,49 @@
                                                     @if($respuesta->reacciones->count() > 0)
                                                         <span class="text-indigo-600">{{ $respuesta->reacciones->count() }} 👍</span>
                                                     @endif
+                                                    @php
+                                                        $miReaccionRespuesta = $respuesta->reacciones->where('user_id', auth()->id())->first();
+                                                    @endphp
                                                     <button 
                                                         wire:click="toggleReaccion({{ $respuesta->id }}, 'like')"
+                                                        class="font-medium hover:text-indigo-600 flex items-center"
+                                                    >
+                                                        @if($miReaccionRespuesta && $miReaccionRespuesta->tipo === 'like')
+                                                            <svg class="w-4 h-4 text-blue-600 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
+                                                            </svg>
+                                                        @else
+                                                            Me gusta
+                                                        @endif
+                                                    </button>
+                                                    <button 
+                                                        wire:click="responder({{ $respuesta->id }})"
                                                         class="font-medium hover:text-indigo-600"
                                                     >
-                                                        Me gusta
+                                                        Responder
                                                     </button>
                                                 </div>
                                             </div>
+                                            
+                                            {{-- Formulario de respuesta inline para respuesta --}}
+                                            @if($respondiendo === $respuesta->id)
+                                                <div class="w-full mt-2 ml-10">
+                                                    <textarea 
+                                                        wire:model="replyContent" 
+                                                        rows="2" 
+                                                        class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg resize-none text-sm"
+                                                        placeholder="Responder a {{ $respuesta->user->name }}..."
+                                                    ></textarea>
+                                                    <div class="flex justify-end space-x-2 mt-2">
+                                                        <button wire:click="cancelarRespuesta" class="px-3 py-1 text-xs text-gray-600 hover:text-gray-800">
+                                                            Cancelar
+                                                        </button>
+                                                        <button wire:click="publicarRespuesta" class="px-3 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold">
+                                                            Responder
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            @endif
                                         </div>
                                     @endforeach
                                 </div>

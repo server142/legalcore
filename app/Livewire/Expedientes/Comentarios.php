@@ -16,6 +16,8 @@ class Comentarios extends Component
     public $editando = null;
     public $contenidoEditado = '';
 
+    public $replyContent = '';
+
     public function mount(Expediente $expediente)
     {
         $this->expediente = $expediente;
@@ -44,11 +46,10 @@ class Comentarios extends Component
             'user_id' => $user->id,
             'tenant_id' => $user->tenant_id,
             'contenido' => trim($this->nuevoComentario),
-            'parent_id' => $this->respondiendo,
+            'parent_id' => null,
         ]);
 
         $this->nuevoComentario = '';
-        $this->respondiendo = null;
         $this->expediente->load('comentarios.user', 'comentarios.respuestas.user', 'comentarios.reacciones.user');
     }
 
@@ -56,12 +57,48 @@ class Comentarios extends Component
     {
         $this->respondiendo = $comentarioId;
         $this->editando = null;
+        $this->replyContent = '';
     }
 
     public function cancelarRespuesta()
     {
         $this->respondiendo = null;
-        $this->nuevoComentario = '';
+        $this->replyContent = '';
+    }
+
+    public function publicarRespuesta()
+    {
+        $this->validate([
+            'replyContent' => 'required|string|min:1|max:5000',
+        ], [
+            'replyContent.required' => 'La respuesta no puede estar vacía.',
+        ]);
+
+        $user = auth()->user();
+        
+        // Determine parent ID (flatten to max 1 level of nesting)
+        $targetComment = Comentario::find($this->respondiendo);
+        if (!$targetComment) return;
+
+        $parentId = $targetComment->parent_id ?? $targetComment->id;
+        
+        // If replying to a reply, maybe prepend mention?
+        $content = trim($this->replyContent);
+        if ($targetComment->parent_id) {
+            $content = '@' . $targetComment->user->name . ' ' . $content;
+        }
+
+        Comentario::create([
+            'expediente_id' => $this->expediente->id,
+            'user_id' => $user->id,
+            'tenant_id' => $user->tenant_id,
+            'contenido' => $content,
+            'parent_id' => $parentId,
+        ]);
+
+        $this->replyContent = '';
+        $this->respondiendo = null;
+        $this->expediente->load('comentarios.user', 'comentarios.respuestas.user', 'comentarios.reacciones.user');
     }
 
     public function editar($comentarioId)

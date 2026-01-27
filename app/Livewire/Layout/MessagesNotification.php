@@ -4,6 +4,8 @@ namespace App\Livewire\Layout;
 
 use Livewire\Component;
 use App\Models\Mensaje;
+use App\Models\Expediente;
+use App\Models\Comentario;
 use Livewire\Attributes\On;
 
 class MessagesNotification extends Component
@@ -20,16 +22,30 @@ class MessagesNotification extends Component
 
     public function loadUnreadCount()
     {
-        $this->unreadCount = Mensaje::where('receiver_id', auth()->id())
-            ->where('leido', false)
+        // Count comments from the last 24 hours on expedientes the user is involved in
+        $user = auth()->user();
+        $expedienteIds = Expediente::where('abogado_responsable_id', $user->id)
+            ->orWhereHas('assignedUsers', function($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })
+            ->pluck('id');
+
+        $this->unreadCount = Comentario::whereIn('expediente_id', $expedienteIds)
+            ->where('created_at', '>=', now()->subDay())
             ->count();
     }
 
     public function loadRecentMessages()
     {
-        $this->recentMessages = Mensaje::where('receiver_id', auth()->id())
-            ->where('leido', false)
-            ->with('sender')
+        $user = auth()->user();
+        $expedienteIds = Expediente::where('abogado_responsable_id', $user->id)
+            ->orWhereHas('assignedUsers', function($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })
+            ->pluck('id');
+
+        $this->recentMessages = Comentario::whereIn('expediente_id', $expedienteIds)
+            ->with(['user', 'expediente'])
             ->latest()
             ->take(5)
             ->get();
@@ -58,11 +74,7 @@ class MessagesNotification extends Component
 
     public function markAsRead($messageId)
     {
-        $mensaje = Mensaje::find($messageId);
-        if ($mensaje && $mensaje->receiver_id === auth()->id()) {
-            $mensaje->update(['leido' => true]);
-            $this->dispatch('message-read');
-        }
+        // No-op for now as we don't track read status for comments
     }
 
     public function render()
