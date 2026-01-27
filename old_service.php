@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Services;
 
@@ -17,12 +17,12 @@ class GoogleCalendarService
     {
         $this->client = new Client();
         
-        // Opción A: Cuenta de Servicio (Prioridad)
+        // Opci├│n A: Cuenta de Servicio (Prioridad)
         if (config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'))) {
             $this->client->setAuthConfig(config('services.google.service_account_json'));
             $this->client->addScope(Calendar::CALENDAR);
         } 
-        // Opción B: OAuth (Respaldo / Legacy)
+        // Opci├│n B: OAuth (Respaldo / Legacy)
         else {
             $this->client->setClientId(config('services.google.client_id'));
             $this->client->setClientSecret(config('services.google.client_secret'));

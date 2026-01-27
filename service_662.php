@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Services;
 
@@ -17,12 +17,12 @@ class GoogleCalendarService
     {
         $this->client = new Client();
         
-        // Opción A: Cuenta de Servicio (Prioridad)
+        // Opci├│n A: Cuenta de Servicio (Prioridad)
         if (config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'))) {
             $this->client->setAuthConfig(config('services.google.service_account_json'));
             $this->client->addScope(Calendar::CALENDAR);
         } 
-        // Opción B: OAuth (Respaldo / Legacy)
+        // Opci├│n B: OAuth (Respaldo / Legacy)
         else {
             $this->client->setClientId(config('services.google.client_id'));
             $this->client->setClientSecret(config('services.google.client_secret'));
@@ -73,9 +73,11 @@ class GoogleCalendarService
 
     public function createEvent(User $user, $eventData)
     {
+        // Determinar modo de operaci├│n
         $usingServiceAccount = config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'));
 
         if (!$usingServiceAccount) {
+            // Modo Legacy: OAuth Personal
             if (!$this->setupClientForUser($user)) {
                 return false;
             }
@@ -97,97 +99,33 @@ class GoogleCalendarService
                 ],
             ];
 
-            // Manejo de asistentes (attendees)
-            $attendees = [];
-            if (isset($eventData['attendees']) && is_array($eventData['attendees'])) {
-                foreach ($eventData['attendees'] as $email) {
-                    $attendees[] = ['email' => $email];
-                }
-            } else {
-                $attendeeEmail = $eventData['attendee_email'] ?? $user->email;
-                if ($attendeeEmail) {
-                    $attendees[] = ['email' => $attendeeEmail];
-                }
-            }
-
-            if ($usingServiceAccount && !empty($attendees)) {
-                $eventParams['attendees'] = $attendees;
+            // Si usamos Service Account, AGREGAMOS al usuario como invitado
+            if ($usingServiceAccount && $user->email) {
+                $eventParams['attendees'] = [
+                    ['email' => $user->email]
+                ];
             }
 
             $event = new Event($eventParams);
+
             $calendarId = 'primary';
-            $optParams = ['sendUpdates' => 'all']; 
+            $optParams = ['sendUpdates' => 'all']; // Forzar env├¡o de correo de invitaci├│n
             $event = $service->events->insert($calendarId, $event, $optParams);
 
             return $event->id;
 
         } catch (\Exception $e) {
             Log::error('Google Calendar Create Event Error: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    public function updateEvent(User $user, $googleEventId, $eventData)
-    {
-        $usingServiceAccount = config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'));
-
-        if (!$usingServiceAccount) {
-            if (!$this->setupClientForUser($user)) {
-                return false;
-            }
-        }
-
-        try {
-            $service = new Calendar($this->client);
-            $event = $service->events->get('primary', $googleEventId);
-
-            $event->setSummary($eventData['title']);
-            $event->setDescription($eventData['description'] ?? '');
             
-            $start = new \Google\Service\Calendar\EventDateTime();
-            $start->setDateTime(Carbon::parse($eventData['start'])->toRfc3339String());
-            $start->setTimeZone(config('app.timezone'));
-            $event->setStart($start);
-
-            $end = new \Google\Service\Calendar\EventDateTime();
-            $end->setDateTime(Carbon::parse($eventData['end'])->toRfc3339String());
-            $end->setTimeZone(config('app.timezone'));
-            $event->setEnd($end);
-
-            // Actualizar asistentes si se proporcionan
-            if (isset($eventData['attendees']) && is_array($eventData['attendees'])) {
-                $attendees = [];
-                foreach ($eventData['attendees'] as $email) {
-                    $attendees[] = new \Google\Service\Calendar\EventAttendee(['email' => $email]);
-                }
-                $event->setAttendees($attendees);
+            // Solo limpiar tokens si estamos en modo OAuth y falla por permisos
+            if (!$usingServiceAccount && str_contains($e->getMessage(), 'invalid_grant')) {
+                $user->update([
+                    'google_access_token' => null,
+                    'google_refresh_token' => null,
+                    'google_token_expires_at' => null,
+                ]);
             }
-
-            $updatedEvent = $service->events->update('primary', $googleEventId, $event, ['sendUpdates' => 'all']);
-            return $updatedEvent->id;
-
-        } catch (\Exception $e) {
-            Log::error('Google Calendar Update Event Error: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    public function deleteEvent(User $user, $googleEventId)
-    {
-        $usingServiceAccount = config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'));
-
-        if (!$usingServiceAccount) {
-            if (!$this->setupClientForUser($user)) {
-                return false;
-            }
-        }
-
-        try {
-            $service = new Calendar($this->client);
-            $service->events->delete('primary', $googleEventId, ['sendUpdates' => 'all']);
-            return true;
-        } catch (\Exception $e) {
-            Log::error('Google Calendar Delete Event Error: ' . $e->getMessage());
+            
             return false;
         }
     }

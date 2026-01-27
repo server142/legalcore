@@ -25,63 +25,64 @@ class EventoObserver
             return;
         }
 
-        $hasServiceAccount = config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'));
+        // Recolectar todos los usuarios que deben recibir el evento
+        $targetUsers = collect([$user]); // Siempre incluir al creador
 
-        if ($hasServiceAccount || ($user && $user->google_access_token)) {
-            try {
-                $eventData = [
-                    'title' => $evento->titulo,
-                    'description' => $evento->descripcion,
-                    'start' => $evento->start_time,
-                    'end' => $evento->end_time,
-                ];
-
-                // Si hay expediente, invitar a todos los asignados
-                $emails = [];
-                
-                if ($evento->expediente_id && $evento->expediente) {
-                    // Responsable
-                    if ($evento->expediente->abogado) {
-                        $emails[] = $evento->expediente->abogado->calendar_email ?? $evento->expediente->abogado->email;
-                    }
-                    
-                    // Asignados
-                    if ($evento->expediente->assignedUsers) {
-                        foreach ($evento->expediente->assignedUsers as $assignedUser) {
-                            $email = $assignedUser->calendar_email ?? $assignedUser->email;
-                            if ($email) {
-                                $emails[] = $email;
-                            }
-                        }
-                    }
-                }
-
-                // Sumar invitados manuales
-                if ($evento->invitedUsers) {
-                    foreach ($evento->invitedUsers as $invitedUser) {
-                        $email = $invitedUser->calendar_email ?? $invitedUser->email;
-                        if ($email) {
-                            $emails[] = $email;
-                        }
-                    }
-                }
-
-                if (!empty($emails)) {
-                    $eventData['attendees'] = array_unique(array_filter($emails));
-                } else {
-                    $eventData['attendee_email'] = $user->calendar_email ?? $user->email;
-                }
-
-                $googleEventId = $this->googleService->createEvent($user, $eventData);
-
-                if ($googleEventId) {
-                    $evento->google_event_id = $googleEventId;
-                    $evento->saveQuietly();
-                    Log::info("Evento sincronizado con Google Calendar: {$evento->id} -> {$googleEventId}");
-                }
-            } catch (\Exception $e) {
-                Log::error("Error sincronizando evento {$evento->id} con Google: " . $e->getMessage());
+        if ($evento->expediente_id && $evento->expediente) {
+            // Agregar responsable del expediente
+            if ($evento->expediente->abogado) {
+                $targetUsers->push($evento->expediente->abogado);
             }
+            
+            // Agregar usuarios asignados al expediente
+            if ($evento->expediente->assignedUsers) {
+                $targetUsers = $targetUsers->merge($evento->expediente->assignedUsers);
+            }
+        }
+
+        // Agregar invitados manuales
+        if ($evento->invitedUsers) {
+            $targetUsers = $targetUsers->merge($evento->invitedUsers);
+        }
+
+        // Eliminar duplicados por ID
+        $targetUsers = $targetUsers->unique('id');
+
+        $eventData = [
+            'title' => $evento->titulo,
+            'description' => $evento->descripcion,
+            'start' => $evento->start_time,
+            'end' => $evento->end_time,
+        ];
+
+        $googleEventId = null;
+        $syncedCount = 0;
+
+        // Crear el evento en el calendario de cada usuario que tenga Google conectado
+        foreach ($targetUsers as $targetUser) {
+            if ($targetUser->google_access_token) {
+                try {
+                    $eventId = $this->googleService->createEvent($targetUser, $eventData);
+                    
+                    if ($eventId) {
+                        // Guardar solo el primer ID exitoso como referencia
+                        if (!$googleEventId) {
+                            $googleEventId = $eventId;
+                        }
+                        $syncedCount++;
+                        Log::info("Evento creado en calendario de {$targetUser->email}: {$eventId}");
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Error creando evento para {$targetUser->email}: " . $e->getMessage());
+                }
+            }
+        }
+
+        // Guardar el ID de referencia si al menos un calendario se sincronizó
+        if ($googleEventId) {
+            $evento->google_event_id = $googleEventId;
+            $evento->saveQuietly();
+            Log::info("Evento {$evento->id} sincronizado con {$syncedCount} calendarios");
         }
     }
 
@@ -100,47 +101,37 @@ class EventoObserver
             return;
         }
 
+        // Recolectar todos los usuarios que deben tener el evento
+        $targetUsers = collect([$user]);
+
+        if ($evento->expediente_id && $evento->expediente) {
+            if ($evento->expediente->abogado) {
+                $targetUsers->push($evento->expediente->abogado);
+            }
+            
+            if ($evento->expediente->assignedUsers) {
+                $targetUsers = $targetUsers->merge($evento->expediente->assignedUsers);
+            }
+        }
+
+        if ($evento->invitedUsers) {
+            $targetUsers = $targetUsers->merge($evento->invitedUsers);
+        }
+
+        $targetUsers = $targetUsers->unique('id');
+
+        $eventData = [
+            'title' => $evento->titulo,
+            'description' => $evento->descripcion,
+            'start' => $evento->start_time,
+            'end' => $evento->end_time,
+        ];
+
+        // Actualizar en cada calendario conectado
+        // Nota: Como cada usuario tiene su propio evento con ID diferente,
+        // esto solo funcionará si guardamos múltiples IDs. Por ahora, solo
+        // actualizamos en el calendario del creador.
         try {
-            $eventData = [
-                'title' => $evento->titulo,
-                'description' => $evento->descripcion,
-                'start' => $evento->start_time,
-                'end' => $evento->end_time,
-            ];
-
-            $emails = [];
-
-            if ($evento->expediente_id && $evento->expediente) {
-                if ($evento->expediente->abogado) {
-                    $emails[] = $evento->expediente->abogado->calendar_email ?? $evento->expediente->abogado->email;
-                }
-                
-                if ($evento->expediente->assignedUsers) {
-                    foreach ($evento->expediente->assignedUsers as $assignedUser) {
-                        $email = $assignedUser->calendar_email ?? $assignedUser->email;
-                        if ($email) {
-                            $emails[] = $email;
-                        }
-                    }
-                }
-            }
-
-            // Sumar invitados manuales
-            if ($evento->invitedUsers) {
-                foreach ($evento->invitedUsers as $invitedUser) {
-                    $email = $invitedUser->calendar_email ?? $invitedUser->email;
-                    if ($email) {
-                        $emails[] = $email;
-                    }
-                }
-            }
-
-            if (!empty($emails)) {
-                $eventData['attendees'] = array_unique(array_filter($emails));
-            } else {
-                $eventData['attendee_email'] = $user->calendar_email ?? $user->email;
-            }
-
             $this->googleService->updateEvent($user, $evento->google_event_id, $eventData);
             Log::info("Evento actualizado en Google Calendar: {$evento->id}");
         } catch (\Exception $e) {
