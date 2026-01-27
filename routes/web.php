@@ -11,6 +11,18 @@ Route::get('/', function () {
     return view('welcome', ['plans' => $plans]);
 })->name('welcome');
 
+// Public Legal Pages (Required by Google API Verification)
+Route::get('/privacy', function () {
+    $content = file_get_contents(base_path('POLITICA_PRIVACIDAD.md'));
+    return view('legal.document', ['title' => 'Política de Privacidad', 'content' => $content]);
+})->name('privacy');
+
+Route::get('/terms', function () {
+    $content = file_get_contents(base_path('TERMINOS_SERVICIO.md'));
+    return view('legal.document', ['title' => 'Términos de Servicio', 'content' => $content]);
+})->name('terms');
+
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
     
