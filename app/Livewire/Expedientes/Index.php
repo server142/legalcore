@@ -44,6 +44,7 @@ class Index extends Component
                   ->orWhere('titulo', 'like', '%' . $this->search . '%');
             })
             ->with(['cliente', 'abogado'])
+            ->withCount(['actuaciones', 'documentos', 'eventos', 'comentarios'])
             ->latest()
             ->paginate(10);
 

@@ -8,11 +8,21 @@
                 </div>
             </div>
             <div class="flex-1">
+                @if($respondiendo)
+                    <div class="mb-2 p-2 bg-blue-50 rounded-lg flex items-center justify-between">
+                        <span class="text-sm text-blue-700">Respondiendo a un comentario...</span>
+                        <button wire:click="cancelarRespuesta" class="text-blue-600 hover:text-blue-800">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                @endif
                 <textarea 
                     wire:model="nuevoComentario" 
                     rows="3" 
                     class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg resize-none"
-                    placeholder="Escribe un comentario sobre este expediente..."
+                    placeholder="{{ $respondiendo ? 'Escribe tu respuesta...' : 'Escribe un comentario sobre este expediente...' }}"
                 ></textarea>
                 @error('nuevoComentario')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -26,7 +36,7 @@
                         wire:loading.attr="disabled"
                         class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <span wire:loading.remove wire:target="agregarComentario">Publicar</span>
+                        <span wire:loading.remove wire:target="agregarComentario">{{ $respondiendo ? 'Responder' : 'Publicar' }}</span>
                         <span wire:loading wire:target="agregarComentario">Publicando...</span>
                     </button>
                 </div>
@@ -48,31 +58,165 @@
 
                     {{-- Contenido del comentario --}}
                     <div class="flex-1 min-w-0">
-                        <div class="bg-gray-50 rounded-2xl px-4 py-3">
-                            <div class="flex items-center justify-between mb-1">
-                                <h4 class="font-bold text-gray-900 text-sm">{{ $comentario->user->name }}</h4>
-                                @if($comentario->user_id === auth()->id() || auth()->user()->can('manage users'))
-                                    <button 
-                                        wire:click="eliminarComentario({{ $comentario->id }})"
-                                        wire:confirm="¿Estás seguro de eliminar este comentario?"
-                                        class="text-gray-400 hover:text-red-600 transition"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
+                        @if($editando === $comentario->id)
+                            {{-- Modo edición --}}
+                            <div class="space-y-2">
+                                <textarea 
+                                    wire:model="contenidoEditado" 
+                                    rows="3" 
+                                    class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg resize-none"
+                                ></textarea>
+                                <div class="flex justify-end space-x-2">
+                                    <button wire:click="cancelarEdicion" class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800">
+                                        Cancelar
                                     </button>
-                                @endif
+                                    <button wire:click="guardarEdicion" class="px-3 py-1 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                                        Guardar
+                                    </button>
+                                </div>
                             </div>
-                            <p class="text-gray-700 text-sm whitespace-pre-wrap break-words">{{ $comentario->contenido }}</p>
-                        </div>
-                        
-                        {{-- Metadata --}}
-                        <div class="mt-2 px-4 flex items-center space-x-4 text-xs text-gray-500">
-                            <span class="font-medium">{{ $comentario->created_at->locale('es')->diffForHumans() }}</span>
-                            @if($comentario->created_at != $comentario->updated_at)
-                                <span class="text-gray-400">• Editado</span>
+                        @else
+                            {{-- Modo visualización --}}
+                            <div class="bg-gray-50 rounded-2xl px-4 py-3">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h4 class="font-bold text-gray-900 text-sm">{{ $comentario->user->name }}</h4>
+                                    @if($comentario->user_id === auth()->id())
+                                        <div class="flex items-center space-x-2">
+                                            <button 
+                                                wire:click="editar({{ $comentario->id }})"
+                                                class="text-gray-400 hover:text-indigo-600 transition"
+                                                title="Editar"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                </svg>
+                                            </button>
+                                            <button 
+                                                wire:click="eliminarComentario({{ $comentario->id }})"
+                                                wire:confirm="¿Estás seguro de eliminar este comentario?"
+                                                class="text-gray-400 hover:text-red-600 transition"
+                                                title="Eliminar"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    @elseif(auth()->user()->can('manage users'))
+                                        <button 
+                                            wire:click="eliminarComentario({{ $comentario->id }})"
+                                            wire:confirm="¿Estás seguro de eliminar este comentario?"
+                                            class="text-gray-400 hover:text-red-600 transition"
+                                        >
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    @endif
+                                </div>
+                                <p class="text-gray-700 text-sm whitespace-pre-wrap break-words">{{ $comentario->contenido }}</p>
+                            </div>
+                            
+                            {{-- Metadata y acciones --}}
+                            <div class="mt-2 px-4 flex items-center justify-between">
+                                <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                    <span class="font-medium">{{ $comentario->created_at->locale('es')->diffForHumans() }}</span>
+                                    @if($comentario->created_at != $comentario->updated_at)
+                                        <span class="text-gray-400">• Editado</span>
+                                    @endif
+                                    
+                                    {{-- Contador de reacciones --}}
+                                    @if($comentario->reacciones->count() > 0)
+                                        <span class="text-indigo-600 font-medium">
+                                            {{ $comentario->reacciones->count() }} {{ $comentario->reacciones->count() === 1 ? 'reacción' : 'reacciones' }}
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <div class="flex items-center space-x-3">
+                                    {{-- Botones de reacción --}}
+                                    <div class="flex items-center space-x-1">
+                                        @php
+                                            $miReaccion = $comentario->reacciones->where('user_id', auth()->id())->first();
+                                        @endphp
+                                        
+                                        <button 
+                                            wire:click="toggleReaccion({{ $comentario->id }}, 'like')"
+                                            class="p-1 rounded hover:bg-gray-100 transition {{ $miReaccion && $miReaccion->tipo === 'like' ? 'text-blue-600' : 'text-gray-400' }}"
+                                            title="Me gusta"
+                                        >
+                                            <svg class="w-4 h-4" fill="{{ $miReaccion && $miReaccion->tipo === 'like' ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
+                                            </svg>
+                                        </button>
+                                        
+                                        <button 
+                                            wire:click="toggleReaccion({{ $comentario->id }}, 'love')"
+                                            class="p-1 rounded hover:bg-gray-100 transition {{ $miReaccion && $miReaccion->tipo === 'love' ? 'text-red-600' : 'text-gray-400' }}"
+                                            title="Me encanta"
+                                        >
+                                            <svg class="w-4 h-4" fill="{{ $miReaccion && $miReaccion->tipo === 'love' ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    {{-- Botón responder --}}
+                                    <button 
+                                        wire:click="responder({{ $comentario->id }})"
+                                        class="text-xs font-medium text-gray-600 hover:text-indigo-600 transition"
+                                    >
+                                        Responder
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Respuestas --}}
+                            @if($comentario->respuestas->count() > 0)
+                                <div class="mt-4 ml-8 space-y-3 border-l-2 border-gray-200 pl-4">
+                                    @foreach($comentario->respuestas as $respuesta)
+                                        <div class="flex items-start space-x-2">
+                                            <div class="flex-shrink-0">
+                                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold text-xs">
+                                                    {{ strtoupper(substr($respuesta->user->name, 0, 1)) }}
+                                                </div>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="bg-gray-100 rounded-xl px-3 py-2">
+                                                    <div class="flex items-center justify-between mb-1">
+                                                        <h5 class="font-bold text-gray-900 text-xs">{{ $respuesta->user->name }}</h5>
+                                                        @if($respuesta->user_id === auth()->id() || auth()->user()->can('manage users'))
+                                                            <button 
+                                                                wire:click="eliminarComentario({{ $respuesta->id }})"
+                                                                wire:confirm="¿Eliminar respuesta?"
+                                                                class="text-gray-400 hover:text-red-600"
+                                                            >
+                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                                </svg>
+                                                            </button>
+                                                        @endif
+                                                    </div>
+                                                    <p class="text-gray-700 text-xs whitespace-pre-wrap break-words">{{ $respuesta->contenido }}</p>
+                                                </div>
+                                                <div class="mt-1 px-3 flex items-center space-x-3 text-xs text-gray-500">
+                                                    <span>{{ $respuesta->created_at->locale('es')->diffForHumans() }}</span>
+                                                    @if($respuesta->reacciones->count() > 0)
+                                                        <span class="text-indigo-600">{{ $respuesta->reacciones->count() }} 👍</span>
+                                                    @endif
+                                                    <button 
+                                                        wire:click="toggleReaccion({{ $respuesta->id }}, 'like')"
+                                                        class="font-medium hover:text-indigo-600"
+                                                    >
+                                                        Me gusta
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                             @endif
-                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

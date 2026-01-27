@@ -15,6 +15,7 @@ class Comentario extends Model
         'user_id',
         'tenant_id',
         'contenido',
+        'parent_id',
     ];
 
     public function expediente()
@@ -25,5 +26,25 @@ class Comentario extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Comentario::class, 'parent_id');
+    }
+
+    public function respuestas()
+    {
+        return $this->hasMany(Comentario::class, 'parent_id')->orderBy('created_at', 'asc');
+    }
+
+    public function reacciones()
+    {
+        return $this->hasMany(ComentarioReaccion::class);
+    }
+
+    public function miReaccion()
+    {
+        return $this->reacciones()->where('user_id', auth()->id())->first();
     }
 }
