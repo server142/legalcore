@@ -34,7 +34,7 @@ class Show extends Component
             }
         }
         
-        $this->expediente = $expediente->load(['cliente', 'abogado', 'actuaciones', 'documentos', 'eventos']);
+        $this->expediente = $expediente->load(['cliente', 'abogado', 'actuaciones', 'documentos', 'eventos', 'comentarios.user']);
     }
 
     #[On('actuacion-added')]

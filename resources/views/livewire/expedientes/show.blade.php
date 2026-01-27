@@ -86,6 +86,9 @@
                     <button wire:click="setTab('agenda')" class="px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap {{ $activeTab == 'agenda' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
                         Agenda
                     </button>
+                    <button wire:click="setTab('comentarios')" class="px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap {{ $activeTab == 'comentarios' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
+                        Comentarios
+                    </button>
                 </div>
 
                 <div class="p-6">
@@ -216,6 +219,8 @@
                                 </div>
                             @endforelse
                         </div>
+                    @elseif($activeTab == 'comentarios')
+                        <livewire:expedientes.comentarios :expediente="$expediente" />
                     @endif
                 </div>
             </div>

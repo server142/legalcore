@@ -63,4 +63,9 @@ class Expediente extends Model
     {
         return $this->belongsToMany(User::class, 'expediente_user');
     }
+
+    public function comentarios()
+    {
+        return $this->hasMany(Comentario::class)->orderBy('created_at', 'desc');
+    }
 }
