@@ -99,30 +99,52 @@ class GoogleCalendarService
 
             // Manejo de asistentes (attendees)
             $attendees = [];
+            $targetCalendarId = 'primary';
+
+            if ($usingServiceAccount) {
+                // Si usamos cuenta de servicio, el calendarId debe ser el correo del usuario
+                // y el usuario debe haber compartido su calendario con el email del robot.
+                $targetCalendarId = $user->calendar_email ?? $user->email;
+            }
+
             if (isset($eventData['attendees']) && is_array($eventData['attendees'])) {
                 foreach ($eventData['attendees'] as $email) {
+                    // No invitar al dueño del calendario si ya estamos insertando en su calendario
+                    if ($usingServiceAccount && $email === $targetCalendarId) {
+                        continue;
+                    }
                     $attendees[] = ['email' => $email];
                 }
             } else {
                 $attendeeEmail = $eventData['attendee_email'] ?? $user->email;
-                if ($attendeeEmail) {
+                if ($attendeeEmail && (!$usingServiceAccount || $attendeeEmail !== $targetCalendarId)) {
                     $attendees[] = ['email' => $attendeeEmail];
                 }
             }
 
-            if ($usingServiceAccount && !empty($attendees)) {
+            if (!empty($attendees)) {
                 $eventParams['attendees'] = $attendees;
             }
 
             $event = new Event($eventParams);
-            $calendarId = 'primary';
             $optParams = ['sendUpdates' => 'all']; 
-            $event = $service->events->insert($calendarId, $event, $optParams);
+            
+            Log::info('Google Calendar: Intentando insertar evento', [
+                'calendarId' => $targetCalendarId,
+                'attendees' => $attendees,
+                'usingServiceAccount' => $usingServiceAccount
+            ]);
+
+            $event = $service->events->insert($targetCalendarId, $event, $optParams);
+
+            Log::info('Google Calendar: Evento insertado exitosamente', ['id' => $event->id]);
 
             return $event->id;
 
         } catch (\Exception $e) {
-            Log::error('Google Calendar Create Event Error: ' . $e->getMessage());
+            Log::error('Google Calendar Create Event Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
             return false;
         }
     }
@@ -139,7 +161,9 @@ class GoogleCalendarService
 
         try {
             $service = new Calendar($this->client);
-            $event = $service->events->get('primary', $googleEventId);
+            $targetCalendarId = $usingServiceAccount ? ($user->calendar_email ?? $user->email) : 'primary';
+            
+            $event = $service->events->get($targetCalendarId, $googleEventId);
 
             $event->setSummary($eventData['title']);
             $event->setDescription($eventData['description'] ?? '');
@@ -158,12 +182,15 @@ class GoogleCalendarService
             if (isset($eventData['attendees']) && is_array($eventData['attendees'])) {
                 $attendees = [];
                 foreach ($eventData['attendees'] as $email) {
+                    if ($usingServiceAccount && $email === $targetCalendarId) {
+                        continue;
+                    }
                     $attendees[] = new \Google\Service\Calendar\EventAttendee(['email' => $email]);
                 }
                 $event->setAttendees($attendees);
             }
 
-            $updatedEvent = $service->events->update('primary', $googleEventId, $event, ['sendUpdates' => 'all']);
+            $updatedEvent = $service->events->update($targetCalendarId, $googleEventId, $event, ['sendUpdates' => 'all']);
             return $updatedEvent->id;
 
         } catch (\Exception $e) {
@@ -184,7 +211,8 @@ class GoogleCalendarService
 
         try {
             $service = new Calendar($this->client);
-            $service->events->delete('primary', $googleEventId, ['sendUpdates' => 'all']);
+            $targetCalendarId = $usingServiceAccount ? ($user->calendar_email ?? $user->email) : 'primary';
+            $service->events->delete($targetCalendarId, $googleEventId, ['sendUpdates' => 'all']);
             return true;
         } catch (\Exception $e) {
             Log::error('Google Calendar Delete Event Error: ' . $e->getMessage());
