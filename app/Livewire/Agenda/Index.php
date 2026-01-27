@@ -27,6 +27,9 @@ class Index extends Component
                          ->orWhereHas('assignedUsers', function($qu) {
                              $qu->where('users.id', auth()->id());
                          });
+                  })
+                  ->orWhereHas('invitedUsers', function($qi) {
+                      $qi->where('users.id', auth()->id());
                   });
             });
         }
