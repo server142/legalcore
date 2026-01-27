@@ -4,6 +4,7 @@ namespace App\Livewire\Agenda;
 
 use Livewire\Component;
 use App\Models\Evento;
+use Illuminate\Support\Facades\Log;
 
 class Index extends Component
 {
@@ -155,8 +156,11 @@ class Index extends Component
         ]);
 
         if (!empty($this->selectedUsers)) {
+            Log::info('Agenda Store: Syncing users', ['count' => count($this->selectedUsers), 'users' => $this->selectedUsers]);
             $evento->invitedUsers()->sync($this->selectedUsers);
             $evento->touch(); // Trigger updated observer to sync attendees to Google
+        } else {
+            Log::info('Agenda Store: No users selected for sync');
         }
 
         $this->showModal = false;
@@ -178,6 +182,7 @@ class Index extends Component
             'expediente_id' => $this->expediente_id ?: null,
         ]);
 
+        Log::info('Agenda Update: Syncing users', ['count' => count($this->selectedUsers), 'users' => $this->selectedUsers]);
         $evento->invitedUsers()->sync($this->selectedUsers);
         $evento->touch();
 

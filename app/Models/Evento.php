@@ -40,6 +40,6 @@ class Evento extends Model
 
     public function invitedUsers()
     {
-        return $this->belongsToMany(User::class, 'evento_user');
+        return $this->belongsToMany(User::class, 'evento_user')->withTimestamps();
     }
 }
