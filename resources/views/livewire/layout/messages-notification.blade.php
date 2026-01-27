@@ -29,6 +29,7 @@
                 @forelse($recentMessages as $comment)
                     <a href="{{ route('expedientes.show', $comment->expediente_id) }}" 
                        wire:navigate
+                       wire:click="markAsRead({{ $comment->id }})"
                        class="block p-4 hover:bg-gray-50 border-b border-gray-100 transition">
                         <div class="flex items-start space-x-3">
                             <div class="flex-shrink-0">

@@ -22,7 +22,6 @@ class MessagesNotification extends Component
 
     public function loadUnreadCount()
     {
-        // Count comments from the last 24 hours on expedientes the user is involved in
         $user = auth()->user();
         $expedienteIds = Expediente::where('abogado_responsable_id', $user->id)
             ->orWhereHas('assignedUsers', function($q) use ($user) {
@@ -30,8 +29,13 @@ class MessagesNotification extends Component
             })
             ->pluck('id');
 
+        $readCommentIds = \DB::table('comentario_reads')
+            ->where('user_id', $user->id)
+            ->pluck('comentario_id');
+
         $this->unreadCount = Comentario::whereIn('expediente_id', $expedienteIds)
             ->where('created_at', '>=', now()->subDay())
+            ->whereNotIn('id', $readCommentIds)
             ->count();
     }
 
@@ -44,7 +48,13 @@ class MessagesNotification extends Component
             })
             ->pluck('id');
 
+        $readCommentIds = \DB::table('comentario_reads')
+            ->where('user_id', $user->id)
+            ->pluck('comentario_id');
+
         $this->recentMessages = Comentario::whereIn('expediente_id', $expedienteIds)
+            ->where('created_at', '>=', now()->subDay())
+            ->whereNotIn('id', $readCommentIds)
             ->with(['user', 'expediente'])
             ->latest()
             ->take(5)
@@ -72,9 +82,21 @@ class MessagesNotification extends Component
         $this->showDropdown = !$this->showDropdown;
     }
 
-    public function markAsRead($messageId)
+    public function markAsRead($commentId)
     {
-        // No-op for now as we don't track read status for comments
+        $user = auth()->user();
+        try {
+            \DB::table('comentario_reads')->insertOrIgnore([
+                'user_id' => $user->id,
+                'comentario_id' => $commentId,
+                'read_at' => now(),
+            ]);
+            
+            $this->loadUnreadCount();
+            $this->loadRecentMessages();
+        } catch (\Exception $e) {
+            // Ignore duplicate entry errors or others
+        }
     }
 
     public function render()

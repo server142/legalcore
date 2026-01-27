@@ -66,6 +66,10 @@
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                        </div>
+                    </div>
                         @else
                             {{-- Modo visualización --}}
                             <div class="bg-gray-50 rounded-2xl px-4 py-3">
@@ -163,12 +167,11 @@
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
                                         Responder
                                     </button>
-                                </div>
                             </div>
 
                             {{-- Formulario de respuesta inline --}}
                             @if($respondiendo === $comentario->id)
-                                <div class="mt-3">
+                                <div class="mt-3 w-full">
                                     <textarea 
                                         wire:model="replyContent" 
                                         rows="2" 
@@ -188,7 +191,7 @@
 
                             {{-- Respuestas --}}
                             @if($comentario->respuestas->count() > 0)
-                                <div class="mt-4 ml-8 space-y-3 border-l-2 border-gray-200 pl-4">
+                                <div class="mt-4 ml-12 space-y-3 border-l-2 border-gray-200 pl-4">
                                     @foreach($comentario->respuestas as $respuesta)
                                         <div class="flex items-start space-x-2">
                                             <div class="flex-shrink-0">
@@ -245,7 +248,7 @@
                                             
                                             {{-- Formulario de respuesta inline para respuesta --}}
                                             @if($respondiendo === $respuesta->id)
-                                                <div class="mt-2">
+                                                <div class="mt-2 w-full">
                                                     <textarea 
                                                         wire:model="replyContent" 
                                                         rows="2" 
@@ -267,9 +270,7 @@
                                 </div>
                             @endif
                         @endif
-                    </div>
-                </div>
-            </div>
+                    @endif
         @empty
             <div class="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
                 <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
