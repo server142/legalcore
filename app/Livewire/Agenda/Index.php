@@ -153,6 +153,7 @@ class Index extends Component
 
         if (!empty($this->selectedUsers)) {
             $evento->invitedUsers()->sync($this->selectedUsers);
+            $evento->touch(); // Trigger updated observer to sync attendees to Google
         }
 
         $this->showModal = false;
@@ -175,6 +176,7 @@ class Index extends Component
         ]);
 
         $evento->invitedUsers()->sync($this->selectedUsers);
+        $evento->touch();
 
         $this->showModal = false;
         $this->dispatch('notify', 'Evento actualizado exitosamente');

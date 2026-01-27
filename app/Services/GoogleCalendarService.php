@@ -110,7 +110,7 @@ class GoogleCalendarService
                 }
             }
 
-            if ($usingServiceAccount && !empty($attendees)) {
+            if (!empty($attendees)) {
                 $eventParams['attendees'] = $attendees;
             }
 
