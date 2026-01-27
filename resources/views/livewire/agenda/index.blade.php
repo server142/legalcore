@@ -85,14 +85,14 @@
                                                  @this.edit(info.event.id);
                                              },
                                              eventContent: function(arg) {
-                                                 let italicEl = document.createElement('div');
+                                                 let italicEl = document.createElement("div");
                                                  let syncIcon = arg.event.extendedProps.google_event_id 
-                                                     ? '<span class="ml-1 text-[10px]">☁️</span>' 
-                                                     : '';
-                                                 italicEl.innerHTML = '<div class="fc-content flex items-center overflow-hidden text-xs">' + 
-                                                                    '<span class="truncate">' + arg.event.title + '</span>' + 
+                                                     ? " <span class='ml-1 text-[10px]'>☁️</span>" 
+                                                     : "";
+                                                 italicEl.innerHTML = "<div class='fc-content flex items-center overflow-hidden text-xs'>" + 
+                                                                    "<span class='truncate'>" + arg.event.title + "</span>" + 
                                                                     syncIcon + 
-                                                                    '</div>';
+                                                                    "</div>";
                                                  return { domNodes: [italicEl] };
                                              },
                                              buttonText: {
