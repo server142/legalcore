@@ -22,43 +22,61 @@ class MessagesNotification extends Component
 
     public function loadUnreadCount()
     {
-        $user = auth()->user();
-        $expedienteIds = Expediente::where('abogado_responsable_id', $user->id)
-            ->orWhereHas('assignedUsers', function($q) use ($user) {
-                $q->where('users.id', $user->id);
-            })
-            ->pluck('id');
+        try {
+            $user = auth()->user();
+            $expedienteIds = Expediente::where('abogado_responsable_id', $user->id)
+                ->orWhereHas('assignedUsers', function($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                })
+                ->pluck('id');
 
-        $readCommentIds = \DB::table('comentario_reads')
-            ->where('user_id', $user->id)
-            ->pluck('comentario_id');
+            // Check if table exists before querying
+            if (\Schema::hasTable('comentario_reads')) {
+                $readCommentIds = \DB::table('comentario_reads')
+                    ->where('user_id', $user->id)
+                    ->pluck('comentario_id');
+            } else {
+                $readCommentIds = collect([]);
+            }
 
-        $this->unreadCount = Comentario::whereIn('expediente_id', $expedienteIds)
-            ->where('created_at', '>=', now()->subDay())
-            ->whereNotIn('id', $readCommentIds)
-            ->count();
+            $this->unreadCount = Comentario::whereIn('expediente_id', $expedienteIds)
+                ->where('created_at', '>=', now()->subDay())
+                ->whereNotIn('id', $readCommentIds)
+                ->count();
+        } catch (\Exception $e) {
+            $this->unreadCount = 0;
+        }
     }
 
     public function loadRecentMessages()
     {
-        $user = auth()->user();
-        $expedienteIds = Expediente::where('abogado_responsable_id', $user->id)
-            ->orWhereHas('assignedUsers', function($q) use ($user) {
-                $q->where('users.id', $user->id);
-            })
-            ->pluck('id');
+        try {
+            $user = auth()->user();
+            $expedienteIds = Expediente::where('abogado_responsable_id', $user->id)
+                ->orWhereHas('assignedUsers', function($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                })
+                ->pluck('id');
 
-        $readCommentIds = \DB::table('comentario_reads')
-            ->where('user_id', $user->id)
-            ->pluck('comentario_id');
+            // Check if table exists before querying
+            if (\Schema::hasTable('comentario_reads')) {
+                $readCommentIds = \DB::table('comentario_reads')
+                    ->where('user_id', $user->id)
+                    ->pluck('comentario_id');
+            } else {
+                $readCommentIds = collect([]);
+            }
 
-        $this->recentMessages = Comentario::whereIn('expediente_id', $expedienteIds)
-            ->where('created_at', '>=', now()->subDay())
-            ->whereNotIn('id', $readCommentIds)
-            ->with(['user', 'expediente'])
-            ->latest()
-            ->take(5)
-            ->get();
+            $this->recentMessages = Comentario::whereIn('expediente_id', $expedienteIds)
+                ->where('created_at', '>=', now()->subDay())
+                ->whereNotIn('id', $readCommentIds)
+                ->with(['user', 'expediente'])
+                ->latest()
+                ->take(5)
+                ->get();
+        } catch (\Exception $e) {
+            $this->recentMessages = collect([]);
+        }
     }
 
     #[On('message-sent')]
@@ -84,8 +102,13 @@ class MessagesNotification extends Component
 
     public function markAsRead($commentId)
     {
-        $user = auth()->user();
         try {
+            // Only mark as read if table exists
+            if (!\Schema::hasTable('comentario_reads')) {
+                return;
+            }
+
+            $user = auth()->user();
             \DB::table('comentario_reads')->insertOrIgnore([
                 'user_id' => $user->id,
                 'comentario_id' => $commentId,
@@ -95,7 +118,7 @@ class MessagesNotification extends Component
             $this->loadUnreadCount();
             $this->loadRecentMessages();
         } catch (\Exception $e) {
-            // Ignore duplicate entry errors or others
+            // Silently fail if table doesn't exist
         }
     }
 
