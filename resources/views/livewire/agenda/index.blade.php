@@ -29,7 +29,14 @@
                                         <p class="text-sm font-bold text-gray-800 truncate">
                                             {{ $evento->expediente_id ? "📂 " : "👤 " }}{{ $evento->titulo }}
                                         </p>
-                                        <p class="text-xs text-gray-500">{{ $evento->start_time->format('H:i') }}</p>
+                                        <p class="text-xs text-gray-500 flex items-center">
+                                            {{ $evento->start_time->format('H:i') }}
+                                            @if($evento->google_event_id)
+                                                <span class="ml-2 text-green-500" title="Sincronizado con Google Calendar">
+                                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M17.5,19c-3.037,0-5.5-2.463-5.5-5.5c0-3.037,2.463-5.5,5.5-5.5s5.5,2.463,5.5,5.5C23,16.537,20.537,19,17.5,19z M17.5,10 c-1.93,0-3.5,1.57-3.5,3.5s1.57,3.5,3.5,3.5s3.5-1.57,3.5-3.5S19.43,10,17.5,10z M17.5,16c-1.379,0-2.5-1.121-2.5-2.5s1.121-2.5,2.5-2.5 s2.5,1.121,2.5,2.5S18.879,16,17.5,16z"/><path d="M19,13h-3c-0.552,0-1-0.448-1-1s0.448-1,1-1h3c0.552,0,1,0.448,1,1S19.552,13,19,13z"/><path d="M17.5,15c-0.552,0-1-0.448-1-1v-3c0-0.552,0.448-1,1-1s1,0.448,1,1v3C18.5,14.552,18.052,15,17.5,15z"/><path d="M12.03,12.14c-0.01-0.05-0.03-0.09-0.03-0.14c0-2.76,2.24-5,5-5c0.28,0,0.54,0.03,0.8,0.07c0.14-2.32,2.07-4.14,4.45-4.06 c2.25,0.08,4.02,1.91,4.01,4.16c0,0.05,0,0.1,0,0.15c2.16,0.61,3.74,2.59,3.74,4.93c0,2.83-2.3,5.13-5.13,5.13h-0.87 c-0.55,0-1-0.45-1-1s0.45-1,1-1h0.87c1.73,0,3.13-1.4,3.13-3.13c0-1.55-1.13-2.84-2.63-3.08c-0.34-0.05-0.6-0.33-0.62-0.67 c-0.03-1.4-1.17-2.52-2.57-2.49c-1.32,0.03-2.39,1.1-2.42,2.42c0,0.34-0.24,0.63-0.57,0.68c-1.84,0.28-3.11,1.99-2.83,3.83 c0.04,0.26,0.13,0.51,0.25,0.74c0.25,0.49,0.05,1.09-0.44,1.34s-1.09,0.05-1.34-0.44C12.18,12.68,12.09,12.42,12.03,12.14z"/></svg>
+                                                </span>
+                                            @endif
+                                        </p>
                                     </div>
                                     <div class="flex space-x-1 opacity-0 group-hover:opacity-100 transition">
                                         <button wire:click="edit({{ $evento->id }})" class="p-1 text-indigo-600 hover:bg-indigo-50 rounded">
@@ -76,6 +83,17 @@
                                              events: events,
                                              eventClick: function(info) {
                                                  @this.edit(info.event.id);
+                                             },
+                                             eventContent: function(arg) {
+                                                 let italicEl = document.createElement('div');
+                                                 let syncIcon = arg.event.extendedProps.google_event_id 
+                                                     ? '<span class="ml-1 text-[10px]">☁️</span>' 
+                                                     : '';
+                                                 italicEl.innerHTML = '<div class="fc-content flex items-center overflow-hidden text-xs">' + 
+                                                                    '<span class="truncate">' + arg.event.title + '</span>' + 
+                                                                    syncIcon + 
+                                                                    '</div>';
+                                                 return { domNodes: [italicEl] };
                                              },
                                              buttonText: {
                                                  today: 'Hoy',
@@ -131,9 +149,30 @@
         <!-- Modal -->
         <x-modal-wire wire:model="showModal">
             <div class="p-6">
-                <h2 class="text-lg font-medium text-gray-900">
-                    {{ $editMode ? __('Editar Evento') : __('Nuevo Evento') }}
-                </h2>
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-medium text-gray-900">
+                        {{ $editMode ? __('Editar Evento') : __('Nuevo Evento') }}
+                    </h2>
+                    @if($editMode)
+                        <div class="flex items-center">
+                            @if($eventId && \App\Models\Evento::find($eventId)?->google_event_id)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8">
+                                        <circle cx="4" cy="4" r="3" />
+                                    </svg>
+                                    Sincronizado con Google
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-gray-400" fill="currentColor" viewBox="0 0 8 8">
+                                        <circle cx="4" cy="4" r="3" />
+                                    </svg>
+                                    No sincronizado
+                                </span>
+                            @endif
+                        </div>
+                    @endif
+                </div>
 
                 <div class="mt-6 space-y-6">
                     <!-- Title -->

@@ -67,7 +67,8 @@ class Index extends Component
                 'extendedProps' => [
                     'expediente_id' => $evento->expediente_id,
                     'tipo' => $evento->tipo,
-                    'user_name' => $evento->user->name
+                    'user_name' => $evento->user->name,
+                    'google_event_id' => $evento->google_event_id
                 ]
             ];
         }
