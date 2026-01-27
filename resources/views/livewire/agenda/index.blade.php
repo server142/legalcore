@@ -7,11 +7,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="mb-6 flex justify-end">
-                <x-primary-button wire:click="create">
-                    {{ __('Nuevo Evento') }}
-                </x-primary-button>
-            </div>
+
 
             <div class="space-y-6">
                 <!-- Top Section: Legend and Upcoming Events -->
@@ -60,6 +56,12 @@
                             @endforelse
                         </div>
                     </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <x-primary-button wire:click="create">
+                        {{ __('Nuevo Evento') }}
+                    </x-primary-button>
                 </div>
 
                 <!-- Main: Calendario Interactivo (Full Width) -->
