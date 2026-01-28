@@ -48,11 +48,12 @@ class Create extends Component
 
         // Check expediente limit
         $tenant = auth()->user()->tenant;
-        $subscription = $tenant?->subscriptions()->active()->first();
         
-        if ($subscription && $subscription->plan) {
-            if (!$subscription->plan->canAddExpediente($tenant)) {
-                $limit = $subscription->plan->max_expedientes;
+        if ($tenant && $tenant->plan_id) {
+            $plan = \App\Models\Plan::find($tenant->plan_id);
+            
+            if ($plan && !$plan->canAddExpediente($tenant)) {
+                $limit = $plan->max_expedientes;
                 session()->flash('error', "Has alcanzado el límite de {$limit} expedientes de tu plan. Actualiza tu suscripción para crear más.");
                 return;
             }
