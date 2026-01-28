@@ -8,6 +8,7 @@ use App\Models\Expediente;
 use App\Models\Actuacion;
 use App\Models\Documento;
 use App\Models\AuditLog;
+use App\Models\EstadoProcesal;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 
@@ -22,7 +23,7 @@ class Show extends Component
     public $showEditModal = false;
 
     // Edit fields
-    public $numero, $titulo, $materia, $juzgado, $estado_procesal, $nombre_juez, $fecha_inicio, $cliente_id, $abogado_responsable_id;
+    public $numero, $titulo, $materia, $juzgado, $estado_procesal, $estado_procesal_id, $nombre_juez, $fecha_inicio, $cliente_id, $abogado_responsable_id;
 
     public function mount(Expediente $expediente)
     {
@@ -112,6 +113,7 @@ class Show extends Component
         $this->materia = $this->expediente->materia;
         $this->juzgado = $this->expediente->juzgado;
         $this->estado_procesal = $this->expediente->estado_procesal;
+        $this->estado_procesal_id = $this->expediente->estado_procesal_id;
         $this->nombre_juez = $this->expediente->nombre_juez;
         $this->fecha_inicio = $this->expediente->fecha_inicio?->format('Y-m-d');
         $this->cliente_id = $this->expediente->cliente_id;
@@ -127,17 +129,20 @@ class Show extends Component
             'titulo' => 'required|string|max:255',
             'materia' => 'required|string|max:255',
             'juzgado' => 'required|string|max:255',
-            'estado_procesal' => 'required|string|max:255',
+            'estado_procesal_id' => 'nullable|exists:estados_procesales,id',
             'cliente_id' => 'required|exists:clientes,id',
             'abogado_responsable_id' => 'required|exists:users,id',
         ]);
+
+        $estado = $this->estado_procesal_id ? EstadoProcesal::find($this->estado_procesal_id) : null;
 
         $this->expediente->update([
             'numero' => $this->numero,
             'titulo' => $this->titulo,
             'materia' => $this->materia,
             'juzgado' => $this->juzgado,
-            'estado_procesal' => $this->estado_procesal,
+            'estado_procesal' => $estado?->nombre ?? $this->expediente->estado_procesal,
+            'estado_procesal_id' => $this->estado_procesal_id,
             'nombre_juez' => $this->nombre_juez,
             'fecha_inicio' => $this->fecha_inicio,
             'cliente_id' => $this->cliente_id,
@@ -154,6 +159,7 @@ class Show extends Component
         return view('livewire.expedientes.show', [
             'clientes' => \App\Models\Cliente::all(),
             'abogados' => \App\Models\User::role('abogado')->get(),
+            'estadosProcesales' => EstadoProcesal::orderBy('nombre')->get(),
         ]);
     }
 }

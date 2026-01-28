@@ -18,7 +18,7 @@
         </div>
         
         {{-- Desktop Table --}}
-        <div class="overflow-x-auto hidden md:block">
+        <div class="hidden md:block overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -42,7 +42,7 @@
                         <td class="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate" title="{{ $exp->abogado->name }}">{{ $exp->abogado->name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                {{ $exp->estado_procesal }}
+                                {{ $exp->estadoProcesal?->nombre ?? $exp->estado_procesal }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -93,7 +93,7 @@
                 <div class="flex justify-between items-start mb-3">
                     <span class="text-xs font-bold text-indigo-600 uppercase tracking-wide">{{ $exp->numero }}</span>
                     <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                        {{ $exp->estado_procesal }}
+                        {{ $exp->estadoProcesal?->nombre ?? $exp->estado_procesal }}
                     </span>
                 </div>
                 

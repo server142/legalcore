@@ -7,6 +7,7 @@ use App\Models\Expediente;
 use App\Models\Cliente;
 use App\Models\User;
 use App\Models\Materia;
+use App\Models\EstadoProcesal;
 use Illuminate\Support\Facades\Hash;
 
 class Create extends Component
@@ -18,6 +19,7 @@ class Create extends Component
     public $nombre_juez;
     public $cliente_id;
     public $abogado_responsable_id;
+    public $estado_procesal_id;
     public $descripcion;
     public $fecha_inicio;
 
@@ -38,6 +40,11 @@ class Create extends Component
     {
         $user = auth()->user();
 
+        $defaultEstado = EstadoProcesal::where('nombre', 'Inicial')->first();
+        if ($defaultEstado) {
+            $this->estado_procesal_id = $defaultEstado->id;
+        }
+
         if (($user && $user->hasRole('abogado') && !$user->can('view all expedientes')) || ($user && $user->role === 'super_admin')) {
             $this->abogado_responsable_id = $user->id;
         }
@@ -49,6 +56,7 @@ class Create extends Component
         'materia' => 'required|string|max:255',
         'cliente_id' => 'required|exists:clientes,id',
         'abogado_responsable_id' => 'required|exists:users,id',
+        'estado_procesal_id' => 'nullable|exists:estados_procesales,id',
     ];
 
     public function save()
@@ -83,6 +91,8 @@ class Create extends Component
             }
         }
 
+        $estado = $this->estado_procesal_id ? EstadoProcesal::find($this->estado_procesal_id) : null;
+
         Expediente::create([
             'numero' => $this->numero,
             'titulo' => $this->titulo,
@@ -93,7 +103,8 @@ class Create extends Component
             'abogado_responsable_id' => $this->abogado_responsable_id,
             'descripcion' => $this->descripcion,
             'fecha_inicio' => $this->fecha_inicio,
-            'estado_procesal' => 'inicial',
+            'estado_procesal' => $estado?->nombre ?? 'inicial',
+            'estado_procesal_id' => $this->estado_procesal_id,
         ]);
 
         session()->flash('message', 'Expediente creado exitosamente.');
@@ -171,6 +182,7 @@ class Create extends Component
             'clientes' => Cliente::all(),
             'abogados' => $abogadosQuery->get(),
             'materias' => Materia::all(),
+            'estadosProcesales' => EstadoProcesal::orderBy('nombre')->get(),
             'isAdmin' => $isAdmin,
         ]);
     }

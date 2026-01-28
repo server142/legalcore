@@ -89,6 +89,18 @@
                     <x-input-error :messages="$errors->get('abogado_responsable_id')" class="mt-2" />
                 </div>
 
+                <!-- Estado Procesal -->
+                <div>
+                    <x-input-label for="estado_procesal_id" :value="__('Estado Procesal')" />
+                    <select id="estado_procesal_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model="estado_procesal_id">
+                        <option value="">Seleccione un estado</option>
+                        @foreach($estadosProcesales as $estado)
+                            <option value="{{ $estado->id }}">{{ $estado->nombre }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('estado_procesal_id')" class="mt-2" />
+                </div>
+
                 <!-- Fecha de Inicio -->
                 <div>
                     <x-input-label for="fecha_inicio" :value="__('Fecha de Inicio')" />

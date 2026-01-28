@@ -28,7 +28,7 @@
         </tr>
         <tr>
             <th>Estado Procesal:</th>
-            <td>{{ $expediente->estado_procesal }}</td>
+            <td>{{ $expediente->estadoProcesal?->nombre ?? $expediente->estado_procesal }}</td>
         </tr>
         <tr>
             <th>Fecha Inicio:</th>

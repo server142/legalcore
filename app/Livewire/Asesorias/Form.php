@@ -3,11 +3,11 @@
 namespace App\Livewire\Asesorias;
 
 use Livewire\Component;
-use App\Models\Asesoria;
-use App\Models\Evento;
-use App\Models\User;
 use App\Models\Cliente;
 use App\Models\Expediente;
+use App\Models\EstadoProcesal;
+use App\Models\Evento;
+use App\Models\Factura;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 
@@ -398,6 +398,8 @@ class Form extends Component
         $count = Expediente::where('tenant_id', auth()->user()->tenant_id)->count() + 1;
         $numero = 'EXP-' . date('Y') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
 
+        $tramite = EstadoProcesal::where('nombre', 'Trámite')->first();
+
         $expediente = Expediente::create([
             'tenant_id' => auth()->user()->tenant_id,
             'numero' => $numero,
@@ -407,6 +409,7 @@ class Form extends Component
             'descripcion' => $this->asesoria->asunto . "\n\nResumen Asesoría: " . $this->asesoria->resumen,
             'fecha_inicio' => now(),
             'estado_procesal' => 'Trámite',
+            'estado_procesal_id' => $tramite?->id,
             'materia' => 'Por definir', // Se debe editar después
             'juzgado' => 'Por definir',
         ]);

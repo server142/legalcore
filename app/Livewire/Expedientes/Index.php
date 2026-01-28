@@ -5,6 +5,7 @@ namespace App\Livewire\Expedientes;
 use Livewire\Component;
 
 use App\Models\Expediente;
+use App\Models\EstadoProcesal;
 use Livewire\WithPagination;
 
 class Index extends Component
@@ -21,7 +22,11 @@ class Index extends Component
     public function cerrar($id)
     {
         $expediente = Expediente::findOrFail($id);
-        $expediente->update(['estado_procesal' => 'Cerrado']);
+        $cerrado = EstadoProcesal::where('nombre', 'Cerrado')->first();
+        $expediente->update([
+            'estado_procesal' => 'Cerrado',
+            'estado_procesal_id' => $cerrado?->id,
+        ]);
         $this->dispatch('notify', 'Expediente cerrado exitosamente');
     }
 
@@ -43,7 +48,7 @@ class Index extends Component
                 $q->where('numero', 'like', '%' . $this->search . '%')
                   ->orWhere('titulo', 'like', '%' . $this->search . '%');
             })
-            ->with(['cliente', 'abogado'])
+            ->with(['cliente', 'abogado', 'estadoProcesal'])
             ->withCount(['actuaciones', 'documentos', 'eventos', 'comentarios'])
             ->orderByDesc('id')
             ->paginate(10);

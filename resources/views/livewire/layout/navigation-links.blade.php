@@ -13,6 +13,12 @@
             {{ __('Expedientes') }}
         </x-sidebar-link>
 
+        @if(auth()->user()->hasRole(['super_admin', 'admin', 'abogado']))
+        <x-sidebar-link :href="route('admin.estados-procesales.index')" :active="request()->routeIs('admin.estados-procesales.*')" icon="book">
+            {{ __('Estados Procesales') }}
+        </x-sidebar-link>
+        @endif
+
         @can('view terminos')
         <x-sidebar-link :href="route('terminos.index')" :active="request()->routeIs('terminos.*')" icon="calendar">
             {{ __('Términos') }}
@@ -95,6 +101,9 @@
         </x-sidebar-link>
         <x-sidebar-link :href="route('admin.materias.index')" :active="request()->routeIs('admin.materias.*')" icon="book">
             {{ __('Materias') }}
+        </x-sidebar-link>
+        <x-sidebar-link :href="route('admin.estados-procesales.index')" :active="request()->routeIs('admin.estados-procesales.*')" icon="book">
+            {{ __('Estados Procesales') }}
         </x-sidebar-link>
         <x-sidebar-link :href="route('admin.juzgados.index')" :active="request()->routeIs('admin.juzgados.*')" icon="court">
             {{ __('Juzgados') }}

@@ -325,14 +325,13 @@
                 <!-- Estado Procesal -->
                 <div>
                     <x-input-label for="edit_estado" :value="__('Estado Procesal')" />
-                    <select wire:model="estado_procesal" id="edit_estado" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                        <option value="Trámite">Trámite</option>
-                        <option value="Sentencia">Sentencia</option>
-                        <option value="Ejecución">Ejecución</option>
-                        <option value="Cerrado">Cerrado</option>
-                        <option value="Suspendido">Suspendido</option>
+                    <select wire:model="estado_procesal_id" id="edit_estado" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                        <option value="">Seleccione un estado</option>
+                        @foreach($estadosProcesales as $estado)
+                            <option value="{{ $estado->id }}">{{ $estado->nombre }}</option>
+                        @endforeach
                     </select>
-                    <x-input-error :messages="$errors->get('estado_procesal')" class="mt-2" />
+                    <x-input-error :messages="$errors->get('estado_procesal_id')" class="mt-2" />
                 </div>
 
                 <!-- Juez -->

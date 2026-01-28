@@ -51,7 +51,7 @@
                             <td class="px-4 py-2 text-sm text-gray-700">{{ $exp->titulo }}</td>
                             <td class="px-4 py-2 text-sm">
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    {{ $exp->estado_procesal }}
+                                    {{ $exp->estadoProcesal?->nombre ?? $exp->estado_procesal }}
                                 </span>
                             </td>
                             <td class="px-4 py-2 text-sm font-medium">
@@ -70,7 +70,7 @@
                     <div class="flex justify-between items-start mb-1">
                         <span class="text-xs font-bold text-indigo-600 uppercase">{{ $exp->numero }}</span>
                         <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-100 text-blue-800">
-                            {{ $exp->estado_procesal }}
+                            {{ $exp->estadoProcesal?->nombre ?? $exp->estado_procesal }}
                         </span>
                     </div>
                     <h4 class="text-sm font-bold text-gray-900">{{ $exp->titulo }}</h4>

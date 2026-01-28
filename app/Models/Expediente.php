@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\BelongsToTenant;
+use App\Models\EstadoProcesal;
 
 class Expediente extends Model
 {
@@ -19,6 +20,7 @@ class Expediente extends Model
         'juzgado',
         'nombre_juez',
         'estado_procesal',
+        'estado_procesal_id',
         'cliente_id',
         'abogado_responsable_id',
         'descripcion',
@@ -42,6 +44,11 @@ class Expediente extends Model
     public function abogado()
     {
         return $this->belongsTo(User::class, 'abogado_responsable_id');
+    }
+
+    public function estadoProcesal()
+    {
+        return $this->belongsTo(EstadoProcesal::class, 'estado_procesal_id');
     }
 
     public function actuaciones()

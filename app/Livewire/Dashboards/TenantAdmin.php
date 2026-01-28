@@ -55,7 +55,7 @@ class TenantAdmin extends Component
             ->count();
 
         $this->totalClientes = Cliente::count(); // Clientes are usually shared, but could be filtered too if needed
-        $this->recentExpedientes = $expedienteQuery->latest()->take(5)->get();
+        $this->recentExpedientes = $expedienteQuery->with('estadoProcesal')->latest()->take(5)->get();
         
         $this->urgentTerminos = (clone $actuacionQuery)
             ->orderBy('fecha_vencimiento', 'asc')
