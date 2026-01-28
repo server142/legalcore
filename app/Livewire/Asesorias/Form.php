@@ -204,6 +204,19 @@ class Form extends Component
 
     public function convertirAExpediente()
     {
+        // Check expediente limit
+        $tenant = auth()->user()->tenant;
+        $subscription = $tenant?->subscriptions()->active()->first();
+        
+        if ($subscription && $subscription->plan) {
+            if (!$subscription->plan->canAddExpediente($tenant)) {
+                $limit = $subscription->plan->max_expedientes;
+                $this->dispatch('notify-error', "Has alcanzado el límite de {$limit} expedientes de tu plan. Actualiza tu suscripción para crear más.");
+                $this->crear_expediente = false;
+                return;
+            }
+        }
+
         $count = Expediente::where('tenant_id', auth()->user()->tenant_id)->count() + 1;
         $numero = 'EXP-' . date('Y') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
 

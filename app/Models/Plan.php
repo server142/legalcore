@@ -18,6 +18,7 @@ class Plan extends Model
         'features',
         'max_admin_users',
         'max_lawyer_users',
+        'max_expedientes',
         'storage_limit_gb',
         'is_active',
     ];
@@ -28,6 +29,7 @@ class Plan extends Model
         'price' => 'decimal:2',
         'max_admin_users' => 'integer',
         'max_lawyer_users' => 'integer',
+        'max_expedientes' => 'integer',
         'storage_limit_gb' => 'integer',
     ];
 
@@ -111,5 +113,45 @@ class Plan extends Model
         $usedBytes = Documento::where('tenant_id', $tenant->id)->sum('size');
 
         return round(($usedBytes / $limitBytes) * 100, 2);
+    }
+
+    /**
+     * Verificar si un tenant puede crear más expedientes
+     */
+    public function canAddExpediente(Tenant $tenant): bool
+    {
+        // 0 = ilimitado
+        if ($this->max_expedientes == 0) {
+            return true;
+        }
+
+        $currentCount = \App\Models\Expediente::where('tenant_id', $tenant->id)->count();
+        return $currentCount < $this->max_expedientes;
+    }
+
+    /**
+     * Obtener el número de expedientes disponibles para crear
+     */
+    public function getRemainingExpedienteSlots(Tenant $tenant): ?int
+    {
+        if ($this->max_expedientes == 0) {
+            return null; // Ilimitado
+        }
+
+        $currentCount = \App\Models\Expediente::where('tenant_id', $tenant->id)->count();
+        return max(0, $this->max_expedientes - $currentCount);
+    }
+
+    /**
+     * Obtener el porcentaje de expedientes usados
+     */
+    public function getExpedienteUsagePercentage(Tenant $tenant): float
+    {
+        if ($this->max_expedientes == 0) {
+            return 0; // Ilimitado
+        }
+
+        $currentCount = \App\Models\Expediente::where('tenant_id', $tenant->id)->count();
+        return round(($currentCount / $this->max_expedientes) * 100, 2);
     }
 }

@@ -46,6 +46,18 @@ class Create extends Component
     {
         $this->validate();
 
+        // Check expediente limit
+        $tenant = auth()->user()->tenant;
+        $subscription = $tenant?->subscriptions()->active()->first();
+        
+        if ($subscription && $subscription->plan) {
+            if (!$subscription->plan->canAddExpediente($tenant)) {
+                $limit = $subscription->plan->max_expedientes;
+                session()->flash('error', "Has alcanzado el límite de {$limit} expedientes de tu plan. Actualiza tu suscripción para crear más.");
+                return;
+            }
+        }
+
         Expediente::create([
             'numero' => $this->numero,
             'titulo' => $this->titulo,
