@@ -398,7 +398,7 @@ class Form extends Component
         $count = Expediente::where('tenant_id', auth()->user()->tenant_id)->count() + 1;
         $numero = 'EXP-' . date('Y') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
 
-        $tramite = EstadoProcesal::where('nombre', 'Trámite')->first();
+        $tramite = EstadoProcesal::where('nombre', 'Radicación/Inicio')->first();
 
         $expediente = Expediente::create([
             'tenant_id' => auth()->user()->tenant_id,
@@ -408,7 +408,7 @@ class Form extends Component
             'abogado_responsable_id' => $this->asesoria->abogado_id,
             'descripcion' => $this->asesoria->asunto . "\n\nResumen Asesoría: " . $this->asesoria->resumen,
             'fecha_inicio' => now(),
-            'estado_procesal' => 'Trámite',
+            'estado_procesal' => 'Radicación/Inicio',
             'estado_procesal_id' => $tramite?->id,
             'materia' => 'Por definir', // Se debe editar después
             'juzgado' => 'Por definir',

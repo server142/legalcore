@@ -47,7 +47,7 @@ class TenantAdmin extends Component
             });
         }
 
-        $this->activeExpedientes = (clone $expedienteQuery)->where('estado_procesal', '!=', 'cerrado')->count();
+        $this->activeExpedientes = (clone $expedienteQuery)->where('estado_procesal', '!=', 'Archivo')->count();
         
         $this->upcomingDeadlines = (clone $actuacionQuery)
             ->where('fecha_vencimiento', '>=', now())

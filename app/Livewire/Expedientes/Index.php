@@ -22,9 +22,9 @@ class Index extends Component
     public function cerrar($id)
     {
         $expediente = Expediente::findOrFail($id);
-        $cerrado = EstadoProcesal::where('nombre', 'Cerrado')->first();
+        $cerrado = EstadoProcesal::where('nombre', 'Archivo')->first();
         $expediente->update([
-            'estado_procesal' => 'Cerrado',
+            'estado_procesal' => 'Archivo',
             'estado_procesal_id' => $cerrado?->id,
         ]);
         $this->dispatch('notify', 'Expediente cerrado exitosamente');

@@ -39,8 +39,22 @@
 
                 <!-- Juzgado -->
                 <div>
-                    <x-input-label for="juzgado" :value="__('Juzgado / Tribunal')" />
-                    <x-text-input id="juzgado" type="text" class="mt-1 block w-full" wire:model="juzgado" placeholder="Ej. Juzgado 5to de lo Civil" />
+                    <div class="flex justify-between items-center">
+                        <x-input-label for="juzgado" :value="__('Juzgado / Tribunal')" />
+                        <button type="button" wire:click="$set('showJuzgadoModal', true)" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold">+ Nuevo Juzgado</button>
+                    </div>
+                    <select id="juzgado" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model="juzgado">
+                        <option value="">Seleccione un juzgado</option>
+                        @php
+                            $juzgadosNombres = $juzgados->pluck('nombre')->all();
+                        @endphp
+                        @if(!empty($juzgado) && !in_array($juzgado, $juzgadosNombres, true))
+                            <option value="{{ $juzgado }}">{{ $juzgado }}</option>
+                        @endif
+                        @foreach($juzgados as $j)
+                            <option value="{{ $j->nombre }}">{{ $j->nombre }}</option>
+                        @endforeach
+                    </select>
                     <x-input-error :messages="$errors->get('juzgado')" class="mt-2" />
                 </div>
 
@@ -140,6 +154,41 @@
                     <div class="mt-6 flex justify-end space-x-3">
                         <button type="button" wire:click="$set('showMateriaModal', false)" class="text-sm text-gray-500">Cancelar</button>
                         <x-primary-button wire:click="createMateria">Guardar</x-primary-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Modal Juzgado -->
+    @if($showJuzgadoModal)
+    <div class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showJuzgadoModal', false)"></div>
+            <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full z-50">
+                <div class="p-6">
+                    <h3 class="text-lg font-bold mb-4">Nuevo Juzgado</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <x-input-label for="newJuzgadoNombre" :value="__('Nombre')" />
+                            <x-text-input id="newJuzgadoNombre" type="text" class="mt-1 block w-full" wire:model="newJuzgadoNombre" />
+                            <x-input-error :messages="$errors->get('newJuzgadoNombre')" class="mt-2" />
+                        </div>
+                        <div>
+                            <x-input-label for="newJuzgadoDireccion" :value="__('Dirección')" />
+                            <x-text-input id="newJuzgadoDireccion" type="text" class="mt-1 block w-full" wire:model="newJuzgadoDireccion" />
+                            <x-input-error :messages="$errors->get('newJuzgadoDireccion')" class="mt-2" />
+                        </div>
+                        <div>
+                            <x-input-label for="newJuzgadoTelefono" :value="__('Teléfono')" />
+                            <x-text-input id="newJuzgadoTelefono" type="text" class="mt-1 block w-full" wire:model="newJuzgadoTelefono" />
+                            <x-input-error :messages="$errors->get('newJuzgadoTelefono')" class="mt-2" />
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button type="button" wire:click="$set('showJuzgadoModal', false)" class="text-sm text-gray-500">Cancelar</button>
+                        <x-primary-button wire:click="createJuzgado">Guardar</x-primary-button>
                     </div>
                 </div>
             </div>

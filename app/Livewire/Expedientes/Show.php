@@ -9,6 +9,8 @@ use App\Models\Actuacion;
 use App\Models\Documento;
 use App\Models\AuditLog;
 use App\Models\EstadoProcesal;
+use App\Models\Materia;
+use App\Models\Juzgado;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 
@@ -128,7 +130,7 @@ class Show extends Component
             'numero' => 'required|string|max:255',
             'titulo' => 'required|string|max:255',
             'materia' => 'required|string|max:255',
-            'juzgado' => 'required|string|max:255',
+            'juzgado' => 'nullable|string|max:255',
             'estado_procesal_id' => 'nullable|exists:estados_procesales,id',
             'cliente_id' => 'required|exists:clientes,id',
             'abogado_responsable_id' => 'required|exists:users,id',
@@ -156,9 +158,23 @@ class Show extends Component
 
     public function render()
     {
+        $tenantId = $this->expediente->tenant_id;
+
+        $materias = Materia::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->orderBy('nombre')
+            ->get();
+
+        $juzgados = Juzgado::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenantId)
+            ->orderBy('nombre')
+            ->get();
+
         return view('livewire.expedientes.show', [
             'clientes' => \App\Models\Cliente::all(),
             'abogados' => \App\Models\User::role('abogado')->get(),
+            'materias' => $materias,
+            'juzgados' => $juzgados,
             'estadosProcesales' => EstadoProcesal::orderBy('nombre')->get(),
         ]);
     }

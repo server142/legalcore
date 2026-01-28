@@ -311,14 +311,30 @@
                 <!-- Materia -->
                 <div>
                     <x-input-label for="edit_materia" :value="__('Materia')" />
-                    <x-text-input wire:model="materia" id="edit_materia" class="block mt-1 w-full" type="text" required />
+                    <select wire:model="materia" id="edit_materia" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                        <option value="">Seleccione una materia</option>
+                        @foreach($materias as $m)
+                            <option value="{{ $m->nombre }}">{{ $m->nombre }}</option>
+                        @endforeach
+                    </select>
                     <x-input-error :messages="$errors->get('materia')" class="mt-2" />
                 </div>
 
                 <!-- Juzgado -->
                 <div>
                     <x-input-label for="edit_juzgado" :value="__('Juzgado')" />
-                    <x-text-input wire:model="juzgado" id="edit_juzgado" class="block mt-1 w-full" type="text" required />
+                    <select wire:model="juzgado" id="edit_juzgado" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                        <option value="">Seleccione un juzgado</option>
+                        @php
+                            $juzgadosNombres = $juzgados->pluck('nombre')->all();
+                        @endphp
+                        @if(!empty($juzgado) && !in_array($juzgado, $juzgadosNombres, true))
+                            <option value="{{ $juzgado }}">{{ $juzgado }}</option>
+                        @endif
+                        @foreach($juzgados as $j)
+                            <option value="{{ $j->nombre }}">{{ $j->nombre }}</option>
+                        @endforeach
+                    </select>
                     <x-input-error :messages="$errors->get('juzgado')" class="mt-2" />
                 </div>
 

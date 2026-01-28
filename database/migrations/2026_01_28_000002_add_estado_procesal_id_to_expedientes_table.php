@@ -31,14 +31,15 @@ return new class extends Migration
                 ->update(['estado_procesal_id' => $estado->id]);
         }
 
-        $inicial = DB::table('estados_procesales')->where('nombre', 'Inicial')->first();
+        $inicial = DB::table('estados_procesales')->where('nombre', 'Radicación/Inicio')->first();
         if ($inicial) {
             DB::table('expedientes')
                 ->whereNull('estado_procesal_id')
                 ->where(function ($q) {
                     $q->whereNull('estado_procesal')
                       ->orWhere('estado_procesal', 'inicial')
-                      ->orWhere('estado_procesal', 'Inicial');
+                      ->orWhere('estado_procesal', 'Inicial')
+                      ->orWhere('estado_procesal', 'Radicación/Inicio');
                 })
                 ->update(['estado_procesal_id' => $inicial->id]);
         }

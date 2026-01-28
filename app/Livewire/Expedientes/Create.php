@@ -7,6 +7,7 @@ use App\Models\Expediente;
 use App\Models\Cliente;
 use App\Models\User;
 use App\Models\Materia;
+use App\Models\Juzgado;
 use App\Models\EstadoProcesal;
 use Illuminate\Support\Facades\Hash;
 
@@ -27,6 +28,11 @@ class Create extends Component
     public $showMateriaModal = false;
     public $newMateriaNombre;
 
+    public $showJuzgadoModal = false;
+    public $newJuzgadoNombre;
+    public $newJuzgadoDireccion;
+    public $newJuzgadoTelefono;
+
     public $showClienteModal = false;
     public $newClienteNombre;
     public $newClienteEmail;
@@ -40,7 +46,7 @@ class Create extends Component
     {
         $user = auth()->user();
 
-        $defaultEstado = EstadoProcesal::where('nombre', 'Inicial')->first();
+        $defaultEstado = EstadoProcesal::where('nombre', 'Radicación/Inicio')->first();
         if ($defaultEstado) {
             $this->estado_procesal_id = $defaultEstado->id;
         }
@@ -54,6 +60,7 @@ class Create extends Component
         'numero' => 'required|unique:expedientes,numero',
         'titulo' => 'required|string|max:255',
         'materia' => 'required|string|max:255',
+        'juzgado' => 'nullable|string|max:255',
         'cliente_id' => 'required|exists:clientes,id',
         'abogado_responsable_id' => 'required|exists:users,id',
         'estado_procesal_id' => 'nullable|exists:estados_procesales,id',
@@ -119,7 +126,26 @@ class Create extends Component
         $materia = Materia::create(['nombre' => $this->newMateriaNombre]);
         $this->materia = $materia->nombre;
         $this->showMateriaModal = false;
-        $this->newMateriaNombre = '';
+        $this->reset(['newMateriaNombre']);
+    }
+
+    public function createJuzgado()
+    {
+        $this->validate([
+            'newJuzgadoNombre' => 'required|string|max:255',
+            'newJuzgadoDireccion' => 'nullable|string|max:255',
+            'newJuzgadoTelefono' => 'nullable|string|max:255',
+        ]);
+
+        $juzgado = Juzgado::create([
+            'nombre' => $this->newJuzgadoNombre,
+            'direccion' => $this->newJuzgadoDireccion,
+            'telefono' => $this->newJuzgadoTelefono,
+        ]);
+
+        $this->juzgado = $juzgado->nombre;
+        $this->showJuzgadoModal = false;
+        $this->reset(['newJuzgadoNombre', 'newJuzgadoDireccion', 'newJuzgadoTelefono']);
     }
 
     public function createCliente()
@@ -127,6 +153,7 @@ class Create extends Component
         $this->validate([
             'newClienteNombre' => 'required|string|max:255',
             'newClienteEmail' => 'nullable|email',
+            'newClienteTelefono' => 'nullable|string|max:255',
         ]);
 
         $cliente = Cliente::create([
@@ -173,15 +200,26 @@ class Create extends Component
         $user = auth()->user();
         $isAdmin = ($user->hasRole('admin') || $user->can('view all expedientes')) && $user->role !== 'super_admin';
 
+        $tenantId = session('tenant_id') ?? $user?->tenant_id;
+
         $abogadosQuery = User::role(['abogado', 'admin']);
         if ($user->role !== 'super_admin') {
             $abogadosQuery->where('tenant_id', $user->tenant_id);
         }
 
+        if ($tenantId) {
+            $materias = Materia::withoutGlobalScope('tenant')->where('tenant_id', $tenantId)->orderBy('nombre')->get();
+            $juzgados = Juzgado::withoutGlobalScope('tenant')->where('tenant_id', $tenantId)->orderBy('nombre')->get();
+        } else {
+            $materias = Materia::orderBy('nombre')->get();
+            $juzgados = Juzgado::orderBy('nombre')->get();
+        }
+
         return view('livewire.expedientes.create', [
             'clientes' => Cliente::all(),
             'abogados' => $abogadosQuery->get(),
-            'materias' => Materia::all(),
+            'materias' => $materias,
+            'juzgados' => $juzgados,
             'estadosProcesales' => EstadoProcesal::orderBy('nombre')->get(),
             'isAdmin' => $isAdmin,
         ]);
