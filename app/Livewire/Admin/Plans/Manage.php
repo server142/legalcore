@@ -19,6 +19,7 @@ class Manage extends Component
     public $duration_in_days = 30;
     public $max_admin_users = 1;
     public $max_lawyer_users = null;
+    public $max_expedientes = 0;
     public $storage_limit_gb = 1;
     public $is_active = true;
     public $features = [];
@@ -37,6 +38,7 @@ class Manage extends Component
             $this->duration_in_days = $plan->duration_in_days;
             $this->max_admin_users = $plan->max_admin_users;
             $this->max_lawyer_users = $plan->max_lawyer_users;
+            $this->max_expedientes = $plan->max_expedientes ?? 0;
             $this->storage_limit_gb = $plan->storage_limit_gb ?? 1;
             $this->is_active = $plan->is_active;
             
@@ -80,6 +82,7 @@ class Manage extends Component
             'duration_in_days' => 'required|integer|min:1',
             'max_admin_users' => 'required|integer|min:1',
             'max_lawyer_users' => 'nullable|integer|min:0',
+            'max_expedientes' => 'required|integer|min:0',
             'storage_limit_gb' => 'required|integer|min:1',
             'features' => 'array',
         ]);
@@ -92,6 +95,7 @@ class Manage extends Component
             'duration_in_days' => $this->duration_in_days,
             'max_admin_users' => $this->max_admin_users,
             'max_lawyer_users' => $this->max_lawyer_users === '' ? null : $this->max_lawyer_users,
+            'max_expedientes' => $this->max_expedientes === '' ? 0 : $this->max_expedientes,
             'storage_limit_gb' => $this->storage_limit_gb,
             'is_active' => $this->is_active,
             'features' => $this->features,

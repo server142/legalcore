@@ -62,6 +62,14 @@
                                 <x-input-error :messages="$errors->get('max_lawyer_users')" class="mt-2" />
                             </div>
 
+                            <!-- Límite de Expedientes -->
+                            <div>
+                                <x-input-label for="max_expedientes" :value="__('Máximo de Expedientes')" />
+                                <x-text-input wire:model="max_expedientes" id="max_expedientes" class="block mt-1 w-full" type="number" min="0" placeholder="0 = ilimitado" />
+                                <p class="text-xs text-gray-500 mt-1">0 para expedientes ilimitados. Ej: 10, 50, 100.</p>
+                                <x-input-error :messages="$errors->get('max_expedientes')" class="mt-2" />
+                            </div>
+
                             <!-- Límite de Almacenamiento -->
                             <div>
                                 <x-input-label for="storage_limit_gb" :value="__('Límite de Almacenamiento (GB)')" />
