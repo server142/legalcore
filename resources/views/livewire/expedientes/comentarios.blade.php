@@ -191,7 +191,7 @@
 
                             {{-- Respuestas --}}
                             @if($comentario->respuestas->count() > 0)
-                                <div class="mt-4 ml-12 space-y-3 border-l-2 border-gray-200 pl-4">
+                                <div class="mt-4 ml-4 sm:ml-12 space-y-3 border-l-2 border-gray-200 pl-2 sm:pl-4">
                                     @foreach($comentario->respuestas as $respuesta)
                                         <div class="flex items-start space-x-2">
                                             <div class="flex-shrink-0">
@@ -199,15 +199,15 @@
                                                     {{ strtoupper(substr($respuesta->user->name, 0, 1)) }}
                                                 </div>
                                             </div>
-                                            <div class="flex-1">
+                                            <div class="flex-1 min-w-0">
                                                 <div class="bg-gray-100 rounded-xl px-3 py-2">
                                                     <div class="flex items-center justify-between mb-1">
-                                                        <h5 class="font-bold text-gray-900 text-xs">{{ $respuesta->user->name }}</h5>
+                                                        <h5 class="font-bold text-gray-900 text-xs truncate">{{ $respuesta->user->name }}</h5>
                                                         @if($respuesta->user_id === auth()->id() || auth()->user()->can('manage users'))
                                                             <button 
                                                                 wire:click="eliminarComentario({{ $respuesta->id }})"
                                                                 wire:confirm="¿Eliminar respuesta?"
-                                                                class="text-gray-400 hover:text-red-600"
+                                                                class="text-gray-400 hover:text-red-600 flex-shrink-0 ml-2"
                                                             >
                                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -217,17 +217,17 @@
                                                     </div>
                                                     <p class="text-gray-700 text-xs whitespace-pre-wrap break-words">{{ $respuesta->contenido }}</p>
                                                 </div>
-                                                <div class="mt-1 px-3 flex items-center space-x-3 text-xs text-gray-500">
-                                                    <span>{{ $respuesta->created_at->locale('es')->diffForHumans() }}</span>
+                                                <div class="mt-1 px-2 sm:px-3 flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-gray-500">
+                                                    <span class="whitespace-nowrap">{{ $respuesta->created_at->locale('es')->diffForHumans() }}</span>
                                                     @if($respuesta->reacciones->count() > 0)
-                                                        <span class="text-indigo-600">{{ $respuesta->reacciones->count() }} 👍</span>
+                                                        <span class="text-indigo-600 whitespace-nowrap">{{ $respuesta->reacciones->count() }} 👍</span>
                                                     @endif
                                                     @php
                                                         $miReaccionRespuesta = $respuesta->reacciones->where('user_id', auth()->id())->first();
                                                     @endphp
                                                     <button 
                                                         wire:click="toggleReaccion({{ $respuesta->id }}, 'like')"
-                                                        class="font-medium hover:text-indigo-600 flex items-center"
+                                                        class="font-medium hover:text-indigo-600 flex items-center whitespace-nowrap"
                                                     >
                                                         @if($miReaccionRespuesta && $miReaccionRespuesta->tipo === 'like')
                                                             <svg class="w-4 h-4 text-blue-600 mr-1" fill="currentColor" viewBox="0 0 24 24">
@@ -239,7 +239,7 @@
                                                     </button>
                                                     <button 
                                                         wire:click="responder({{ $respuesta->id }})"
-                                                        class="font-medium hover:text-indigo-600"
+                                                        class="font-medium hover:text-indigo-600 whitespace-nowrap"
                                                     >
                                                         Responder
                                                     </button>
