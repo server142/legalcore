@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('plans', function (Blueprint $table) {
-            $table->integer('max_expedientes')->default(0)->after('max_users')->comment('0 = ilimitado');
+            $table->integer('max_expedientes')->default(0)->comment('0 = ilimitado');
         });
     }
 
