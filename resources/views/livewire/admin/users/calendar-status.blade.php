@@ -63,21 +63,22 @@
             </div>
 
             <!-- Tabla de Usuarios -->
-            <div class="bg-white rounded-lg shadow overflow-hidden">
-                <table class="min-w-full divide-y divide-gray-200">
+            <div class="bg-white rounded-lg shadow">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full min-w-[900px] divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email Sistema</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email Calendario</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email Sistema</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email Calendario</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($users as $user)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0 h-10 w-10">
                                             <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
@@ -89,17 +90,17 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $user->email }}</div>
+                                <td class="px-4 sm:px-6 py-4">
+                                    <div class="text-sm text-gray-900 break-all">{{ $user->email }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 sm:px-6 py-4">
                                     @if($user->calendar_email)
-                                        <div class="text-sm text-gray-900">{{ $user->calendar_email }}</div>
+                                        <div class="text-sm text-gray-900 break-all">{{ $user->calendar_email }}</div>
                                     @else
                                         <span class="text-xs text-gray-400 italic">No configurado</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
                                     @if($user->calendar_email)
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                             Configurado
@@ -110,7 +111,7 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     @foreach($user->roles as $role)
                                         <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                                             {{ $role->name }}
@@ -120,15 +121,16 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="5" class="px-4 sm:px-6 py-4 text-center text-gray-500">
                                     No se encontraron usuarios.
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
-                </table>
+                    </table>
+                </div>
 
-                <div class="px-6 py-4 border-t border-gray-200">
+                <div class="px-4 sm:px-6 py-4 border-t border-gray-200">
                     {{ $users->links() }}
                 </div>
             </div>
