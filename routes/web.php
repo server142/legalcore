@@ -11,56 +11,6 @@ Route::get('/', function () {
     return view('welcome', ['plans' => $plans]);
 })->name('welcome');
 
-// RUTA DE REPARACIÓN DE SISTEMA (TEMPORAL)
-Route::get('/fix-system', function() {
-    $log = [];
-    
-    try {
-        // 1. Reparar tabla tenants (agregar deleted_at)
-        if (!\Illuminate\Support\Facades\Schema::hasColumn('tenants', 'deleted_at')) {
-            \Illuminate\Support\Facades\Schema::table('tenants', function (\Illuminate\Database\Schema\Blueprint $table) {
-                $table->softDeletes();
-            });
-            $log[] = "✅ ÉXITO: Columna 'deleted_at' agregada a la tabla 'tenants'.";
-        } else {
-            $log[] = "ℹ️ INFO: La tabla 'tenants' ya está correcta (tiene deleted_at).";
-        }
-
-        // 2. Reparar tabla plans (asegurar que existe Trial)
-        $trial = \App\Models\Plan::where('slug', 'trial')->first();
-        if (!$trial) {
-            \App\Models\Plan::create([
-                'name' => 'Trial',
-                'slug' => 'trial',
-                'price' => 0,
-                'duration_in_days' => 15,
-                'max_admin_users' => 1,
-                'max_lawyer_users' => 1,
-                'max_expedientes' => 0,
-                'storage_limit_gb' => 1,
-                'features' => ['Acceso completo por 15 días'],
-                'is_active' => true
-            ]);
-            $log[] = "✅ ÉXITO: Plan 'Trial' creado automáticamente.";
-        } else {
-            $log[] = "ℹ️ INFO: El plan 'Trial' ya existe.";
-        }
-
-        // 3. Verificar columna max_expedientes en plans
-        if (!\Illuminate\Support\Facades\Schema::hasColumn('plans', 'max_expedientes')) {
-             \Illuminate\Support\Facades\Schema::table('plans', function (\Illuminate\Database\Schema\Blueprint $table) {
-                $table->integer('max_expedientes')->default(0)->after('max_lawyer_users')->comment('0 = ilimitado');
-            });
-            $log[] = "✅ ÉXITO: Columna 'max_expedientes' agregada a 'plans'.";
-        }
-
-    } catch (\Exception $e) {
-        return response()->json(['status' => 'error', 'message' => $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
-    }
-
-    return response()->json(['status' => 'success', 'log' => $log]);
-});
-
 // Public Legal Pages (Required by Google API Verification)
 Route::get('/privacy', function () {
     $content = file_get_contents(base_path('POLITICA_PRIVACIDAD.md'));
