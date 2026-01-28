@@ -31,6 +31,8 @@ class TenantSettings extends Component
     public $asesorias_enforce_availability = true;
     public $asesorias_sync_to_agenda = true;
 
+    public $agenda_enforce_availability = false;
+
     // Plan & Billing
     public $currentPlanDetails;
     public $availablePlans;
@@ -59,6 +61,8 @@ class TenantSettings extends Component
         $this->asesorias_slot_minutes = $settings['asesorias_slot_minutes'] ?? 15;
         $this->asesorias_enforce_availability = $settings['asesorias_enforce_availability'] ?? true;
         $this->asesorias_sync_to_agenda = $settings['asesorias_sync_to_agenda'] ?? true;
+
+        $this->agenda_enforce_availability = $settings['agenda_enforce_availability'] ?? false;
 
         // Plan Info
         $this->currentPlanDetails = $tenant->planRelation;
@@ -94,6 +98,7 @@ class TenantSettings extends Component
             'asesorias_slot_minutes' => 'required|integer|min:5|max:60',
             'asesorias_enforce_availability' => 'boolean',
             'asesorias_sync_to_agenda' => 'boolean',
+            'agenda_enforce_availability' => 'boolean',
         ], [
             'logo.max' => 'La imagen es demasiado pesada. El límite es de 5MB.',
             'logo.image' => 'El archivo debe ser una imagen (jpg, png, etc).',
@@ -123,6 +128,8 @@ class TenantSettings extends Component
         $settings['asesorias_slot_minutes'] = (int) $this->asesorias_slot_minutes;
         $settings['asesorias_enforce_availability'] = (bool) $this->asesorias_enforce_availability;
         $settings['asesorias_sync_to_agenda'] = (bool) $this->asesorias_sync_to_agenda;
+
+        $settings['agenda_enforce_availability'] = (bool) $this->agenda_enforce_availability;
 
         $tenant->update([
             'name' => $this->name,

@@ -165,6 +165,20 @@
                         <x-input-error :messages="$errors->get('start')" class="mt-2" />
                     </div>
 
+                    @if($suggested_start && $suggested_end)
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                <div>
+                                    <p class="text-sm font-bold text-yellow-800">Horario sugerido</p>
+                                    <p class="text-sm text-yellow-700">{{ $suggested_start }} - {{ $suggested_end }}</p>
+                                </div>
+                                <button type="button" wire:click="applySuggestedSlot" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-bold shadow-sm transition">
+                                    Usar horario sugerido
+                                </button>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- End -->
                     <div>
                         <x-input-label for="end" :value="__('Fecha y Hora Fin')" />

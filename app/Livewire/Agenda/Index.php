@@ -5,6 +5,7 @@ namespace App\Livewire\Agenda;
 use Livewire\Component;
 use App\Models\Evento;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class Index extends Component
 {
@@ -44,14 +45,14 @@ class Index extends Component
         // Formato para FullCalendar
         $allEvents = $query->get();
         $isAdmin = auth()->user()->hasRole(['admin', 'super_admin']);
-        
+
         foreach ($allEvents as $evento) {
             $color = '#3b82f6'; // Default blue
             if ($evento->tipo == 'audiencia') $color = '#ef4444'; // Red
             if ($evento->tipo == 'termino') $color = '#f97316'; // Orange
 
             $title = $evento->titulo;
-            
+
             // Icono según si es de expediente o personal
             $icon = $evento->expediente_id ? "📂 " : "👤 ";
             $title = $icon . $title;
@@ -81,6 +82,89 @@ class Index extends Component
                 ]
             ];
         }
+    }
+
+    public function applySuggestedSlot()
+    {
+        if ($this->suggested_start) {
+            $this->start = $this->suggested_start;
+        }
+        if ($this->suggested_end) {
+            $this->end = $this->suggested_end;
+        }
+
+        $this->suggested_start = null;
+        $this->suggested_end = null;
+    }
+
+    private function hasAgendaConflict(Carbon $start, Carbon $end, int $userId, ?int $ignoreEventId): bool
+    {
+        $query = Evento::query()
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->where('user_id', $userId)
+            ->where('start_time', '<', $end)
+            ->where('end_time', '>', $start);
+
+        if ($ignoreEventId) {
+            $query->where('id', '!=', $ignoreEventId);
+        }
+
+        return $query->exists();
+    }
+
+    private function suggestNextAvailableSlot(Carbon $requestedStart, int $durationMinutes, int $userId, ?int $ignoreEventId): ?array
+    {
+        $tenant = auth()->user()->tenant;
+        $settings = $tenant?->settings ?? [];
+
+        $workStart = $settings['asesorias_working_hours_start'] ?? '09:00';
+        $workEnd = $settings['asesorias_working_hours_end'] ?? '18:00';
+        $businessDays = $settings['asesorias_business_days'] ?? ['mon', 'tue', 'wed', 'thu', 'fri'];
+        $slotMinutes = (int) ($settings['asesorias_slot_minutes'] ?? 15);
+
+        $candidate = (clone $requestedStart);
+        $candidate->second(0);
+
+        if ($slotMinutes > 0) {
+            $minute = (int) $candidate->format('i');
+            $rounded = (int) (ceil($minute / $slotMinutes) * $slotMinutes);
+            if ($rounded >= 60) {
+                $candidate->addHour()->minute(0);
+            } else {
+                $candidate->minute($rounded);
+            }
+        }
+
+        for ($i = 0; $i < 2000; $i++) {
+            $dayKey = strtolower($candidate->format('D'));
+            $dayKey = substr($dayKey, 0, 3);
+
+            if (!in_array($dayKey, $businessDays, true)) {
+                $candidate->addDay()->setTimeFromTimeString($workStart);
+                continue;
+            }
+
+            $startLimit = (clone $candidate)->setTimeFromTimeString($workStart);
+            $endLimit = (clone $candidate)->setTimeFromTimeString($workEnd);
+
+            if ($candidate->lt($startLimit)) {
+                $candidate = $startLimit;
+            }
+
+            $candidateEnd = (clone $candidate)->addMinutes($durationMinutes);
+            if ($candidateEnd->gt($endLimit)) {
+                $candidate->addDay()->setTimeFromTimeString($workStart);
+                continue;
+            }
+
+            if (!$this->hasAgendaConflict($candidate, $candidateEnd, $userId, $ignoreEventId)) {
+                return ['start' => $candidate, 'end' => $candidateEnd];
+            }
+
+            $candidate->addMinutes(max(5, $slotMinutes));
+        }
+
+        return null;
     }
 
     private function adjustColor($hex, $userId)
@@ -117,9 +201,12 @@ class Index extends Component
         'selectedUsers.*' => 'exists:users,id',
     ];
 
+    public $suggested_start;
+    public $suggested_end;
+
     public function create()
     {
-        $this->reset(['title', 'description', 'start', 'end', 'type', 'expediente_id', 'eventId', 'editMode', 'selectedUsers']);
+        $this->reset(['title', 'description', 'start', 'end', 'type', 'expediente_id', 'eventId', 'editMode', 'selectedUsers', 'suggested_start', 'suggested_end']);
         $this->showModal = true;
     }
 
@@ -127,6 +214,8 @@ class Index extends Component
     {
         $this->editMode = true;
         $this->eventId = $id;
+        $this->suggested_start = null;
+        $this->suggested_end = null;
         $evento = Evento::with('invitedUsers')->findOrFail($id);
         
         $this->title = $evento->titulo;
@@ -144,12 +233,36 @@ class Index extends Component
     {
         $this->validate();
 
+        $tenant = auth()->user()->tenant;
+        $settings = $tenant?->settings ?? [];
+        $enforceAvailability = (bool) ($settings['agenda_enforce_availability'] ?? false);
+
+        $start = Carbon::parse($this->start);
+        $end = $this->end ? Carbon::parse($this->end) : null;
+        if (!$end) {
+            $end = (clone $start)->addHour();
+        }
+
+        if ($enforceAvailability) {
+            if ($this->hasAgendaConflict($start, $end, auth()->id(), null)) {
+                $suggestion = $this->suggestNextAvailableSlot($start, $end->diffInMinutes($start), auth()->id(), null);
+                if ($suggestion) {
+                    $this->suggested_start = $suggestion['start']->format('Y-m-d\TH:i');
+                    $this->suggested_end = $suggestion['end']->format('Y-m-d\TH:i');
+                    $this->addError('start', 'Tienes un evento traslapado en ese horario. Te proponemos el siguiente horario disponible.');
+                } else {
+                    $this->addError('start', 'Tienes un evento traslapado en ese horario.');
+                }
+                return;
+            }
+        }
+
         $evento = Evento::create([
             'tenant_id' => auth()->user()->tenant_id,
             'titulo' => $this->title,
             'descripcion' => $this->description,
-            'start_time' => $this->start,
-            'end_time' => $this->end,
+            'start_time' => $start,
+            'end_time' => $end,
             'tipo' => $this->type,
             'expediente_id' => $this->expediente_id ?: null,
             'user_id' => auth()->id(),
@@ -172,12 +285,36 @@ class Index extends Component
     {
         $this->validate();
 
+        $tenant = auth()->user()->tenant;
+        $settings = $tenant?->settings ?? [];
+        $enforceAvailability = (bool) ($settings['agenda_enforce_availability'] ?? false);
+
+        $start = Carbon::parse($this->start);
+        $end = $this->end ? Carbon::parse($this->end) : null;
+        if (!$end) {
+            $end = (clone $start)->addHour();
+        }
+
+        if ($enforceAvailability) {
+            if ($this->hasAgendaConflict($start, $end, auth()->id(), (int) $this->eventId)) {
+                $suggestion = $this->suggestNextAvailableSlot($start, $end->diffInMinutes($start), auth()->id(), (int) $this->eventId);
+                if ($suggestion) {
+                    $this->suggested_start = $suggestion['start']->format('Y-m-d\TH:i');
+                    $this->suggested_end = $suggestion['end']->format('Y-m-d\TH:i');
+                    $this->addError('start', 'Tienes un evento traslapado en ese horario. Te proponemos el siguiente horario disponible.');
+                } else {
+                    $this->addError('start', 'Tienes un evento traslapado en ese horario.');
+                }
+                return;
+            }
+        }
+
         $evento = Evento::findOrFail($this->eventId);
         $evento->update([
             'titulo' => $this->title,
             'descripcion' => $this->description,
-            'start_time' => $this->start,
-            'end_time' => $this->end,
+            'start_time' => $start,
+            'end_time' => $end,
             'tipo' => $this->type,
             'expediente_id' => $this->expediente_id ?: null,
         ]);

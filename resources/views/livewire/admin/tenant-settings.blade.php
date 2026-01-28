@@ -250,6 +250,11 @@
                                     <input type="checkbox" wire:model.live="asesorias_sync_to_agenda" id="asesorias_sync_to_agenda" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                                     <x-input-label for="asesorias_sync_to_agenda" :value="__('Sincronizar asesorías a Agenda')" />
                                 </div>
+
+                                <div class="flex items-center space-x-3 pt-6">
+                                    <input type="checkbox" wire:model.live="agenda_enforce_availability" id="agenda_enforce_availability" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                    <x-input-label for="agenda_enforce_availability" :value="__('Validar traslapes en Agenda (evitar choques)')" />
+                                </div>
                             </div>
                         </div>
 
