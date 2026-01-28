@@ -183,6 +183,76 @@
                             </div>
                         </div>
 
+                        <!-- Asesorías & Agenda Settings -->
+                        <div class="md:col-span-2 pt-6 border-t">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Asesorías y Agenda') }}</h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <x-input-label for="asesorias_working_hours_start" :value="__('Horario laboral (inicio)')" />
+                                    <x-text-input wire:model="asesorias_working_hours_start" id="asesorias_working_hours_start" type="time" class="block mt-1 w-full" />
+                                    <x-input-error :messages="$errors->get('asesorias_working_hours_start')" class="mt-2" />
+                                </div>
+
+                                <div>
+                                    <x-input-label for="asesorias_working_hours_end" :value="__('Horario laboral (fin)')" />
+                                    <x-text-input wire:model="asesorias_working_hours_end" id="asesorias_working_hours_end" type="time" class="block mt-1 w-full" />
+                                    <x-input-error :messages="$errors->get('asesorias_working_hours_end')" class="mt-2" />
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <p class="text-sm font-medium text-gray-700 mb-2">{{ __('Días hábiles') }}</p>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        <label class="inline-flex items-center space-x-2">
+                                            <input type="checkbox" value="mon" wire:model="asesorias_business_days" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                            <span class="text-sm text-gray-700">{{ __('Lunes') }}</span>
+                                        </label>
+                                        <label class="inline-flex items-center space-x-2">
+                                            <input type="checkbox" value="tue" wire:model="asesorias_business_days" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                            <span class="text-sm text-gray-700">{{ __('Martes') }}</span>
+                                        </label>
+                                        <label class="inline-flex items-center space-x-2">
+                                            <input type="checkbox" value="wed" wire:model="asesorias_business_days" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                            <span class="text-sm text-gray-700">{{ __('Miércoles') }}</span>
+                                        </label>
+                                        <label class="inline-flex items-center space-x-2">
+                                            <input type="checkbox" value="thu" wire:model="asesorias_business_days" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                            <span class="text-sm text-gray-700">{{ __('Jueves') }}</span>
+                                        </label>
+                                        <label class="inline-flex items-center space-x-2">
+                                            <input type="checkbox" value="fri" wire:model="asesorias_business_days" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                            <span class="text-sm text-gray-700">{{ __('Viernes') }}</span>
+                                        </label>
+                                        <label class="inline-flex items-center space-x-2">
+                                            <input type="checkbox" value="sat" wire:model="asesorias_business_days" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                            <span class="text-sm text-gray-700">{{ __('Sábado') }}</span>
+                                        </label>
+                                        <label class="inline-flex items-center space-x-2">
+                                            <input type="checkbox" value="sun" wire:model="asesorias_business_days" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                            <span class="text-sm text-gray-700">{{ __('Domingo') }}</span>
+                                        </label>
+                                    </div>
+                                    <x-input-error :messages="$errors->get('asesorias_business_days')" class="mt-2" />
+                                </div>
+
+                                <div>
+                                    <x-input-label for="asesorias_slot_minutes" :value="__('Granularidad (minutos)')" />
+                                    <x-text-input wire:model="asesorias_slot_minutes" id="asesorias_slot_minutes" type="number" min="5" max="60" class="block mt-1 w-full" />
+                                    <x-input-error :messages="$errors->get('asesorias_slot_minutes')" class="mt-2" />
+                                </div>
+
+                                <div class="flex items-center space-x-3 pt-6">
+                                    <input type="checkbox" wire:model.live="asesorias_enforce_availability" id="asesorias_enforce_availability" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                    <x-input-label for="asesorias_enforce_availability" :value="__('Validar disponibilidad antes de agendar')" />
+                                </div>
+
+                                <div class="flex items-center space-x-3 pt-6">
+                                    <input type="checkbox" wire:model.live="asesorias_sync_to_agenda" id="asesorias_sync_to_agenda" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                    <x-input-label for="asesorias_sync_to_agenda" :value="__('Sincronizar asesorías a Agenda')" />
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="flex items-center justify-end space-x-4">
                             @if ($errors->any())
                                 <span class="text-sm text-red-600 font-medium">Hay errores en el formulario. Por favor revisa los campos.</span>

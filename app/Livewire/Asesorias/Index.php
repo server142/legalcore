@@ -24,6 +24,7 @@ class Index extends Component
     public function render()
     {
         $user = auth()->user();
+        $isAdmin = $user->hasRole(['admin', 'super_admin']);
         
         $query = Asesoria::query()
             ->with(['cliente', 'abogado']);
@@ -55,18 +56,23 @@ class Index extends Component
             }
         }
 
-        // Permisos: Abogados solo ven las suyas a menos que tengan permiso especial
-        if ($user->hasRole('abogado') && !$user->can('view all asesorias')) {
+        // Permisos: Admin ve todas. Los demás solo ven asesorías asignadas a ellos.
+        if (!$isAdmin) {
             $query->where('abogado_id', $user->id);
         }
 
         $asesorias = $query->orderBy('fecha_hora', 'desc')->paginate(10);
 
         // Estadísticas para tarjetas superiores
+        $statsQuery = Asesoria::query();
+        if (!$isAdmin) {
+            $statsQuery->where('abogado_id', $user->id);
+        }
+
         $stats = [
-            'hoy' => Asesoria::whereDate('fecha_hora', Carbon::today())->where('estado', 'agendada')->count(),
-            'pendientes' => Asesoria::where('estado', 'agendada')->count(),
-            'realizadas_mes' => Asesoria::where('estado', 'realizada')->whereMonth('fecha_hora', Carbon::now()->month)->count(),
+            'hoy' => (clone $statsQuery)->whereDate('fecha_hora', Carbon::today())->where('estado', 'agendada')->count(),
+            'pendientes' => (clone $statsQuery)->where('estado', 'agendada')->count(),
+            'realizadas_mes' => (clone $statsQuery)->where('estado', 'realizada')->whereMonth('fecha_hora', Carbon::now()->month)->count(),
         ];
 
         return view('livewire.asesorias.index', [

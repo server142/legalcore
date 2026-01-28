@@ -4,10 +4,12 @@ namespace App\Livewire\Asesorias;
 
 use Livewire\Component;
 use App\Models\Asesoria;
+use App\Models\Evento;
 use App\Models\User;
 use App\Models\Cliente;
 use App\Models\Expediente;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class Form extends Component
 {
@@ -37,6 +39,9 @@ class Form extends Component
     public $pagado = false;
     public $fecha_pago;
 
+    public $suggested_fecha;
+    public $suggested_hora;
+
     // Conversión a cliente/expediente
     public $crear_cliente = false;
     public $crear_expediente = false;
@@ -51,6 +56,140 @@ class Form extends Component
             $this->abogado_id = auth()->id();
             $this->fecha = Carbon::today()->format('Y-m-d');
             $this->hora = Carbon::now()->addHour()->format('H:00');
+        }
+
+    }
+
+    public function applySuggestedSlot()
+    {
+        if ($this->suggested_fecha && $this->suggested_hora) {
+            $this->fecha = $this->suggested_fecha;
+            $this->hora = $this->suggested_hora;
+            $this->suggested_fecha = null;
+            $this->suggested_hora = null;
+        }
+    }
+
+    private function hasAgendaConflict(Carbon $start, int $durationMinutes, int $abogadoId): bool
+    {
+        $end = (clone $start)->addMinutes($durationMinutes);
+
+        $query = Evento::query()
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->where('user_id', $abogadoId)
+            ->where('start_time', '<', $end)
+            ->where('end_time', '>', $start);
+
+        if ($this->asesoria) {
+            $query->where(function ($q) {
+                $q->whereNull('asesoria_id')
+                  ->orWhere('asesoria_id', '!=', $this->asesoria->id);
+            });
+        }
+
+        return $query->exists();
+    }
+
+    private function suggestNextAvailableSlot(Carbon $requestedStart, int $durationMinutes, int $abogadoId): ?Carbon
+    {
+        $tenant = auth()->user()->tenant;
+        $settings = $tenant?->settings ?? [];
+
+        $workStart = $settings['asesorias_working_hours_start'] ?? '09:00';
+        $workEnd = $settings['asesorias_working_hours_end'] ?? '18:00';
+        $businessDays = $settings['asesorias_business_days'] ?? ['mon', 'tue', 'wed', 'thu', 'fri'];
+        $slotMinutes = (int) ($settings['asesorias_slot_minutes'] ?? 15);
+
+        $candidate = (clone $requestedStart);
+        $candidate->second(0);
+
+        if ($slotMinutes > 0) {
+            $minute = (int) $candidate->format('i');
+            $rounded = (int) (ceil($minute / $slotMinutes) * $slotMinutes);
+            if ($rounded >= 60) {
+                $candidate->addHour()->minute(0);
+            } else {
+                $candidate->minute($rounded);
+            }
+        }
+
+        for ($i = 0; $i < 2000; $i++) {
+            $dayKey = strtolower($candidate->format('D'));
+            $dayKey = substr($dayKey, 0, 3);
+
+            if (!in_array($dayKey, $businessDays, true)) {
+                $candidate->addDay()->setTimeFromTimeString($workStart);
+                continue;
+            }
+
+            $startLimit = (clone $candidate)->setTimeFromTimeString($workStart);
+            $endLimit = (clone $candidate)->setTimeFromTimeString($workEnd);
+
+            if ($candidate->lt($startLimit)) {
+                $candidate = $startLimit;
+            }
+
+            $candidateEnd = (clone $candidate)->addMinutes($durationMinutes);
+            if ($candidateEnd->gt($endLimit)) {
+                $candidate->addDay()->setTimeFromTimeString($workStart);
+                continue;
+            }
+
+            if (!$this->hasAgendaConflict($candidate, $durationMinutes, $abogadoId)) {
+                return $candidate;
+            }
+
+            $candidate->addMinutes(max(5, $slotMinutes));
+        }
+
+        return null;
+    }
+
+    private function syncAsesoriaToAgenda(): void
+    {
+        if (!$this->asesoria) {
+            return;
+        }
+
+        $evento = Evento::where('asesoria_id', $this->asesoria->id)->first();
+
+        if ($this->asesoria->estado !== 'agendada') {
+            if ($evento) {
+                $evento->delete();
+            }
+            return;
+        }
+
+        $start = $this->asesoria->fecha_hora;
+        $end = (clone $start)->addMinutes((int) $this->asesoria->duracion_minutos);
+
+        $descripcion = $this->asesoria->asunto;
+        if ($this->asesoria->telefono) {
+            $descripcion .= "\nTel: " . $this->asesoria->telefono;
+        }
+        if ($this->asesoria->email) {
+            $descripcion .= "\nEmail: " . $this->asesoria->email;
+        }
+        if ($this->asesoria->tipo === 'videoconferencia' && $this->asesoria->link_videoconferencia) {
+            $descripcion .= "\nVideollamada: " . $this->asesoria->link_videoconferencia;
+        }
+
+        $data = [
+            'tenant_id' => $this->asesoria->tenant_id,
+            'titulo' => "Asesoría {$this->asesoria->folio} - {$this->asesoria->nombre_prospecto}",
+            'descripcion' => $descripcion,
+            'start_time' => $start,
+            'end_time' => $end,
+            'tipo' => 'cita',
+            'user_id' => $this->asesoria->abogado_id,
+            'expediente_id' => $this->asesoria->expediente_id,
+            'asesoria_id' => $this->asesoria->id,
+        ];
+
+        if ($evento) {
+            $evento->update($data);
+        } else {
+            Evento::create($data);
         }
     }
 
@@ -107,6 +246,9 @@ class Form extends Component
 
     public function guardar()
     {
+        $user = auth()->user();
+        $isAdmin = $user->hasRole(['admin', 'super_admin']);
+
         $rules = [
             'nombre_prospecto' => 'required|string|max:255',
             'telefono' => 'nullable|string|max:20',
@@ -116,10 +258,16 @@ class Form extends Component
             'hora' => 'required',
             'duracion_minutos' => 'required|integer|min:5',
             'tipo' => 'required|in:presencial,telefonica,videoconferencia',
-            'abogado_id' => 'required|exists:users,id',
+            'abogado_id' => ['nullable'],
             'costo' => 'required|numeric|min:0',
             'estado' => 'required|in:agendada,realizada,cancelada,no_atendida',
         ];
+
+        if ($isAdmin) {
+            $rules['abogado_id'][] = Rule::exists('users', 'id')->where(function ($q) use ($user) {
+                $q->where('tenant_id', $user->tenant_id);
+            });
+        }
 
         if ($this->estado === 'cancelada') {
             $rules['motivo_cancelacion'] = 'required|string';
@@ -137,6 +285,31 @@ class Form extends Component
 
         $fechaHora = Carbon::parse($this->fecha . ' ' . $this->hora);
 
+        $effectiveAbogadoId = $this->abogado_id ?: $user->id;
+        if (!$isAdmin) {
+            $effectiveAbogadoId = $user->id;
+        }
+
+        $tenant = auth()->user()->tenant;
+        $settings = $tenant?->settings ?? [];
+        $enforceAvailability = $settings['asesorias_enforce_availability'] ?? true;
+        $syncToAgenda = $settings['asesorias_sync_to_agenda'] ?? true;
+
+        if ($this->estado === 'agendada' && $enforceAvailability) {
+            $conflict = $this->hasAgendaConflict($fechaHora, (int) $this->duracion_minutos, (int) $effectiveAbogadoId);
+            if ($conflict) {
+                $suggestion = $this->suggestNextAvailableSlot($fechaHora, (int) $this->duracion_minutos, (int) $effectiveAbogadoId);
+                if ($suggestion) {
+                    $this->suggested_fecha = $suggestion->format('Y-m-d');
+                    $this->suggested_hora = $suggestion->format('H:i');
+                    $this->addError('hora', 'El abogado no tiene disponibilidad en el horario seleccionado. Te proponemos el siguiente horario disponible.');
+                } else {
+                    $this->addError('hora', 'El abogado no tiene disponibilidad en el horario seleccionado.');
+                }
+                return;
+            }
+        }
+
         $datos = [
             'nombre_prospecto' => $this->nombre_prospecto,
             'telefono' => $this->telefono,
@@ -146,7 +319,7 @@ class Form extends Component
             'fecha_hora' => $fechaHora,
             'duracion_minutos' => $this->duracion_minutos,
             'tipo' => $this->tipo,
-            'abogado_id' => $this->abogado_id,
+            'abogado_id' => $effectiveAbogadoId,
             'costo' => $this->costo,
             'link_videoconferencia' => $this->link_videoconferencia,
             'estado' => $this->estado,
@@ -167,6 +340,10 @@ class Form extends Component
             $this->asesoria = Asesoria::create($datos);
             $mensaje = 'Asesoría agendada correctamente.';
             $this->modoEdicion = true; // Cambiar a modo edición
+        }
+
+        if ($syncToAgenda && $this->asesoria) {
+            $this->syncAsesoriaToAgenda();
         }
 
         // Lógica de conversión a Cliente / Expediente
@@ -241,7 +418,8 @@ class Form extends Component
     public function render()
     {
         return view('livewire.asesorias.form', [
-            'abogados' => User::role('abogado')->get(),
+            'abogados' => User::where('tenant_id', auth()->user()->tenant_id)->role('abogado')->get(),
+            'isAdmin' => auth()->user()->hasRole(['admin', 'super_admin']),
         ]);
     }
 }

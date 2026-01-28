@@ -68,6 +68,20 @@
                         <input wire:model="hora" type="time" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
                         @error('hora') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
+
+                    @if($suggested_fecha && $suggested_hora)
+                        <div class="md:col-span-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                <div>
+                                    <p class="text-sm font-bold text-yellow-800">Horario sugerido</p>
+                                    <p class="text-sm text-yellow-700">{{ $suggested_fecha }} {{ $suggested_hora }}</p>
+                                </div>
+                                <button type="button" wire:click="applySuggestedSlot" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-bold shadow-sm transition">
+                                    Usar horario sugerido
+                                </button>
+                            </div>
+                        </div>
+                    @endif
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Duración (min)</label>
                         <select wire:model="duracion_minutos" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
@@ -102,13 +116,20 @@
                     @endif
 
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Abogado Asignado *</label>
-                        <select wire:model="abogado_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-                            @foreach($abogados as $abogado)
-                                <option value="{{ $abogado->id }}">{{ $abogado->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('abogado_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Abogado Asignado</label>
+                        @if($isAdmin)
+                            <select wire:model="abogado_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">(Se asignará al creador si no eliges)</option>
+                                @foreach($abogados as $abogado)
+                                    <option value="{{ $abogado->id }}">{{ $abogado->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('abogado_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        @else
+                            <div class="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+                                Se asignará automáticamente a ti.
+                            </div>
+                        @endif
                     </div>
 
                     <div class="md:col-span-2">

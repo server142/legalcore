@@ -79,6 +79,11 @@ class Asesoria extends Model
         return $this->belongsTo(Expediente::class);
     }
 
+    public function evento()
+    {
+        return $this->hasOne(Evento::class);
+    }
+
     // Scopes
     public function scopePendientes($query)
     {

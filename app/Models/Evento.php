@@ -20,6 +20,7 @@ class Evento extends Model
         'tipo',
         'user_id',
         'expediente_id',
+        'asesoria_id',
         'google_event_id',
     ];
 
@@ -36,6 +37,11 @@ class Evento extends Model
     public function expediente()
     {
         return $this->belongsTo(Expediente::class);
+    }
+
+    public function asesoria()
+    {
+        return $this->belongsTo(Asesoria::class);
     }
 
     public function invitedUsers()

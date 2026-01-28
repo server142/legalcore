@@ -23,6 +23,14 @@ class TenantSettings extends Component
     public $sms_days_before = 3;
     public $sms_recipients = '';
 
+    // Asesorías & Agenda Settings
+    public $asesorias_working_hours_start = '09:00';
+    public $asesorias_working_hours_end = '18:00';
+    public $asesorias_business_days = ['mon', 'tue', 'wed', 'thu', 'fri'];
+    public $asesorias_slot_minutes = 15;
+    public $asesorias_enforce_availability = true;
+    public $asesorias_sync_to_agenda = true;
+
     // Plan & Billing
     public $currentPlanDetails;
     public $availablePlans;
@@ -44,6 +52,13 @@ class TenantSettings extends Component
         $this->sms_enabled = $settings['sms_enabled'] ?? false;
         $this->sms_days_before = $settings['sms_days_before'] ?? 3;
         $this->sms_recipients = $settings['sms_recipients'] ?? '';
+
+        $this->asesorias_working_hours_start = $settings['asesorias_working_hours_start'] ?? '09:00';
+        $this->asesorias_working_hours_end = $settings['asesorias_working_hours_end'] ?? '18:00';
+        $this->asesorias_business_days = $settings['asesorias_business_days'] ?? ['mon', 'tue', 'wed', 'thu', 'fri'];
+        $this->asesorias_slot_minutes = $settings['asesorias_slot_minutes'] ?? 15;
+        $this->asesorias_enforce_availability = $settings['asesorias_enforce_availability'] ?? true;
+        $this->asesorias_sync_to_agenda = $settings['asesorias_sync_to_agenda'] ?? true;
 
         // Plan Info
         $this->currentPlanDetails = $tenant->planRelation;
@@ -72,6 +87,13 @@ class TenantSettings extends Component
             'sms_enabled' => 'boolean',
             'sms_days_before' => 'required|integer|min:1|max:30',
             'sms_recipients' => 'nullable|string',
+            'asesorias_working_hours_start' => 'required|date_format:H:i',
+            'asesorias_working_hours_end' => 'required|date_format:H:i',
+            'asesorias_business_days' => 'required|array',
+            'asesorias_business_days.*' => 'in:mon,tue,wed,thu,fri,sat,sun',
+            'asesorias_slot_minutes' => 'required|integer|min:5|max:60',
+            'asesorias_enforce_availability' => 'boolean',
+            'asesorias_sync_to_agenda' => 'boolean',
         ], [
             'logo.max' => 'La imagen es demasiado pesada. El límite es de 5MB.',
             'logo.image' => 'El archivo debe ser una imagen (jpg, png, etc).',
@@ -85,18 +107,26 @@ class TenantSettings extends Component
             $this->logo_path = $this->logo->store('logos', 'public');
         }
 
+        $settings = $tenant->settings ?? [];
+        $settings['direccion'] = $this->direccion;
+        $settings['titular'] = $this->titular;
+        $settings['titulares_adjuntos'] = $this->titulares_adjuntos;
+        $settings['datos_generales'] = $this->datos_generales;
+        $settings['logo_path'] = $this->logo_path;
+        $settings['sms_enabled'] = (bool) $this->sms_enabled;
+        $settings['sms_days_before'] = (int) $this->sms_days_before;
+        $settings['sms_recipients'] = $this->sms_recipients;
+
+        $settings['asesorias_working_hours_start'] = $this->asesorias_working_hours_start;
+        $settings['asesorias_working_hours_end'] = $this->asesorias_working_hours_end;
+        $settings['asesorias_business_days'] = $this->asesorias_business_days;
+        $settings['asesorias_slot_minutes'] = (int) $this->asesorias_slot_minutes;
+        $settings['asesorias_enforce_availability'] = (bool) $this->asesorias_enforce_availability;
+        $settings['asesorias_sync_to_agenda'] = (bool) $this->asesorias_sync_to_agenda;
+
         $tenant->update([
             'name' => $this->name,
-            'settings' => [
-                'direccion' => $this->direccion,
-                'titular' => $this->titular,
-                'titulares_adjuntos' => $this->titulares_adjuntos,
-                'datos_generales' => $this->datos_generales,
-                'logo_path' => $this->logo_path,
-                'sms_enabled' => $this->sms_enabled,
-                'sms_days_before' => $this->sms_days_before,
-                'sms_recipients' => $this->sms_recipients,
-            ]
+            'settings' => $settings,
         ]);
 
         $this->dispatch('notify', 'Configuración actualizada exitosamente');

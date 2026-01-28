@@ -116,6 +116,14 @@
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                         📹 Video
                                     </span>
+
+                                    @if(!empty($asesoria->link_videoconferencia))
+                                        <div class="mt-1">
+                                            <a href="{{ $asesoria->link_videoconferencia }}" target="_blank" rel="noopener noreferrer" class="text-xs text-indigo-600 underline hover:text-indigo-800 font-bold">
+                                                Abrir videollamada
+                                            </a>
+                                        </div>
+                                    @endif
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
