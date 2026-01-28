@@ -30,7 +30,7 @@ class Index extends Component
         $user = auth()->user();
         $query = Expediente::query();
 
-        if ($user->hasRole('abogado') && !$user->can('view all expedientes')) {
+        if (($user->hasRole('abogado') && !$user->can('view all expedientes')) || $user->role === 'super_admin') {
             $query->where(function($q) use ($user) {
                 $q->where('abogado_responsable_id', $user->id)
                   ->orWhereHas('assignedUsers', function($q2) use ($user) {

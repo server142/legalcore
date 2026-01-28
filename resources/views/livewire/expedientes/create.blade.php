@@ -70,14 +70,22 @@
                 <div>
                     <div class="flex justify-between items-center">
                         <x-input-label for="abogado_responsable_id" :value="__('Abogado Responsable')" />
-                        <button type="button" wire:click="$set('showAbogadoModal', true)" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold">+ Nuevo Abogado</button>
+                        @if($isAdmin)
+                            <button type="button" wire:click="$set('showAbogadoModal', true)" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold">+ Nuevo Abogado</button>
+                        @endif
                     </div>
-                    <select id="abogado_responsable_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model="abogado_responsable_id">
-                        <option value="">Seleccione un abogado</option>
-                        @foreach($abogados as $abogado)
-                            <option value="{{ $abogado->id }}">{{ $abogado->name }}</option>
-                        @endforeach
-                    </select>
+                    @if($isAdmin)
+                        <select id="abogado_responsable_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model="abogado_responsable_id">
+                            <option value="">Seleccione un abogado</option>
+                            @foreach($abogados as $abogado)
+                                <option value="{{ $abogado->id }}">{{ $abogado->name }}</option>
+                            @endforeach
+                        </select>
+                    @else
+                        <div class="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-700">
+                            {{ auth()->user()->name }}
+                        </div>
+                    @endif
                     <x-input-error :messages="$errors->get('abogado_responsable_id')" class="mt-2" />
                 </div>
 

@@ -34,6 +34,15 @@ class Create extends Component
     public $newAbogadoNombre;
     public $newAbogadoEmail;
 
+    public function mount()
+    {
+        $user = auth()->user();
+
+        if (($user && $user->hasRole('abogado') && !$user->can('view all expedientes')) || ($user && $user->role === 'super_admin')) {
+            $this->abogado_responsable_id = $user->id;
+        }
+    }
+
     protected $rules = [
         'numero' => 'required|unique:expedientes,numero',
         'titulo' => 'required|string|max:255',
@@ -45,6 +54,21 @@ class Create extends Component
     public function save()
     {
         $this->validate();
+
+        $user = auth()->user();
+
+        if ($user->role === 'super_admin') {
+            $this->abogado_responsable_id = $user->id;
+        } else {
+            $selected = User::find($this->abogado_responsable_id);
+            if ($selected && $selected->tenant_id !== $user->tenant_id) {
+                abort(403);
+            }
+        }
+
+        if ($user && $user->hasRole('abogado') && !$user->can('view all expedientes')) {
+            $this->abogado_responsable_id = $user->id;
+        }
 
         // Check expediente limit
         $tenant = auth()->user()->tenant;
@@ -107,6 +131,12 @@ class Create extends Component
 
     public function createAbogado()
     {
+        $authUser = auth()->user();
+        $isAdmin = $authUser->hasRole('admin') || $authUser->can('view all expedientes');
+        if (!$isAdmin || $authUser->role === 'super_admin') {
+            abort(403);
+        }
+
         $this->validate([
             'newAbogadoNombre' => 'required|string|max:255',
             'newAbogadoEmail' => 'required|email|unique:users,email',
@@ -117,6 +147,7 @@ class Create extends Component
             'email' => $this->newAbogadoEmail,
             'password' => Hash::make('password123'), // Default password
             'role' => 'abogado',
+            'tenant_id' => auth()->user()->tenant_id,
         ]);
 
         $user->assignRole('abogado');
@@ -128,10 +159,19 @@ class Create extends Component
 
     public function render()
     {
+        $user = auth()->user();
+        $isAdmin = ($user->hasRole('admin') || $user->can('view all expedientes')) && $user->role !== 'super_admin';
+
+        $abogadosQuery = User::role(['abogado', 'admin']);
+        if ($user->role !== 'super_admin') {
+            $abogadosQuery->where('tenant_id', $user->tenant_id);
+        }
+
         return view('livewire.expedientes.create', [
             'clientes' => Cliente::all(),
-            'abogados' => User::role(['abogado', 'admin'])->get(),
+            'abogados' => $abogadosQuery->get(),
             'materias' => Materia::all(),
+            'isAdmin' => $isAdmin,
         ]);
     }
 }

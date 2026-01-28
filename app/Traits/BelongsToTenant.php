@@ -33,10 +33,6 @@ trait BelongsToTenant
 
             if (auth()->check()) {
                 $user = auth()->user();
-                // Super Admin sees everything. Check the 'role' column directly.
-                if ($user->role === 'super_admin') {
-                    return;
-                }
                 $builder->where('tenant_id', $user->tenant_id);
             }
         });
