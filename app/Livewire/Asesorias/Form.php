@@ -55,6 +55,12 @@ class Form extends Component
     public $crear_cliente = false;
     public $crear_expediente = false;
 
+    // Modal: Nuevo Cliente (igual a Expedientes)
+    public $showClienteModal = false;
+    public $newClienteNombre;
+    public $newClienteEmail;
+    public $newClienteTelefono;
+
     public function mount($asesoria = null)
     {
         $tenant = auth()->user()->tenant;
@@ -274,6 +280,28 @@ class Form extends Component
         $this->nombre_prospecto = $cliente->nombre;
         $this->telefono = $cliente->telefono;
         $this->email = $cliente->email;
+    }
+
+    public function createCliente()
+    {
+        $this->validate([
+            'newClienteNombre' => 'required|string|max:255',
+            'newClienteEmail' => 'nullable|email',
+            'newClienteTelefono' => 'nullable|string|max:255',
+        ]);
+
+        $cliente = Cliente::create([
+            'tenant_id' => auth()->user()->tenant_id,
+            'nombre' => $this->newClienteNombre,
+            'email' => $this->newClienteEmail,
+            'telefono' => $this->newClienteTelefono,
+            'tipo' => 'persona_fisica',
+            'origen' => 'asesoria',
+        ]);
+
+        $this->cliente_id = $cliente->id;
+        $this->showClienteModal = false;
+        $this->reset(['newClienteNombre', 'newClienteEmail', 'newClienteTelefono']);
     }
 
     private function syncFacturaFromPago(): void

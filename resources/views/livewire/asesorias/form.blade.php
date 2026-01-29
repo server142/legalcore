@@ -32,7 +32,10 @@
                 <h4 class="text-sm font-bold text-indigo-600 uppercase mb-4 border-b pb-2">1. Información del Prospecto / Cliente</h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="md:col-span-3">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
+                        <div class="flex justify-between items-center">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
+                            <button type="button" wire:click="$set('showClienteModal', true)" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold">+ Nuevo Cliente</button>
+                        </div>
                         <select wire:model.live="cliente_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">Seleccione un cliente</option>
                             @foreach($clientes as $cliente)
@@ -344,6 +347,40 @@
             </button>
         </div>
     </div>
+
+    @if($showClienteModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen px-4">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showClienteModal', false)"></div>
+                <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full z-50">
+                    <div class="p-6">
+                        <h3 class="text-lg font-bold mb-4">Nuevo Cliente</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <x-input-label for="newClienteNombre" :value="__('Nombre Completo')" />
+                                <x-text-input id="newClienteNombre" type="text" class="mt-1 block w-full" wire:model="newClienteNombre" />
+                                <x-input-error :messages="$errors->get('newClienteNombre')" class="mt-2" />
+                            </div>
+                            <div>
+                                <x-input-label for="newClienteEmail" :value="__('Email')" />
+                                <x-text-input id="newClienteEmail" type="email" class="mt-1 block w-full" wire:model="newClienteEmail" />
+                                <x-input-error :messages="$errors->get('newClienteEmail')" class="mt-2" />
+                            </div>
+                            <div>
+                                <x-input-label for="newClienteTelefono" :value="__('Teléfono')" />
+                                <x-text-input id="newClienteTelefono" type="text" class="mt-1 block w-full" wire:model="newClienteTelefono" />
+                                <x-input-error :messages="$errors->get('newClienteTelefono')" class="mt-2" />
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end space-x-3">
+                            <button type="button" wire:click="$set('showClienteModal', false)" class="text-sm text-gray-500">Cancelar</button>
+                            <x-primary-button wire:click="createCliente">Guardar Cliente</x-primary-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 
 @push('scripts')
