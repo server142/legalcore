@@ -23,12 +23,14 @@ class Factura extends Model
         'conceptos',
         'fecha_emision',
         'fecha_vencimiento',
+        'fecha_pago',
     ];
 
     protected $casts = [
         'conceptos' => 'array',
         'fecha_emision' => 'datetime',
         'fecha_vencimiento' => 'datetime',
+        'fecha_pago' => 'datetime',
     ];
 
     public function cliente()

@@ -12,6 +12,7 @@
         <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
             <h3 class="text-xs font-bold text-gray-500 uppercase">Total Cobrado</h3>
             <p class="text-2xl font-bold text-gray-800">${{ number_format($totalCobrado, 2) }}</p>
+            <a href="{{ route('reportes.ingresos') }}" class="mt-2 inline-block text-xs font-bold text-indigo-600 hover:text-indigo-800 underline">Ver detalle por periodo</a>
         </div>
         <div class="bg-white p-4 rounded-lg shadow border-l-4 border-orange-500">
             <h3 class="text-xs font-bold text-gray-500 uppercase">Pendiente de Cobro</h3>

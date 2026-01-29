@@ -31,6 +31,17 @@
             <div>
                 <h4 class="text-sm font-bold text-indigo-600 uppercase mb-4 border-b pb-2">1. Información del Prospecto / Cliente</h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
+                        <select wire:model.live="cliente_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">Seleccione un cliente</option>
+                            @foreach($clientes as $cliente)
+                                <option value="{{ $cliente->id }}">{{ $cliente->nombre }}</option>
+                            @endforeach
+                        </select>
+                        @error('cliente_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
                     <div class="md:col-span-1">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo *</label>
                         <input wire:model="nombre_prospecto" type="text" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
@@ -163,17 +174,81 @@
                         </select>
                     </div>
 
-                    {{-- Pago --}}
-                    <div class="flex items-center space-x-4 pt-6">
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" wire:model.live="pagado" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            <span class="ml-2 text-sm font-bold text-gray-700">¿Asesoría Pagada?</span>
-                        </label>
-                        
+                    {{-- Pago (solo si está habilitado por tenant y el usuario puede facturar) --}}
+                    @if($asesoriasBillingEnabled && $canManageBilling)
+                        <div class="flex items-center space-x-4 pt-6">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" wire:model.live="pagado" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <span class="ml-2 text-sm font-bold text-gray-700">¿Asesoría Pagada?</span>
+                            </label>
+                            
+                            @if($pagado)
+                                <input wire:model="fecha_pago" type="date" class="rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            @endif
+
+                            @if($modoEdicion && $asesoria && $asesoria->factura_id)
+                                <a href="{{ route('reportes.factura', $asesoria->factura_id) }}" target="_blank" class="text-sm text-indigo-600 hover:text-indigo-800 font-bold underline">
+                                    Descargar recibo (PDF)
+                                </a>
+                            @endif
+                        </div>
+
                         @if($pagado)
-                            <input wire:model="fecha_pago" type="date" class="rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            @php
+                                $settingsPay = auth()->user()->tenant?->settings ?? [];
+                                $tBank = trim((string) ($settingsPay['payment_transfer_bank'] ?? ''));
+                                $tHolder = trim((string) ($settingsPay['payment_transfer_holder'] ?? ''));
+                                $tClabe = trim((string) ($settingsPay['payment_transfer_clabe'] ?? ''));
+                                $tAccount = trim((string) ($settingsPay['payment_transfer_account'] ?? ''));
+                                $cBank = trim((string) ($settingsPay['payment_card_bank'] ?? ''));
+                                $cHolder = trim((string) ($settingsPay['payment_card_holder'] ?? ''));
+                                $cNumber = trim((string) ($settingsPay['payment_card_number'] ?? ''));
+                                $hasTransfer = !empty($tBank) || !empty($tHolder) || !empty($tClabe) || !empty($tAccount);
+                                $hasCard = !empty($cBank) || !empty($cHolder) || !empty($cNumber);
+                            @endphp
+
+                            @if($hasTransfer || $hasCard)
+                                <div class="mt-4 p-4 rounded-xl border border-emerald-100 bg-emerald-50">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-3.314 0-6 1.79-6 4s2.686 4 6 4 6-1.79 6-4-2.686-4-6-4z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12V7a2 2 0 012-2h14a2 2 0 012 2v5"/></svg>
+                                        <div class="text-sm font-extrabold text-emerald-900">Formas de pago (para registrar el cobro)</div>
+                                    </div>
+                                    <div class="mt-1 text-xs text-emerald-800">Usa estos datos para que el cliente realice el pago.</div>
+
+                                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        @if($hasTransfer)
+                                            <div class="bg-white rounded-xl border border-emerald-100 p-4">
+                                                <div class="flex items-center gap-2">
+                                                    <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"/></svg>
+                                                    <div class="text-sm font-extrabold text-emerald-900">Transferencia</div>
+                                                </div>
+                                                <div class="mt-2 text-xs text-gray-700 space-y-1">
+                                                    @if($tBank)<div><span class="font-bold">Banco:</span> {{ $tBank }}</div>@endif
+                                                    @if($tHolder)<div><span class="font-bold">Titular:</span> {{ $tHolder }}</div>@endif
+                                                    @if($tClabe)<div><span class="font-bold">CLABE:</span> {{ $tClabe }}</div>@endif
+                                                    @if($tAccount)<div><span class="font-bold">Cuenta:</span> {{ $tAccount }}</div>@endif
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        @if($hasCard)
+                                            <div class="bg-white rounded-xl border border-emerald-100 p-4">
+                                                <div class="flex items-center gap-2">
+                                                    <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 11h18M7 15h4m-7 4h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                                    <div class="text-sm font-extrabold text-emerald-900">Tarjeta</div>
+                                                </div>
+                                                <div class="mt-2 text-xs text-gray-700 space-y-1">
+                                                    @if($cBank)<div><span class="font-bold">Banco:</span> {{ $cBank }}</div>@endif
+                                                    @if($cHolder)<div><span class="font-bold">Titular:</span> {{ $cHolder }}</div>@endif
+                                                    @if($cNumber)<div><span class="font-bold">Tarjeta:</span> {{ $cNumber }}</div>@endif
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
                         @endif
-                    </div>
+                    @endif
                 </div>
 
                 {{-- Campos condicionales según estado --}}
@@ -270,3 +345,61 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    window.addEventListener('asesoria-saved-receipt', (event) => {
+        const data = event.detail?.[0] || event.detail || {};
+
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4';
+
+        const modal = document.createElement('div');
+        modal.className = 'w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-200 overflow-hidden';
+
+        modal.innerHTML = `
+            <div class="p-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center">
+                        <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-extrabold text-gray-900">Asesoría guardada</h3>
+                        <p class="mt-1 text-sm text-gray-600">${(data.message || 'Se guardó correctamente.')}</p>
+                        <p class="mt-3 text-sm font-semibold text-gray-800">¿Deseas generar el recibo ahora?</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 pb-6 flex justify-end gap-3">
+                <button type="button" data-action="no" class="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 font-bold hover:bg-gray-50">No, regresar</button>
+                <button type="button" data-action="yes" class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700">Sí, emitir recibo</button>
+            </div>
+        `;
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        const cleanup = () => {
+            try { document.body.removeChild(overlay); } catch (e) {}
+        };
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                cleanup();
+                if (data.redirectUrl) window.location.href = data.redirectUrl;
+            }
+        });
+
+        modal.querySelector('[data-action="no"]').addEventListener('click', () => {
+            cleanup();
+            if (data.redirectUrl) window.location.href = data.redirectUrl;
+        });
+
+        modal.querySelector('[data-action="yes"]').addEventListener('click', () => {
+            cleanup();
+            if (data.facturaUrl) window.open(data.facturaUrl, '_blank');
+            if (data.redirectUrl) window.location.href = data.redirectUrl;
+        });
+    });
+</script>
+@endpush

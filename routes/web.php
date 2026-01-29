@@ -22,6 +22,8 @@ Route::get('/terms', function () {
     return view('legal.document', ['title' => 'Términos de Servicio', 'content' => $content]);
 })->name('terms');
 
+Route::get('/cita/{token}', [\App\Http\Controllers\PublicAsesoriaController::class, 'show'])->name('asesorias.public');
+Route::get('/qr/asesoria/{token}', [\App\Http\Controllers\PublicAsesoriaQrController::class, 'show'])->name('asesorias.public.qr');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
@@ -69,6 +71,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/reportes/factura/{factura}', [\App\Http\Controllers\ReportController::class, 'invoice'])->name('reportes.factura');
     Route::get('/reportes/expediente/{expediente}', [\App\Http\Controllers\ReportController::class, 'expediente'])->name('reportes.expediente');
+    Route::get('/reportes/ingresos', \App\Livewire\Reports\IncomeReport::class)->name('reportes.ingresos')->middleware('can:manage billing');
 
     Route::get('/manual', \App\Livewire\Manual\Index::class)->name('manual.index');
     Route::get('/admin/manual', \App\Livewire\Manual\Manage::class)->name('manual.manage')->middleware('can:manage users');

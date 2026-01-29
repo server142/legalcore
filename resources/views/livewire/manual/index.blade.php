@@ -21,9 +21,9 @@
             <div class="flex flex-col lg:flex-row gap-8">
                 <!-- Sidebar Navigation -->
                 <div class="lg:w-1/4">
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 p-6 sticky top-8">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 p-6 lg:sticky lg:top-8 h-[calc(100vh-4rem)] overflow-y-auto">
                         <h3 class="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-6">Índice de Temas</h3>
-                        <nav class="space-y-2">
+                        <nav class="space-y-2 pr-2">
                             @foreach($pages as $page)
                                 <a href="#{{ $page->slug }}" 
                                    class="group flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-xl transition-all duration-200 border border-transparent hover:border-indigo-100">

@@ -5,7 +5,11 @@ namespace App\Livewire\Asesorias;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Asesoria;
+use App\Models\Factura;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class Index extends Component
 {
@@ -16,6 +20,112 @@ class Index extends Component
     public $filtroTipo = '';
     public $filtroFecha = '';
 
+    public function generarRecibo($asesoriaId)
+    {
+        $user = auth()->user();
+        $canManageBilling = $user->can('manage billing');
+        $tenant = $user->tenant;
+        $settings = $tenant?->settings ?? [];
+        $billingEnabled = (bool) ($settings['asesorias_billing_enabled'] ?? false);
+        $applyIva = (bool) ($settings['asesorias_billing_apply_iva'] ?? true);
+
+        if (!$billingEnabled || !$canManageBilling) {
+            $this->dispatch('notify-error', 'No tienes permisos para emitir recibos o la función no está habilitada.');
+            return;
+        }
+
+        $asesoria = Asesoria::with('cliente')->findOrFail($asesoriaId);
+        if (!$asesoria->pagado) {
+            $this->dispatch('notify-error', 'Para emitir un recibo, primero marca la asesoría como pagada.');
+            return;
+        }
+        if (empty($asesoria->cliente_id)) {
+            $this->dispatch('notify-error', 'No se puede emitir recibo: la asesoría no tiene cliente asociado.');
+            return;
+        }
+
+        try {
+            DB::beginTransaction();
+
+            if ($asesoria->factura_id) {
+                $factura = Factura::find($asesoria->factura_id);
+            } else {
+                $factura = null;
+            }
+
+            $total = (float) $asesoria->costo;
+            $subtotal = $applyIva ? ($total / 1.16) : $total;
+            $iva = $applyIva ? ($total - $subtotal) : 0;
+
+            $payload = [
+                'tenant_id' => $asesoria->tenant_id,
+                'cliente_id' => $asesoria->cliente_id,
+                'subtotal' => $subtotal,
+                'iva' => $iva,
+                'total' => $total,
+                'moneda' => 'MXN',
+                'estado' => 'pagada',
+                'conceptos' => [[
+                    'descripcion' => "Asesoría {$asesoria->folio} - {$asesoria->asunto}",
+                    'monto' => $total,
+                ]],
+                'fecha_emision' => $asesoria->fecha_pago ?? now(),
+                'fecha_vencimiento' => ($asesoria->fecha_pago ?? now())->copy()->addDays(30),
+                'fecha_pago' => $asesoria->fecha_pago ?? now(),
+            ];
+
+            if ($factura) {
+                $factura->update($payload);
+            } else {
+                $factura = Factura::create($payload);
+                $asesoria->update(['factura_id' => $factura->id]);
+            }
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Error generando recibo desde listado: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            $this->dispatch('notify-error', 'No se pudo generar el recibo.');
+            return;
+        }
+
+        $this->dispatch('open-url', ['url' => route('reportes.factura', $factura->id)]);
+    }
+
+    public function compartirTarjeta($asesoriaId)
+    {
+        $asesoria = Asesoria::findOrFail($asesoriaId);
+
+        if (empty($asesoria->public_token)) {
+            $asesoria->update(['public_token' => Str::random(48)]);
+        }
+
+        $url = route('asesorias.public', $asesoria->public_token);
+        $this->dispatch('open-url', ['url' => $url]);
+    }
+
+    public function compartirTarjetaWhatsApp($asesoriaId)
+    {
+        $asesoria = Asesoria::findOrFail($asesoriaId);
+
+        if (empty($asesoria->telefono)) {
+            $this->dispatch('notify-error', 'La asesoría no tiene teléfono para compartir por WhatsApp.');
+            return;
+        }
+
+        if (empty($asesoria->public_token)) {
+            $asesoria->update(['public_token' => Str::random(48)]);
+        }
+
+        $phone = preg_replace('/\D+/', '', $asesoria->telefono);
+        $url = route('asesorias.public', $asesoria->public_token);
+        $msg = "Hola, aquí está el comprobante de tu cita de asesoría ({$asesoria->folio}): {$url}";
+        $wa = "https://wa.me/{$phone}?text=" . urlencode($msg);
+
+        $this->dispatch('open-url', ['url' => $wa]);
+    }
+
     public function updatingSearch()
     {
         $this->resetPage();
@@ -25,6 +135,10 @@ class Index extends Component
     {
         $user = auth()->user();
         $isAdmin = $user->hasRole(['admin', 'super_admin']);
+        $canManageBilling = $user->can('manage billing');
+        $tenant = $user->tenant;
+        $settings = $tenant?->settings ?? [];
+        $billingEnabled = (bool) ($settings['asesorias_billing_enabled'] ?? false);
         
         $query = Asesoria::query()
             ->with(['cliente', 'abogado']);
@@ -77,7 +191,9 @@ class Index extends Component
 
         return view('livewire.asesorias.index', [
             'asesorias' => $asesorias,
-            'stats' => $stats
+            'stats' => $stats,
+            'canManageBilling' => $canManageBilling,
+            'asesoriasBillingEnabled' => $billingEnabled,
         ]);
     }
 }

@@ -93,7 +93,10 @@ class Index extends Component
     public function markAsPaid($id)
     {
         $factura = Factura::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
-        $factura->update(['estado' => 'pagada']);
+        $factura->update([
+            'estado' => 'pagada',
+            'fecha_pago' => now(),
+        ]);
         
         $this->dispatch('notify', 'Factura marcada como pagada');
         $this->loadData();

@@ -25,17 +25,31 @@ class ReportController extends Controller
         // Convert logo to base64 for better compatibility
         $logoBase64 = null;
         if (isset($tenant->settings['logo_path'])) {
-            $path = storage_path('app/public/' . $tenant->settings['logo_path']);
-            if (file_exists($path)) {
-                $type = pathinfo($path, PATHINFO_EXTENSION);
-                $data = file_get_contents($path);
-                $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+            $logoPath = trim((string) $tenant->settings['logo_path']);
+            if (!empty($logoPath)) {
+                $path = storage_path('app/public/' . $logoPath);
+                if (file_exists($path) && is_file($path) && is_readable($path)) {
+                    try {
+                        $type = pathinfo($path, PATHINFO_EXTENSION);
+                        $data = file_get_contents($path);
+                        if ($data !== false) {
+                            $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                        }
+                    } catch (\Throwable $e) {
+                        // Ignore logo errors and generate PDF without logo
+                    }
+                }
             }
         }
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', compact('factura', 'tenant', 'logoBase64'));
-        
-        return $pdf->download("factura-{$factura->id}.pdf");
+
+        $filename = "factura-{$factura->id}.pdf";
+        if (request()->boolean('download')) {
+            return $pdf->download($filename);
+        }
+
+        return $pdf->stream($filename);
     }
 
     public function expediente(Expediente $expediente)

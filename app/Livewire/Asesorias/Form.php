@@ -3,12 +3,16 @@
 namespace App\Livewire\Asesorias;
 
 use Livewire\Component;
+use App\Models\Asesoria;
 use App\Models\Cliente;
 use App\Models\Expediente;
 use App\Models\EstadoProcesal;
 use App\Models\Evento;
 use App\Models\Factura;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class Form extends Component
@@ -20,6 +24,7 @@ class Form extends Component
     public $nombre_prospecto;
     public $telefono;
     public $email;
+    public $cliente_id;
     public $asunto;
     public $notas;
     public $fecha;
@@ -39,6 +44,10 @@ class Form extends Component
     public $pagado = false;
     public $fecha_pago;
 
+    public $canManageBilling = false;
+    public $asesoriasBillingEnabled = false;
+    public $asesoriasBillingApplyIva = true;
+
     public $suggested_fecha;
     public $suggested_hora;
 
@@ -48,6 +57,12 @@ class Form extends Component
 
     public function mount($asesoria = null)
     {
+        $tenant = auth()->user()->tenant;
+        $settings = $tenant?->settings ?? [];
+        $this->asesoriasBillingEnabled = (bool) ($settings['asesorias_billing_enabled'] ?? false);
+        $this->asesoriasBillingApplyIva = (bool) ($settings['asesorias_billing_apply_iva'] ?? true);
+        $this->canManageBilling = auth()->user()->can('manage billing');
+
         if ($asesoria) {
             $this->asesoria = $asesoria;
             $this->modoEdicion = true;
@@ -198,6 +213,7 @@ class Form extends Component
         $this->nombre_prospecto = $this->asesoria->nombre_prospecto;
         $this->telefono = $this->asesoria->telefono;
         $this->email = $this->asesoria->email;
+        $this->cliente_id = $this->asesoria->cliente_id;
         $this->asunto = $this->asesoria->asunto;
         $this->notas = $this->asesoria->notas;
         $this->fecha = $this->asesoria->fecha_hora->format('Y-m-d');
@@ -244,12 +260,91 @@ class Form extends Component
         }
     }
 
+    public function updatedClienteId($value)
+    {
+        if (empty($value)) {
+            return;
+        }
+
+        $cliente = Cliente::where('tenant_id', auth()->user()->tenant_id)->find($value);
+        if (!$cliente) {
+            return;
+        }
+
+        $this->nombre_prospecto = $cliente->nombre;
+        $this->telefono = $cliente->telefono;
+        $this->email = $cliente->email;
+    }
+
+    private function syncFacturaFromPago(): void
+    {
+        if (!$this->asesoria || !$this->asesoriasBillingEnabled) {
+            return;
+        }
+
+        if (!$this->canManageBilling) {
+            return;
+        }
+
+        $this->asesoria->refresh();
+
+        if (empty($this->asesoria->cliente_id)) {
+            throw new \RuntimeException('No se puede generar el recibo porque la asesoría no tiene cliente asociado.');
+        }
+
+        $factura = null;
+        if ($this->asesoria->factura_id) {
+            $factura = Factura::where('tenant_id', $this->asesoria->tenant_id)->find($this->asesoria->factura_id);
+        }
+
+        if (!$this->asesoria->pagado) {
+            if ($factura) {
+                $factura->update(['estado' => 'pendiente']);
+            }
+            return;
+        }
+
+        $total = (float) $this->asesoria->costo;
+        $subtotal = $this->asesoriasBillingApplyIva ? ($total / 1.16) : $total;
+        $iva = $this->asesoriasBillingApplyIva ? ($total - $subtotal) : 0;
+
+        $payload = [
+            'tenant_id' => $this->asesoria->tenant_id,
+            'cliente_id' => $this->asesoria->cliente_id,
+            'subtotal' => $subtotal,
+            'iva' => $iva,
+            'total' => $total,
+            'moneda' => 'MXN',
+            'estado' => 'pagada',
+            'conceptos' => [[
+                'descripcion' => "Asesoría {$this->asesoria->folio} - {$this->asesoria->asunto}",
+                'monto' => $total,
+            ]],
+            'fecha_emision' => $this->asesoria->fecha_pago ?? now(),
+            'fecha_vencimiento' => ($this->asesoria->fecha_pago ?? now())->copy()->addDays(30),
+            'fecha_pago' => $this->asesoria->fecha_pago ?? now(),
+        ];
+
+        if ($factura) {
+            $factura->update($payload);
+        } else {
+            $factura = Factura::create($payload);
+            $this->asesoria->update(['factura_id' => $factura->id]);
+        }
+    }
+
     public function guardar()
     {
         $user = auth()->user();
         $isAdmin = $user->hasRole(['admin', 'super_admin']);
 
         $rules = [
+            'cliente_id' => [
+                'required',
+                Rule::exists('clientes', 'id')->where(function ($q) use ($user) {
+                    $q->where('tenant_id', $user->tenant_id);
+                }),
+            ],
             'nombre_prospecto' => 'required|string|max:255',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
@@ -311,6 +406,7 @@ class Form extends Component
         }
 
         $datos = [
+            'cliente_id' => $this->cliente_id,
             'nombre_prospecto' => $this->nombre_prospecto,
             'telefono' => $this->telefono,
             'email' => $this->email,
@@ -327,23 +423,51 @@ class Form extends Component
             'motivo_no_atencion' => $this->motivo_no_atencion,
             'resumen' => $this->resumen,
             'prospecto_acepto' => $this->prospecto_acepto,
-            'pagado' => $this->pagado,
-            'fecha_pago' => $this->pagado ? ($this->fecha_pago ?? now()) : null,
         ];
 
-        // Crear o Actualizar
-        if ($this->modoEdicion) {
-            $this->asesoria->update($datos);
-            $mensaje = 'Asesoría actualizada correctamente.';
-        } else {
-            $datos['tenant_id'] = auth()->user()->tenant_id;
-            $this->asesoria = Asesoria::create($datos);
-            $mensaje = 'Asesoría agendada correctamente.';
-            $this->modoEdicion = true; // Cambiar a modo edición
+        if ($this->asesoriasBillingEnabled && $this->canManageBilling) {
+            $datos['pagado'] = (bool) $this->pagado;
+            $datos['fecha_pago'] = $this->pagado ? ($this->fecha_pago ?? now()) : null;
         }
 
-        if ($syncToAgenda && $this->asesoria) {
-            $this->syncAsesoriaToAgenda();
+        $facturaUrl = null;
+        $shouldOfferReceipt = false;
+
+        try {
+            DB::beginTransaction();
+
+            // Crear o Actualizar
+            if ($this->modoEdicion) {
+                $this->asesoria->update($datos);
+                $mensaje = 'Asesoría guardada correctamente.';
+            } else {
+                $datos['tenant_id'] = auth()->user()->tenant_id;
+                $this->asesoria = Asesoria::create($datos);
+                $mensaje = 'Asesoría guardada correctamente.';
+                $this->modoEdicion = true; // Cambiar a modo edición
+            }
+
+            if ($syncToAgenda && $this->asesoria) {
+                $this->syncAsesoriaToAgenda();
+            }
+
+            if ($this->asesoriasBillingEnabled && $this->canManageBilling) {
+                $this->syncFacturaFromPago();
+            }
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Error guardando asesoría/recibo: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            $this->dispatch('notify-error', 'No se pudo guardar la asesoría o generar el recibo. Revisa los datos e inténtalo de nuevo.');
+            return;
+        }
+
+        $this->asesoria->refresh();
+        if ($this->asesoriasBillingEnabled && $this->canManageBilling && $this->asesoria->pagado && $this->asesoria->factura_id) {
+            $shouldOfferReceipt = true;
+            $facturaUrl = route('reportes.factura', $this->asesoria->factura_id);
         }
 
         // Lógica de conversión a Cliente / Expediente
@@ -357,11 +481,17 @@ class Form extends Component
             $mensaje .= ' Se creó el expediente.';
         }
 
-        $this->dispatch('notify', $mensaje);
-        
-        if (!$this->modoEdicion) {
-            return redirect()->route('asesorias.index');
+        if ($shouldOfferReceipt && $facturaUrl) {
+            $this->dispatch('asesoria-saved-receipt', [
+                'message' => $mensaje,
+                'facturaUrl' => $facturaUrl,
+                'redirectUrl' => route('asesorias.index'),
+            ]);
+            return;
         }
+
+        $this->dispatch('notify', $mensaje);
+        return redirect()->route('asesorias.index');
     }
 
     public function convertirACliente()
@@ -422,7 +552,10 @@ class Form extends Component
     {
         return view('livewire.asesorias.form', [
             'abogados' => User::where('tenant_id', auth()->user()->tenant_id)->role('abogado')->get(),
+            'clientes' => Cliente::where('tenant_id', auth()->user()->tenant_id)->orderBy('nombre')->get(),
             'isAdmin' => auth()->user()->hasRole(['admin', 'super_admin']),
+            'canManageBilling' => auth()->user()->can('manage billing'),
+            'asesoriasBillingEnabled' => (bool) (auth()->user()->tenant?->settings['asesorias_billing_enabled'] ?? false),
         ]);
     }
 }

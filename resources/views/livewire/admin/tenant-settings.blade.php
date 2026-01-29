@@ -31,6 +31,54 @@
                                     </p>
                                 </div>
                             </div>
+
+                            <div class="md:col-span-2 pt-6 border-t">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Datos de Pago (para compartir con clientes)') }}</h3>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="border border-gray-200 rounded-lg p-4">
+                                        <div class="text-sm font-bold text-gray-900 mb-3">Transferencia</div>
+
+                                        <div class="grid grid-cols-1 gap-4">
+                                            <div>
+                                                <x-input-label for="payment_transfer_bank" :value="__('Banco')" />
+                                                <x-text-input wire:model="payment_transfer_bank" id="payment_transfer_bank" class="block mt-1 w-full" type="text" />
+                                            </div>
+                                            <div>
+                                                <x-input-label for="payment_transfer_holder" :value="__('Titular')" />
+                                                <x-text-input wire:model="payment_transfer_holder" id="payment_transfer_holder" class="block mt-1 w-full" type="text" />
+                                            </div>
+                                            <div>
+                                                <x-input-label for="payment_transfer_clabe" :value="__('CLABE')" />
+                                                <x-text-input wire:model="payment_transfer_clabe" id="payment_transfer_clabe" class="block mt-1 w-full" type="text" />
+                                            </div>
+                                            <div>
+                                                <x-input-label for="payment_transfer_account" :value="__('Cuenta')" />
+                                                <x-text-input wire:model="payment_transfer_account" id="payment_transfer_account" class="block mt-1 w-full" type="text" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="border border-gray-200 rounded-lg p-4">
+                                        <div class="text-sm font-bold text-gray-900 mb-3">Tarjeta</div>
+
+                                        <div class="grid grid-cols-1 gap-4">
+                                            <div>
+                                                <x-input-label for="payment_card_bank" :value="__('Banco')" />
+                                                <x-text-input wire:model="payment_card_bank" id="payment_card_bank" class="block mt-1 w-full" type="text" />
+                                            </div>
+                                            <div>
+                                                <x-input-label for="payment_card_holder" :value="__('Titular')" />
+                                                <x-text-input wire:model="payment_card_holder" id="payment_card_holder" class="block mt-1 w-full" type="text" />
+                                            </div>
+                                            <div>
+                                                <x-input-label for="payment_card_number" :value="__('Número de tarjeta')" />
+                                                <x-text-input wire:model="payment_card_number" id="payment_card_number" class="block mt-1 w-full" type="text" placeholder="XXXX XXXX XXXX 1234" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div class="mt-4 pt-4 border-t border-indigo-200 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -141,6 +189,32 @@
                                 <x-input-error :messages="$errors->get('direccion')" class="mt-2" />
                             </div>
 
+                            <div class="md:col-span-2 pt-6 border-t">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Tarjeta de Cita (Comprobante)') }}</h3>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div class="md:col-span-1">
+                                        <x-input-label for="asesorias_contact_phone" :value="__('Teléfono del Despacho para Asesorías')" />
+                                        <x-text-input wire:model="asesorias_contact_phone" id="asesorias_contact_phone" class="block mt-1 w-full" type="text" placeholder="+52 55 1234 5678" />
+                                        <p class="mt-1 text-xs text-gray-500 italic">Se usa para el QR de llamadas telefónicas (tel:).</p>
+                                        <x-input-error :messages="$errors->get('asesorias_contact_phone')" class="mt-2" />
+                                    </div>
+
+                                    <div>
+                                        <x-input-label for="asesorias_location_lat" :value="__('Ubicación (Latitud)')" />
+                                        <x-text-input wire:model="asesorias_location_lat" id="asesorias_location_lat" class="block mt-1 w-full" type="text" placeholder="19.4326" />
+                                        <x-input-error :messages="$errors->get('asesorias_location_lat')" class="mt-2" />
+                                    </div>
+
+                                    <div>
+                                        <x-input-label for="asesorias_location_lon" :value="__('Ubicación (Longitud)')" />
+                                        <x-text-input wire:model="asesorias_location_lon" id="asesorias_location_lon" class="block mt-1 w-full" type="text" placeholder="-99.1332" />
+                                        <p class="mt-1 text-xs text-gray-500 italic">Se usa para mostrar clima (Open-Meteo) en la tarjeta.</p>
+                                        <x-input-error :messages="$errors->get('asesorias_location_lon')" class="mt-2" />
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Titulares Adjuntos -->
                             <div class="md:col-span-2">
                                 <x-input-label for="titulares_adjuntos" :value="__('Titulares Adjuntos (separados por coma)')" />
@@ -188,6 +262,24 @@
                             <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Asesorías y Agenda') }}</h3>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="md:col-span-2">
+                                    <div class="flex items-center space-x-3">
+                                        <input type="checkbox" wire:model.live="asesorias_billing_enabled" id="asesorias_billing_enabled" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                        <x-input-label for="asesorias_billing_enabled" :value="__('Habilitar cobros de Asesorías (Facturación/Recibo/WhatsApp)')" />
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500 italic">Activa la integración para registrar ingresos de asesorías y emitir recibos sin afectar otros módulos.</p>
+                                </div>
+
+                                @if($asesorias_billing_enabled)
+                                    <div class="md:col-span-2">
+                                        <div class="flex items-center space-x-3">
+                                            <input type="checkbox" wire:model.live="asesorias_billing_apply_iva" id="asesorias_billing_apply_iva" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                            <x-input-label for="asesorias_billing_apply_iva" :value="__('Aplicar IVA (16%) en recibos de asesorías')" />
+                                        </div>
+                                        <p class="mt-1 text-xs text-gray-500 italic">Si está desactivado, el total se registrará como subtotal y el IVA será $0.00.</p>
+                                    </div>
+                                @endif
+
                                 <div>
                                     <x-input-label for="asesorias_working_hours_start" :value="__('Horario laboral (inicio)')" />
                                     <x-text-input wire:model="asesorias_working_hours_start" id="asesorias_working_hours_start" type="time" class="block mt-1 w-full" />

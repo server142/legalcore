@@ -78,7 +78,7 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 hidden md:table">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Folio / Prospecto</th>
@@ -141,7 +141,60 @@
                                 {{ $asesoria->abogado->name }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('asesorias.edit', $asesoria) }}" class="text-indigo-600 hover:text-indigo-900 mr-3 font-bold">Gestionar</a>
+                                <div class="flex items-center justify-end">
+                                    <button type="button" wire:click="compartirTarjeta({{ $asesoria->id }})" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 mr-2" title="Ver comprobante de cita">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M5 11h14M5 7h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2z" />
+                                        </svg>
+                                    </button>
+
+                                    @if(!empty($asesoria->telefono))
+                                        <button type="button" wire:click="compartirTarjetaWhatsApp({{ $asesoria->id }})" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-900 mr-3" title="Enviar comprobante de cita por WhatsApp">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 20l1.5-4.5A8.5 8.5 0 1112 20a8.4 8.4 0 01-3.6-.8L3 20z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.5 9.8c.2-.7.6-1.2 1.1-1.4.4-.2 1-.1 1.4.2.6.5 1.2 1.2 1.7 1.8.3.4.4 1 .2 1.4-.2.5-.7.9-1.4 1.1.7 1.1 1.6 2 2.7 2.7.2-.7.6-1.2 1.1-1.4.4-.2 1-.1 1.4.2.6.5 1.2 1.2 1.7 1.8.3.4.4 1 .2 1.4-.4.8-1.2 1.3-2.4 1.4-1.5.2-3.6-.7-5.6-2.7-2-2-2.9-4.1-2.7-5.6.1-1.2.6-2 1.4-2.4z" />
+                                            </svg>
+                                        </button>
+                                    @endif
+
+                                    @if($canManageBilling && $asesoriasBillingEnabled)
+                                        @if($asesoria->pagado)
+                                            @if($asesoria->factura_id)
+                                                <a href="{{ route('reportes.factura', $asesoria->factura_id) }}" target="_blank" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 mr-2" title="Abrir recibo (PDF)">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3h7l3 3v15a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3v4h4" />
+                                                    </svg>
+                                                </a>
+                                            @else
+                                                <button type="button" wire:click="generarRecibo({{ $asesoria->id }})" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-indigo-800 mr-2" title="Generar recibo (PDF)">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3h7l3 3v15a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3v4h4" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v6m-3-3h6" />
+                                                    </svg>
+                                                </button>
+                                            @endif
+
+                                            @if(!empty($asesoria->telefono))
+                                                @php
+                                                    $phone = preg_replace('/\D+/', '', $asesoria->telefono);
+                                                    $msg = "Hola, te comparto el recibo de tu asesoría ({$asesoria->folio}).";
+                                                    if ($asesoria->factura_id) {
+                                                        $msg .= " Puedes descargarlo aquí: " . route('reportes.factura', $asesoria->factura_id);
+                                                    }
+                                                    $wa = "https://wa.me/{$phone}?text=" . urlencode($msg);
+                                                @endphp
+                                                <a href="{{ $wa }}" target="_blank" rel="noopener" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-900" title="Enviar recibo por WhatsApp">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 20l1.5-4.5A8.5 8.5 0 1112 20a8.4 8.4 0 01-3.6-.8L3 20z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.5 9.8c.2-.7.6-1.2 1.1-1.4.4-.2 1-.1 1.4.2.6.5 1.2 1.2 1.7 1.8.3.4.4 1 .2 1.4-.2.5-.7.9-1.4 1.1.7 1.1 1.6 2 2.7 2.7.2-.7.6-1.2 1.1-1.4.4-.2 1-.1 1.4.2.6.5 1.2 1.2 1.7 1.8.3.4.4 1 .2 1.4-.4.8-1.2 1.3-2.4 1.4-1.5.2-3.6-.7-5.6-2.7-2-2-2.9-4.1-2.7-5.6.1-1.2.6-2 1.4-2.4z" />
+                                                    </svg>
+                                                </a>
+                                            @endif
+                                        @endif
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -155,9 +208,131 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="block md:hidden">
+            @forelse($asesorias as $asesoria)
+                <div class="p-4 border-b border-gray-200 hover:bg-gray-50 transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-xs font-bold text-indigo-600 uppercase tracking-wide">{{ $asesoria->folio }}</span>
+                        @if($asesoria->estado == 'agendada')
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Agendada</span>
+                        @elseif($asesoria->estado == 'realizada')
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Realizada</span>
+                        @elseif($asesoria->estado == 'cancelada')
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Cancelada</span>
+                        @else
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">No Atendida</span>
+                        @endif
+                    </div>
+
+                    <div class="space-y-2 mb-4">
+                        <h3 class="text-base font-bold text-gray-900 leading-tight">{{ $asesoria->nombre_prospecto }}</h3>
+                        <div class="text-xs text-gray-500 truncate">{{ $asesoria->asunto }}</div>
+
+                        <div class="flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span>{{ $asesoria->fecha_hora->format('d/m/Y H:i') }} ({{ $asesoria->duracion_minutos }} min)</span>
+                        </div>
+
+                        <div class="flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <span class="truncate">{{ $asesoria->abogado->name }}</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            @if($asesoria->tipo == 'presencial')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">🏢 Presencial</span>
+                            @elseif($asesoria->tipo == 'telefonica')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">📞 Telefónica</span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">📹 Video</span>
+                                @if(!empty($asesoria->link_videoconferencia))
+                                    <a href="{{ $asesoria->link_videoconferencia }}" target="_blank" rel="noopener noreferrer" class="text-xs text-indigo-600 underline hover:text-indigo-800 font-bold">Abrir videollamada</a>
+                                @endif
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-2 pt-2 border-t border-gray-100">
+                        <button type="button" wire:click="compartirTarjeta({{ $asesoria->id }})" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900" title="Ver comprobante de cita">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M5 11h14M5 7h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2z" />
+                            </svg>
+                        </button>
+
+                        @if(!empty($asesoria->telefono))
+                            <button type="button" wire:click="compartirTarjetaWhatsApp({{ $asesoria->id }})" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-900" title="Enviar comprobante de cita por WhatsApp">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 20l1.5-4.5A8.5 8.5 0 1112 20a8.4 8.4 0 01-3.6-.8L3 20z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.5 9.8c.2-.7.6-1.2 1.1-1.4.4-.2 1-.1 1.4.2.6.5 1.2 1.2 1.7 1.8.3.4.4 1 .2 1.4-.2.5-.7.9-1.4 1.1.7 1.1 1.6 2 2.7 2.7.2-.7.6-1.2 1.1-1.4.4-.2 1-.1 1.4.2.6.5 1.2 1.2 1.7 1.8.3.4.4 1 .2 1.4-.4.8-1.2 1.3-2.4 1.4-1.5.2-3.6-.7-5.6-2.7-2-2-2.9-4.1-2.7-5.6.1-1.2.6-2 1.4-2.4z" />
+                                </svg>
+                            </button>
+                        @endif
+
+                        @if($canManageBilling && $asesoriasBillingEnabled)
+                            @if($asesoria->pagado)
+                                @if($asesoria->factura_id)
+                                    <a href="{{ route('reportes.factura', $asesoria->factura_id) }}" target="_blank" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900" title="Abrir recibo (PDF)">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3h7l3 3v15a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3v4h4" />
+                                        </svg>
+                                    </a>
+                                @else
+                                    <button type="button" wire:click="generarRecibo({{ $asesoria->id }})" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-indigo-800" title="Generar recibo (PDF)">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3h7l3 3v15a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3v4h4" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v6m-3-3h6" />
+                                        </svg>
+                                    </button>
+                                @endif
+
+                                @if(!empty($asesoria->telefono))
+                                    @php
+                                        $phone = preg_replace('/\D+/', '', $asesoria->telefono);
+                                        $msg = "Hola, te comparto el recibo de tu asesoría ({$asesoria->folio}).";
+                                        if ($asesoria->factura_id) {
+                                            $msg .= " Puedes descargarlo aquí: " . route('reportes.factura', $asesoria->factura_id);
+                                        }
+                                        $wa = "https://wa.me/{$phone}?text=" . urlencode($msg);
+                                    @endphp
+                                    <a href="{{ $wa }}" target="_blank" rel="noopener" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-900" title="Enviar recibo por WhatsApp">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 20l1.5-4.5A8.5 8.5 0 1112 20a8.4 8.4 0 01-3.6-.8L3 20z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.5 9.8c.2-.7.6-1.2 1.1-1.4.4-.2 1-.1 1.4.2.6.5 1.2 1.2 1.7 1.8.3.4.4 1 .2 1.4-.2.5-.7.9-1.4 1.1.7 1.1 1.6 2 2.7 2.7.2-.7.6-1.2 1.1-1.4.4-.2 1-.1 1.4.2.6.5 1.2 1.2 1.7 1.8.3.4.4 1 .2 1.4-.4.8-1.2 1.3-2.4 1.4-1.5.2-3.6-.7-5.6-2.7-2-2-2.9-4.1-2.7-5.6.1-1.2.6-2 1.4-2.4z" />
+                                        </svg>
+                                    </a>
+                                @endif
+                            @endif
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="px-6 py-12 text-center text-gray-500">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    <p class="mt-2 text-sm font-medium">No se encontraron asesorías</p>
+                </div>
+            @endforelse
+        </div>
         
         <div class="p-4 border-t border-gray-200">
             {{ $asesorias->links() }}
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    window.addEventListener('open-url', (event) => {
+        const data = event.detail?.[0] || event.detail || {};
+        if (data.url) {
+            window.open(data.url, '_blank');
+        }
+    });
+</script>
+@endpush

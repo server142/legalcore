@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\BelongsToTenant;
+use Illuminate\Support\Str;
 
 class Asesoria extends Model
 {
@@ -18,6 +19,7 @@ class Asesoria extends Model
         'factura_id',
         'expediente_id',
         'folio',
+        'public_token',
         'tipo',
         'estado',
         'nombre_prospecto',
@@ -54,6 +56,10 @@ class Asesoria extends Model
             if (!$asesoria->folio) {
                 $count = static::where('tenant_id', $asesoria->tenant_id)->count() + 1;
                 $asesoria->folio = 'ASE-' . str_pad($count, 5, '0', STR_PAD_LEFT);
+            }
+
+            if (empty($asesoria->public_token)) {
+                $asesoria->public_token = Str::random(48);
             }
         });
     }
