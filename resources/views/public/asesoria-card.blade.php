@@ -309,46 +309,23 @@
                         return;
                     }
 
-                    // Crear canvas para generar imagen PNG
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 180;
-                    canvas.height = 180;
-                    const ctx = canvas.getContext('2d');
-
-                    // Generar QR con mayor nivel de corrección de errores
-                    const qr = window.qrcode(0, 'H'); // Nivel H (High) para mejor legibilidad
+                    // Generar QR con nivel de corrección alto y tamaño adecuado
+                    const qr = window.qrcode(0, 'H'); // Nivel H para mejor legibilidad
                     qr.addData(url);
                     qr.make();
-
-                    // Dibujar en canvas
-                    const cellSize = 4;
-                    const margin = 10;
-                    const size = qr.getModuleCount();
-                    const totalSize = size * cellSize;
-                    const offset = (canvas.width - totalSize) / 2;
-
-                    // Fondo blanco
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                    // Dibujar QR
-                    for (let row = 0; row < size; row++) {
-                        for (let col = 0; col < size; col++) {
-                            if (qr.isDark(row, col)) {
-                                ctx.fillStyle = '#000000';
-                                ctx.fillRect(offset + col * cellSize, offset + row * cellSize, cellSize, cellSize);
-                            }
-                        }
+                    
+                    // Generar SVG con mejor configuración
+                    const svgString = qr.createSvgTag(5, 0); // cellSize=5, margin=0
+                    el.innerHTML = svgString;
+                    
+                    // Asegurar que el SVG tenga tamaño correcto
+                    const svg = el.querySelector('svg');
+                    if (svg) {
+                        svg.setAttribute('width', '180');
+                        svg.setAttribute('height', '180');
+                        svg.style.width = '180px';
+                        svg.style.height = '180px';
                     }
-
-                    // Convertir canvas a imagen y mostrar
-                    const img = document.createElement('img');
-                    img.src = canvas.toDataURL('image/png');
-                    img.className = 'w-full h-full rounded-xl';
-                    img.alt = 'QR Code';
-                    el.innerHTML = '';
-                    el.appendChild(img);
-
                 } catch (e) {
                     console.error('Error generando QR:', e);
                     el.innerHTML = '<div class="text-xs text-gray-500">QR no disponible</div>';
