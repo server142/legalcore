@@ -102,11 +102,15 @@
                                         $qrUrl .= '?' . $parsed['query'];
                                     }
                                 }
-                            } elseif ($asesoria->tipo === 'telefonica' && !empty($contactPhone)) {
-                                $phoneDigits = preg_replace('/\D+/', '', $contactPhone);
-                                $qrUrl = 'tel:+' . ltrim($phoneDigits, '+');
-                                $qrTitle = 'Escanea para llamar al despacho';
-                                $qrHint = 'Si tu equipo no abre llamadas desde QR, copia el número y márcalo manualmente.';
+                            } elseif ($asesoria->tipo === 'telefonica') {
+                                // Usar teléfono del cliente si existe, sino del despacho
+                                $clientPhone = !empty($asesoria->telefono) ? $asesoria->telefono : $contactPhone;
+                                if (!empty($clientPhone)) {
+                                    $phoneDigits = preg_replace('/\D+/', '', $clientPhone);
+                                    $qrUrl = 'tel:+' . ltrim($phoneDigits, '+');
+                                    $qrTitle = 'Escanea para llamar al cliente';
+                                    $qrHint = 'Si tu equipo no abre llamadas desde QR, copia el número y márcalo manualmente.';
+                                }
                             } elseif ($asesoria->tipo === 'presencial' && !empty($direccion)) {
                                 $qrUrl = $mapsUrl;
                                 $qrTitle = 'Escanea para abrir la ubicación';
@@ -279,11 +283,16 @@
                 const iso = @json($asesoria->fecha_hora->format('Y-m-d\\TH:00:00'));
                 const date = @json($asesoria->fecha_hora->format('Y-m-d'));
 
+                console.log('Clima - lat:', lat, 'lon:', lon, 'iso:', iso, 'date:', date);
+
                 const url = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&hourly=temperature_2m,precipitation_probability,weathercode&timezone=auto&start_date=${date}&end_date=${date}`;
+
+                console.log('Clima URL:', url);
 
                 fetch(url)
                     .then(r => r.json())
                     .then(data => {
+                        console.log('Clima data:', data);
                         const t = data?.hourly?.time || [];
                         const temp = data?.hourly?.temperature_2m || [];
                         const pop = data?.hourly?.precipitation_probability || [];
@@ -298,10 +307,16 @@
                         const vPop = pop[idx];
                         el.textContent = `${vTemp}°C · Prob. lluvia ${vPop}% (hora de la cita)`;
                     })
-                    .catch(() => {
+                    .catch((error) => {
+                        console.error('Error clima:', error);
                         el.textContent = 'No se pudo cargar el clima.';
                     });
             })();
+        </script>
+    @else
+        <script>
+            console.log('Clima - lat:', @json($lat), 'lon:', @json($lon), 'fecha_hora:', @json($asesoria->fecha_hora ? $asesoria->fecha_hora->format('Y-m-d H:i:s') : 'null'));
+            console.log('Clima no se muestra porque falta lat, lon o fecha_hora');
         </script>
     @endif
 
