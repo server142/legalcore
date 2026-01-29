@@ -413,7 +413,8 @@
                 </div>
             </div>
             <div class="px-6 pb-6 flex justify-end gap-3">
-                <button type="button" data-action="no" class="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 font-bold hover:bg-gray-50">No, regresar</button>
+                <button type="button" data-action="edit" class="px-4 py-2 rounded-xl bg-gray-600 text-white font-bold hover:bg-gray-700">Seguir editando</button>
+                <button type="button" data-action="no" class="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 font-bold hover:bg-gray-50">Regresar a lista</button>
                 <button type="button" data-action="yes" class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700">Sí, emitir recibo</button>
             </div>
         `;
@@ -430,6 +431,11 @@
                 cleanup();
                 if (data.redirectUrl) window.location.href = data.redirectUrl;
             }
+        });
+
+        modal.querySelector('[data-action="edit"]').addEventListener('click', () => {
+            cleanup();
+            // No hace nada, se queda en la misma página
         });
 
         modal.querySelector('[data-action="no"]').addEventListener('click', () => {
