@@ -312,7 +312,8 @@
                 const el = document.getElementById('qr');
                 if (!el) return;
 
-                // Hardcodear URL corta para pruebas
+                try {
+                    // Hardcodear URL corta para pruebas
                     const url = 'https://meet.google.com/abc-defg-hij'; // URL de prueba corta
                     console.log('QR URL (hardcodeada):', url); // Debug
                     
