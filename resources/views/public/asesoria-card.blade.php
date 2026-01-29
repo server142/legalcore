@@ -313,9 +313,9 @@
                 if (!el) return;
 
                 try {
-                    // Hardcodear URL corta para pruebas
-                    const url = 'https://meet.google.com/abc-defg-hij'; // URL de prueba corta
-                    console.log('QR URL (hardcodeada):', url); // Debug
+                    // Usar URL real de la asesoría
+                    const url = @json($qrUrl);
+                    console.log('QR URL (real):', url); // Debug
                     
                     if (typeof qrcode === 'undefined') {
                         console.error('QR library not loaded');
