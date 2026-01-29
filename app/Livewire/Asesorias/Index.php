@@ -131,6 +131,41 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function edit($asesoriaId)
+    {
+        $user = auth()->user();
+        $isAdmin = $user->hasRole(['admin', 'super_admin']);
+        $asesoria = Asesoria::findOrFail($asesoriaId);
+
+        // Solo el creador (abogado_id) o admin pueden editar
+        if (!$isAdmin && $asesoria->abogado_id !== $user->id) {
+            $this->dispatch('notify-error', 'No tienes permisos para editar esta asesoría.');
+            return;
+        }
+
+        return redirect()->route('asesorias.edit', $asesoriaId);
+    }
+
+    public function delete($asesoriaId)
+    {
+        $user = auth()->user();
+        $isAdmin = $user->hasRole(['admin', 'super_admin']);
+        $asesoria = Asesoria::findOrFail($asesoriaId);
+
+        // Solo el creador (abogado_id) o admin pueden eliminar
+        if (!$isAdmin && $asesoria->abogado_id !== $user->id) {
+            $this->dispatch('notify-error', 'No tienes permisos para eliminar esta asesoría.');
+            return;
+        }
+
+        try {
+            $asesoria->delete();
+            $this->dispatch('notify', 'Asesoría eliminada correctamente.');
+        } catch (\Exception $e) {
+            $this->dispatch('notify-error', 'No se pudo eliminar la asesoría.');
+        }
+    }
+
     public function render()
     {
         $user = auth()->user();
@@ -194,6 +229,8 @@ class Index extends Component
             'stats' => $stats,
             'canManageBilling' => $canManageBilling,
             'asesoriasBillingEnabled' => $billingEnabled,
+            'isAdmin' => $isAdmin,
+            'currentUserId' => $user->id,
         ]);
     }
 }
