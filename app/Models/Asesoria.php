@@ -54,7 +54,10 @@ class Asesoria extends Model
 
         static::creating(function ($asesoria) {
             if (!$asesoria->folio) {
-                $count = static::where('tenant_id', $asesoria->tenant_id)->count() + 1;
+                // Contar por tenant sin el scope global de BelongsToTenant
+                $count = static::withoutGlobalScope('tenant')
+                    ->where('tenant_id', $asesoria->tenant_id)
+                    ->count() + 1;
                 $asesoria->folio = 'ASE-' . str_pad($count, 5, '0', STR_PAD_LEFT);
             }
 
