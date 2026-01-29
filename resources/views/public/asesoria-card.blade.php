@@ -92,6 +92,16 @@
                                 $qrUrl = $asesoria->link_videoconferencia;
                                 $qrTitle = 'Escanea para abrir la videollamada';
                                 $qrHint = 'Recomendación: usa audífonos y una red estable.';
+                                
+                                // Si la URL es muy larga, acortarla para QR
+                                if (strlen($qrUrl) > 200) {
+                                    // Extraer solo el dominio y path principal para QR
+                                    $parsed = parse_url($qrUrl);
+                                    $qrUrl = $parsed['scheme'] . '://' . $parsed['host'] . (isset($parsed['path']) ? $parsed['path'] : '');
+                                    if (isset($parsed['query'])) {
+                                        $qrUrl .= '?' . $parsed['query'];
+                                    }
+                                }
                             } elseif ($asesoria->tipo === 'telefonica' && !empty($contactPhone)) {
                                 $phoneDigits = preg_replace('/\D+/', '', $contactPhone);
                                 $qrUrl = 'tel:+' . ltrim($phoneDigits, '+');
@@ -312,8 +322,14 @@
                         return;
                     }
 
-                    // Generar QR con máxima capacidad para URLs largas
-                    const qr = window.qrcode(10, 'L'); // typeNumber=10, nivel L para máxima capacidad
+                    // Generar QR con balance capacidad/corrección
+                    let qr;
+                    try {
+                        qr = window.qrcode(8, 'M'); // Type 8, Nivel M
+                    } catch (e) {
+                        // Fallback a configuración más pequeña
+                        qr = window.qrcode(5, 'L');
+                    }
                     qr.addData(url);
                     qr.make();
                     
