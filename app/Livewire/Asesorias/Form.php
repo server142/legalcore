@@ -551,6 +551,17 @@ class Form extends Component
         $this->crear_cliente = false; // Reset
     }
 
+    public function crearExpedienteDesdeAsesoria()
+    {
+        if (!$this->asesoria || !$this->asesoria->cliente_id || $this->asesoria->expediente_id) {
+            $this->dispatch('notify-error', 'No se puede crear el expediente. La asesoría debe tener un cliente vinculado y no tener un expediente existente.');
+            return;
+        }
+
+        $this->convertirAExpediente();
+        $this->dispatch('notify-success', 'Expediente creado correctamente. Se ha vinculado a esta asesoría.');
+    }
+
     public function convertirAExpediente()
     {
         // Check expediente limit
