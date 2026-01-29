@@ -312,13 +312,13 @@
                         return;
                     }
 
-                    // Generar QR con nivel de corrección medio y tamaño adecuado para URLs largas
-                    const qr = window.qrcode(4, 'M'); // typeNumber=4, nivel M para URLs largas
+                    // Generar QR con máxima capacidad para URLs largas
+                    const qr = window.qrcode(10, 'L'); // typeNumber=10, nivel L para máxima capacidad
                     qr.addData(url);
                     qr.make();
                     
                     // Generar SVG con mejor configuración
-                    const svgString = qr.createSvgTag(4, 0); // cellSize=4, margin=0
+                    const svgString = qr.createSvgTag(3, 0); // cellSize=3, margin=0
                     el.innerHTML = svgString;
                     
                     // Asegurar que el SVG tenga tamaño correcto
