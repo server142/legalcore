@@ -306,7 +306,7 @@
     @endif
 
     @if(!empty($qrUrl))
-        <script src="/js/qrcode.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
         <script>
             (function () {
                 const el = document.getElementById('qr');
@@ -317,55 +317,35 @@
                     const url = 'https://meet.google.com/abc-defg-hij'; // URL de prueba corta
                     console.log('QR URL (hardcodeada):', url); // Debug
                     
-                    if (typeof window.qrcode !== 'function') {
+                    if (typeof qrcode === 'undefined') {
                         console.error('QR library not loaded');
                         el.innerHTML = '<div class="text-xs text-gray-500">QR no disponible</div>';
                         return;
                     }
 
-                    // Múltiples fallbacks para encontrar configuración válida
-                    const configs = [
-                        { type: 5, level: 'L' },
-                        { type: 4, level: 'L' },
-                        { type: 3, level: 'L' },
-                        { type: 2, level: 'L' },
-                        { type: 1, level: 'L' }
-                    ];
+                    // Usar qrcode-generator (más robusto)
+                    const qr = qrcode(0, 'M');
+                    qr.addData(url);
+                    qr.make();
                     
-                    let qr = null;
-                    let error = null;
-                    
-                    for (const config of configs) {
-                        try {
-                            qr = window.qrcode(config.type, config.level);
-                            qr.addData(url);
-                            qr.make();
-                            console.log('QR generado con:', config);
-                            break;
-                        } catch (e) {
-                            console.log('Falló config', config, ':', e.message);
-                            error = e;
-                            continue;
-                        }
-                    }
-                    
-                    if (!qr) {
-                        console.error('No se pudo generar QR con ninguna configuración:', error);
-                        el.innerHTML = '<div class="text-xs text-gray-500">QR no disponible</div>';
-                        return;
-                    }
-                    
-                    // Generar SVG con mejor configuración
-                    const svgString = qr.createSvgTag(4, 0); // cellSize=4, margin=0
+                    // Generar SVG con alto contraste
+                    const svgString = qr.createSvgTag(4, 0);
                     el.innerHTML = svgString;
                     
-                    // Asegurar que el SVG tenga tamaño correcto
+                    // Mejorar contraste y tamaño
                     const svg = el.querySelector('svg');
                     if (svg) {
                         svg.setAttribute('width', '180');
                         svg.setAttribute('height', '180');
                         svg.style.width = '180px';
                         svg.style.height = '180px';
+                        
+                        // Forzar alto contraste
+                        const rects = svg.querySelectorAll('rect[fill="#000000"]');
+                        rects.forEach(rect => rect.setAttribute('fill', '#000000'));
+                        
+                        const bgRects = svg.querySelectorAll('rect[fill="#ffffff"]');
+                        bgRects.forEach(rect => rect.setAttribute('fill', '#ffffff'));
                     }
                 } catch (e) {
                     console.error('Error generando QR:', e);
@@ -373,7 +353,9 @@
                 }
             })();
         </script>
-    @else
+    @endif
+
+    @if(!empty($qrUrl))
         <script>
             console.log('QR URL está vacío o nulo');
             console.log('Tipo asesoría:', @json($asesoria->tipo));
