@@ -304,18 +304,21 @@
 
                 try {
                     const url = @json($qrUrl);
+                    console.log('QR URL:', url); // Debug
+                    
                     if (typeof window.qrcode !== 'function') {
+                        console.error('QR library not loaded');
                         el.innerHTML = '<div class="text-xs text-gray-500">QR no disponible</div>';
                         return;
                     }
 
-                    // Generar QR con nivel de corrección alto y tamaño adecuado
-                    const qr = window.qrcode(0, 'H'); // Nivel H para mejor legibilidad
+                    // Generar QR con nivel de corrección medio y tamaño adecuado para URLs largas
+                    const qr = window.qrcode(4, 'M'); // typeNumber=4, nivel M para URLs largas
                     qr.addData(url);
                     qr.make();
                     
                     // Generar SVG con mejor configuración
-                    const svgString = qr.createSvgTag(5, 0); // cellSize=5, margin=0
+                    const svgString = qr.createSvgTag(4, 0); // cellSize=4, margin=0
                     el.innerHTML = svgString;
                     
                     // Asegurar que el SVG tenga tamaño correcto
@@ -331,6 +334,14 @@
                     el.innerHTML = '<div class="text-xs text-gray-500">QR no disponible</div>';
                 }
             })();
+        </script>
+    @else
+        <script>
+            console.log('QR URL está vacío o nulo');
+            console.log('Tipo asesoría:', @json($asesoria->tipo));
+            console.log('Link videoconferencia:', @json($asesoria->link_videoconferencia ?? 'vacio'));
+            console.log('Contact phone:', @json($contactPhone ?? 'vacio'));
+            console.log('Dirección:', @json($direccion ?? 'vacio'));
         </script>
     @endif
 </body>
