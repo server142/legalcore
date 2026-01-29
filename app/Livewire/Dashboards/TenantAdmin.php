@@ -7,6 +7,7 @@ use Livewire\Component;
 use App\Models\Expediente;
 use App\Models\Cliente;
 use App\Models\Actuacion;
+use App\Models\ExpedientePago;
 
 class TenantAdmin extends Component
 {
@@ -87,8 +88,20 @@ class TenantAdmin extends Component
         // Financial Stats - Only for those who can manage billing
         if ($user->can('manage billing')) {
             try {
-                $this->totalCobrado = \App\Models\Factura::where('estado', 'pagada')->sum('total');
-                $this->pendienteCobro = \App\Models\Factura::where('estado', 'pendiente')->sum('total');
+                // Calcular totales de facturas (TODAS las fechas, del tenant actual)
+                $totalFacturasPagadas = \App\Models\Factura::where('estado', 'pagada')
+                    ->sum('total');
+                $totalFacturasPendientes = \App\Models\Factura::where('estado', 'pendiente')
+                    ->sum('total');
+                
+                // Calcular totales de anticipos (TODAS las fechas, del tenant actual)
+                $totalAnticipos = ExpedientePago::sum('monto');
+                
+                // Combinar para el total cobrado
+                $this->totalCobrado = $totalFacturasPagadas + $totalAnticipos;
+                $this->pendienteCobro = $totalFacturasPendientes;
+                
+                // Contar facturas del mes
                 $this->facturasMes = \App\Models\Factura::whereMonth('created_at', now()->month)
                     ->whereYear('created_at', now()->year)
                     ->count();

@@ -69,16 +69,25 @@ class ReportController extends Controller
         }
 
         $tenant = auth()->user()->tenant;
-        $expediente->load(['cliente', 'abogado', 'actuaciones', 'documentos', 'eventos']);
+        $expediente->load(['cliente', 'abogado', 'actuaciones', 'documentos', 'eventos', 'comentarios.user', 'pagos']);
         
         // Convert logo to base64 for better compatibility
         $logoBase64 = null;
         if (isset($tenant->settings['logo_path'])) {
-            $path = storage_path('app/public/' . $tenant->settings['logo_path']);
-            if (file_exists($path)) {
-                $type = pathinfo($path, PATHINFO_EXTENSION);
-                $data = file_get_contents($path);
-                $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+            $logoPath = trim((string) $tenant->settings['logo_path']);
+            if (!empty($logoPath)) {
+                $path = storage_path('app/public/' . $logoPath);
+                if (file_exists($path) && is_file($path) && is_readable($path)) {
+                    try {
+                        $type = pathinfo($path, PATHINFO_EXTENSION);
+                        $data = file_get_contents($path);
+                        if ($data !== false) {
+                            $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                        }
+                    } catch (\Throwable $e) {
+                        // Ignorar logo errors y generar PDF sin logo
+                    }
+                }
             }
         }
         

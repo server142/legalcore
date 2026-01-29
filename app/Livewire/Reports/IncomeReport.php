@@ -74,21 +74,14 @@ class IncomeReport extends Component
         $from = $this->rangeStart();
         $to = $this->rangeEnd();
         
-        // Calcular totales por separado
-        $this->totalFacturas = Factura::where('estado', 'pagada')
-            ->where(function ($q) use ($from, $to) {
-                $q->whereBetween('fecha_pago', [$from, $to])
-                    ->orWhere(function ($q2) use ($from, $to) {
-                        $q2->whereNull('fecha_pago')
-                            ->whereBetween(DB::raw('COALESCE(fecha_emision, created_at)'), [$from, $to]);
-                    });
-            })
+        // Calcular totales por separado (TODOS los tiempos, del tenant actual)
+        $this->totalFacturas = Factura::where('tenant_id', auth()->user()->tenant_id)
+            ->where('estado', 'pagada')
             ->sum('total');
-            
-        $this->totalAnticipos = ExpedientePago::where('tipo_pago', 'anticipo')
-            ->whereBetween('fecha_pago', [$from, $to])
+        
+        $this->totalAnticipos = ExpedientePago::where('tenant_id', auth()->user()->tenant_id)
             ->sum('monto');
-            
+        
         $this->totalIncome = $this->totalFacturas + $this->totalAnticipos;
     }
 
@@ -138,25 +131,15 @@ class IncomeReport extends Component
 
     public function render()
     {
-        $from = $this->rangeStart();
-        $to = $this->rangeEnd();
-        
-        // Obtener facturas pagadas
-        $facturas = Factura::where('estado', 'pagada')
-            ->where(function ($q) use ($from, $to) {
-                $q->whereBetween('fecha_pago', [$from, $to])
-                    ->orWhere(function ($q2) use ($from, $to) {
-                        $q2->whereNull('fecha_pago')
-                            ->whereBetween(DB::raw('COALESCE(fecha_emision, created_at)'), [$from, $to]);
-                    });
-            })
+        // Obtener facturas pagadas (del tenant actual)
+        $facturas = Factura::where('tenant_id', auth()->user()->tenant_id)
+            ->where('estado', 'pagada')
             ->with('cliente')
             ->orderByRaw('COALESCE(fecha_pago, fecha_emision, created_at) desc')
             ->get();
             
-        // Obtener anticipos
-        $anticipos = ExpedientePago::where('tipo_pago', 'anticipo')
-            ->whereBetween('fecha_pago', [$from, $to])
+        // Obtener anticipos (del tenant actual, todos los tipos)
+        $anticipos = ExpedientePago::where('tenant_id', auth()->user()->tenant_id)
             ->with('expediente.cliente')
             ->orderBy('fecha_pago', 'desc')
             ->get();
@@ -179,14 +162,14 @@ class IncomeReport extends Component
         
         foreach ($anticipos as $anticipo) {
             $ingresos->push((object)[
-                'tipo' => 'anticipo',
+                'tipo' => 'pago',
                 'fecha' => $anticipo->fecha_pago,
                 'cliente' => $anticipo->expediente->cliente->nombre ?? '',
-                'concepto' => 'Anticipo - ' . $anticipo->expediente->numero,
+                'concepto' => ($anticipo->tipo_pago == 'anticipo' ? 'Anticipo' : 'Parcial') . ' - ' . $anticipo->expediente->numero,
                 'monto' => $anticipo->monto,
                 'moneda' => 'MXN',
                 'id' => $anticipo->id,
-                'referencia' => $anticipo->referencia ?? 'ANT-' . $anticipo->id,
+                'referencia' => $anticipo->referencia ?? 'PAG-' . $anticipo->id,
             ]);
         }
         

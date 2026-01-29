@@ -97,6 +97,101 @@
         <p>No hay eventos programados.</p>
     @endif
 
+    <div class="section-title">COMENTARIOS ({{ $expediente->comentarios->count() }})</div>
+    @if($expediente->comentarios->count() > 0)
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">Fecha</th>
+                    <th>Usuario</th>
+                    <th>Comentario</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($expediente->comentarios->take(10) as $comentario)
+                    <tr>
+                        <td>{{ $comentario->created_at->format('d/m/Y H:i') }}</td>
+                        <td>{{ $comentario->user->name }}</td>
+                        <td>{{ $comentario->contenido }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @if($expediente->comentarios->count() > 10)
+            <p style="font-size: 11px; color: #6b7280; margin-top: 5px;">
+                * Mostrando los últimos 10 comentarios de {{ $expediente->comentarios->count() }} totales
+            </p>
+        @endif
+    @else
+        <p>No hay comentarios registrados.</p>
+    @endif
+
+    <div class="section-title">RESUMEN FINANCIERO</div>
+    @if($expediente->costo_total && $expediente->costo_total > 0)
+        <table class="data-table">
+            <tr>
+                <th style="width: 35%;">Importe Total:</th>
+                <td style="font-weight: bold; color: #111827;">${{ number_format($expediente->costo_total, 2) }}</td>
+            </tr>
+            <tr>
+                <th>Total Abonado:</th>
+                <td style="font-weight: bold; color: #059669;">${{ number_format($expediente->getTotalPagadoAttribute(), 2) }}</td>
+            </tr>
+            <tr>
+                <th>Saldo Pendiente:</th>
+                <td style="font-weight: bold; color: #d97706;">${{ number_format($expediente->saldo_pendiente, 2) }}</td>
+            </tr>
+            <tr>
+                <th>Estado de Cobro:</th>
+                <td>
+                    @if($expediente->estado_cobro == 'liquidado')
+                        <span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-size: 11px;">LIQUIDADO</span>
+                    @elseif($expediente->estado_cobro == 'parcial_pagado')
+                        <span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-size: 11px;">PARCIAL</span>
+                    @else
+                        <span style="background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 4px; font-size: 11px;">PENDIENTE</span>
+                    @endif
+                </td>
+            </tr>
+        </table>
+        
+        @if($expediente->pagos->count() > 0)
+            <div style="margin-top: 15px;">
+                <div style="font-weight: bold; margin-bottom: 8px;">Detalle de Pagos ({{ $expediente->pagos->count() }}):</div>
+                <table class="data-table" style="font-size: 11px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">Fecha</th>
+                            <th style="width: 60px;">Tipo</th>
+                            <th style="width: 80px;">Monto</th>
+                            <th style="width: 80px;">Método</th>
+                            <th>Referencia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($expediente->pagos->sortBy('fecha_pago') as $pago)
+                            <tr>
+                                <td>{{ $pago->fecha_pago->format('d/m/Y') }}</td>
+                                <td style="text-align: center;">
+                                    @if($pago->tipo_pago == 'anticipo')
+                                        <span style="background: #fef3c7; color: #92400e; padding: 1px 4px; border-radius: 2px; font-size: 10px;">ANT</span>
+                                    @else
+                                        <span style="background: #dbeafe; color: #1e40af; padding: 1px 4px; border-radius: 2px; font-size: 10px;">PAR</span>
+                                    @endif
+                                </td>
+                                <td style="text-align: right;">${{ number_format($pago->monto, 2) }}</td>
+                                <td>{{ $pago->metodo_pago }}</td>
+                                <td>{{ $pago->referencia ?? '-' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    @else
+        <p>Este expediente no tiene configurado un costo total.</p>
+    @endif
+
     <div class="section-title">RESUMEN DE DOCUMENTOS</div>
     <p>Este expediente cuenta con <strong>{{ $expediente->documentos->count() }}</strong> documentos anexos en el sistema digital.</p>
 

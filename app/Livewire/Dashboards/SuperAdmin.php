@@ -4,8 +4,10 @@ namespace App\Livewire\Dashboards;
 
 use Livewire\Component;
 
-use App\Models\Tenant;
 use App\Models\User;
+use App\Models\Tenant;
+use App\Models\Factura;
+use App\Models\ExpedientePago;
 
 class SuperAdmin extends Component
 {
@@ -22,12 +24,28 @@ class SuperAdmin extends Component
         $this->totalUsers = User::count();
         $this->tenants = Tenant::latest()->take(10)->get();
         
-        // Calcular ingresos del mes actual
+        // Calcular ingresos del mes actual (todos los tenants)
         try {
-            $this->monthlyIncome = \App\Models\Payment::whereMonth('payment_date', now()->month)
+            // Ingresos de suscripciones (Payments)
+            $incomeSuscripciones = \App\Models\Payment::whereMonth('payment_date', now()->month)
                 ->whereYear('payment_date', now()->year)
                 ->where('status', 'completed')
                 ->sum('amount');
+            
+            // Ingresos de facturas pagadas (todos los tenants)
+            $incomeFacturas = Factura::where('estado', 'pagada')
+                ->whereMonth('fecha_pago', now()->month)
+                ->whereYear('fecha_pago', now()->year)
+                ->sum('total');
+            
+            // Ingresos de anticipos (todos los tenants)
+            $incomeAnticipos = ExpedientePago::where('tipo_pago', 'anticipo')
+                ->whereMonth('fecha_pago', now()->month)
+                ->whereYear('fecha_pago', now()->year)
+                ->sum('monto');
+            
+            // Sumar todos los ingresos
+            $this->monthlyIncome = $incomeSuscripciones + $incomeFacturas + $incomeAnticipos;
         } catch (\Throwable $e) {
             $this->monthlyIncome = 0;
             \Illuminate\Support\Facades\Log::warning('SuperAdmin Dashboard: Error al calcular ingresos. ' . $e->getMessage());

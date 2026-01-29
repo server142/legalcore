@@ -45,7 +45,7 @@
                 </div>
 
                 <div class="bg-yellow-50 p-6 rounded-xl border border-yellow-100">
-                    <p class="text-yellow-600 text-sm font-bold uppercase tracking-wider">Anticipos</p>
+                    <p class="text-yellow-600 text-sm font-bold uppercase tracking-wider">Pagos</p>
                     <p class="text-2xl font-black text-yellow-900 mt-1">${{ number_format($totalAnticipos, 2) }}</p>
                 </div>
 
@@ -79,7 +79,7 @@
                                         @if($ingreso->tipo == 'factura')
                                             <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Factura</span>
                                         @else
-                                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Anticipo</span>
+                                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pago</span>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
@@ -117,7 +117,7 @@
                                         @if($ingreso->tipo == 'factura')
                                             <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Factura</span>
                                         @else
-                                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Anticipo</span>
+                                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pago</span>
                                         @endif
                                     </div>
                                     <div class="mt-1 text-sm font-bold text-gray-900">{{ $ingreso->cliente }}</div>
