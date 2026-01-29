@@ -102,15 +102,12 @@
                                         $qrUrl .= '?' . $parsed['query'];
                                     }
                                 }
-                            } elseif ($asesoria->tipo === 'telefonica') {
-                                // Usar teléfono del cliente si existe, sino del despacho
-                                $clientPhone = !empty($asesoria->telefono) ? $asesoria->telefono : $contactPhone;
-                                if (!empty($clientPhone)) {
-                                    $phoneDigits = preg_replace('/\D+/', '', $clientPhone);
-                                    $qrUrl = 'tel:+' . ltrim($phoneDigits, '+');
-                                    $qrTitle = 'Escanea para llamar al cliente';
-                                    $qrHint = 'Si tu equipo no abre llamadas desde QR, copia el número y márcalo manualmente.';
-                                }
+                            } elseif ($asesoria->tipo === 'telefonica' && !empty($contactPhone)) {
+                                // Usar teléfono del despacho para llamadas
+                                $phoneDigits = preg_replace('/\D+/', '', $contactPhone);
+                                $qrUrl = 'tel:+' . ltrim($phoneDigits, '+');
+                                $qrTitle = 'Escanea para llamar al despacho';
+                                $qrHint = 'Si tu equipo no abre llamadas desde QR, copia el número y márcalo manualmente.';
                             } elseif ($asesoria->tipo === 'presencial' && !empty($direccion)) {
                                 $qrUrl = $mapsUrl;
                                 $qrTitle = 'Escanea para abrir la ubicación';
@@ -297,9 +294,32 @@
                         const temp = data?.hourly?.temperature_2m || [];
                         const pop = data?.hourly?.precipitation_probability || [];
 
+                        console.log('Horas disponibles:', t);
+                        console.log('Buscando hora:', iso);
+
                         const idx = t.indexOf(iso);
                         if (idx === -1) {
-                            el.textContent = 'No disponible para la hora exacta.';
+                            // Buscar hora más cercana
+                            let closestIdx = -1;
+                            let minDiff = Infinity;
+                            
+                            for (let i = 0; i < t.length; i++) {
+                                const diff = Math.abs(new Date(t[i]).getTime() - new Date(iso).getTime());
+                                if (diff < minDiff) {
+                                    minDiff = diff;
+                                    closestIdx = i;
+                                }
+                            }
+                            
+                            if (closestIdx !== -1) {
+                                console.log('Usando hora más cercana:', t[closestIdx]);
+                                const vTemp = temp[closestIdx];
+                                const vPop = pop[closestIdx];
+                                const horaCercana = new Date(t[closestIdx]).getHours() + ':00';
+                                el.textContent = `${vTemp}°C · Prob. lluvia ${vPop}% (aprox. ${horaCercana})`;
+                            } else {
+                                el.textContent = 'No disponible para la fecha.';
+                            }
                             return;
                         }
 
