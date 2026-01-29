@@ -122,6 +122,42 @@
                     <x-input-error :messages="$errors->get('fecha_inicio')" class="mt-2" />
                 </div>
 
+                <!-- Costo Total -->
+                <div>
+                    <x-input-label for="costo_total" :value="__('Costo Total del Expediente')" />
+                    <x-text-input id="costo_total" type="number" step="0.01" min="0" class="mt-1 block w-full" wire:model="costo_total" placeholder="0.00" />
+                    <x-input-error :messages="$errors->get('costo_total')" class="mt-2" />
+                </div>
+
+                <!-- Anticipo -->
+                <div>
+                    <x-input-label for="anticipo" :value="__('Anticipo')" />
+                    <x-text-input id="anticipo" type="number" step="0.01" min="0" class="mt-1 block w-full" wire:model="anticipo" placeholder="0.00" />
+                    <x-input-error :messages="$errors->get('anticipo')" class="mt-2" />
+                </div>
+
+                <!-- Método de Pago del Anticipo -->
+                @if($anticipo && $anticipo > 0)
+                <div>
+                    <x-input-label for="metodo_pago_anticipo" :value="__('Método de Pago del Anticipo')" />
+                    <select id="metodo_pago_anticipo" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model="metodo_pago_anticipo">
+                        <option value="">Seleccione un método</option>
+                        <option value="efectivo">Efectivo</option>
+                        <option value="transferencia">Transferencia Bancaria</option>
+                        <option value="tarjeta">Tarjeta de Crédito/Débito</option>
+                        <option value="cheque">Cheque</option>
+                    </select>
+                    <x-input-error :messages="$errors->get('metodo_pago_anticipo')" class="mt-2" />
+                </div>
+
+                <!-- Referencia del Anticipo -->
+                <div>
+                    <x-input-label for="referencia_anticipo" :value="__('Referencia (Opcional)')" />
+                    <x-text-input id="referencia_anticipo" type="text" class="mt-1 block w-full" wire:model="referencia_anticipo" placeholder="Número de referencia, folio, etc." />
+                    <x-input-error :messages="$errors->get('referencia_anticipo')" class="mt-2" />
+                </div>
+                @endif
+
                 <!-- Descripción -->
                 <div class="md:col-span-2">
                     <x-input-label for="descripcion" :value="__('Descripción / Notas Iniciales')" />

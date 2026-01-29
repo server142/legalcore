@@ -23,6 +23,12 @@ class Create extends Component
     public $estado_procesal_id;
     public $descripcion;
     public $fecha_inicio;
+    
+    // Campos de pago
+    public $costo_total;
+    public $anticipo;
+    public $metodo_pago_anticipo;
+    public $referencia_anticipo;
 
     // Modals
     public $showMateriaModal = false;
@@ -64,6 +70,9 @@ class Create extends Component
         'cliente_id' => 'required|exists:clientes,id',
         'abogado_responsable_id' => 'required|exists:users,id',
         'estado_procesal_id' => 'nullable|exists:estados_procesales,id',
+        'costo_total' => 'nullable|numeric|min:0',
+        'anticipo' => 'nullable|numeric|min:0',
+        'metodo_pago_anticipo' => 'required_if:anticipo,>,0|string',
     ];
 
     public function save()
@@ -100,7 +109,18 @@ class Create extends Component
 
         $estado = $this->estado_procesal_id ? EstadoProcesal::find($this->estado_procesal_id) : null;
 
-        Expediente::create([
+        // Calcular saldo pendiente y estado de cobro
+        $saldo_pendiente = $this->costo_total - $this->anticipo;
+        $estado_cobro = 'pendiente';
+        
+        if ($this->anticipo > 0 && $saldo_pendiente > 0) {
+            $estado_cobro = 'parcial_pagado';
+        } elseif ($saldo_pendiente <= 0) {
+            $estado_cobro = 'liquidado';
+            $saldo_pendiente = 0;
+        }
+
+        $expediente = Expediente::create([
             'numero' => $this->numero,
             'titulo' => $this->titulo,
             'materia' => $this->materia,
@@ -112,7 +132,25 @@ class Create extends Component
             'fecha_inicio' => $this->fecha_inicio,
             'estado_procesal' => $estado?->nombre ?? 'inicial',
             'estado_procesal_id' => $this->estado_procesal_id,
+            'costo_total' => $this->costo_total,
+            'anticipo' => $this->anticipo,
+            'saldo_pendiente' => $saldo_pendiente,
+            'estado_cobro' => $estado_cobro,
         ]);
+
+        // Crear pago de anticipo si existe
+        if ($this->anticipo > 0) {
+            ExpedientePago::create([
+                'tenant_id' => auth()->user()->tenant_id,
+                'expediente_id' => $expediente->id,
+                'monto' => $this->anticipo,
+                'tipo_pago' => 'anticipo',
+                'fecha_pago' => now(),
+                'metodo_pago' => $this->metodo_pago_anticipo,
+                'referencia' => $this->referencia_anticipo,
+                'notas' => 'Anticipo del expediente',
+            ]);
+        }
 
         session()->flash('message', 'Expediente creado exitosamente.');
 

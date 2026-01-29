@@ -33,7 +33,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
                     <p class="text-indigo-600 text-sm font-bold uppercase tracking-wider">Total Cobrado</p>
                     <p class="text-4xl font-black text-indigo-900 mt-1">${{ number_format($totalIncome, 2) }} <span class="text-lg font-normal">MXN</span></p>
@@ -41,14 +41,17 @@
 
                 <div class="bg-green-50 p-6 rounded-xl border border-green-100">
                     <p class="text-green-600 text-sm font-bold uppercase tracking-wider">Facturas Pagadas</p>
-                    <p class="text-4xl font-black text-green-900 mt-1">{{ $facturas->total() }}</p>
+                    <p class="text-2xl font-black text-green-900 mt-1">${{ number_format($totalFacturas, 2) }}</p>
+                </div>
+
+                <div class="bg-yellow-50 p-6 rounded-xl border border-yellow-100">
+                    <p class="text-yellow-600 text-sm font-bold uppercase tracking-wider">Anticipos</p>
+                    <p class="text-2xl font-black text-yellow-900 mt-1">${{ number_format($totalAnticipos, 2) }}</p>
                 </div>
 
                 <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                    <p class="text-blue-600 text-sm font-bold uppercase tracking-wider">Ticket Promedio</p>
-                    <p class="text-4xl font-black text-blue-900 mt-1">
-                        ${{ $facturas->total() > 0 ? number_format($totalIncome / $facturas->total(), 2) : '0.00' }}
-                    </p>
+                    <p class="text-blue-600 text-sm font-bold uppercase tracking-wider">Transacciones</p>
+                    <p class="text-2xl font-black text-blue-900 mt-1">{{ $total }}</p>
                 </div>
             </div>
 
@@ -59,37 +62,42 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Pago</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Concepto</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Recibo</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Referencia</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($facturas as $factura)
-                                @php
-                                    $fecha = $factura->fecha_pago ?? $factura->fecha_emision ?? $factura->created_at;
-                                @endphp
+                            @forelse($ingresos as $ingreso)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                        {{ optional($fecha)->format('d/m/Y H:i') ?? '—' }}
+                                        {{ optional($ingreso->fecha)->format('d/m/Y H:i') ?? '—' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($ingreso->tipo == 'factura')
+                                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Factura</span>
+                                        @else
+                                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Anticipo</span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                        {{ $factura->cliente->nombre ?? '—' }}
+                                        {{ $ingreso->cliente }}
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700">
-                                        {{ data_get($factura->conceptos, '0.descripcion') ?? '—' }}
+                                        {{ $ingreso->concepto }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold text-right">
-                                        ${{ number_format($factura->total, 2) }}
+                                        ${{ number_format($ingreso->monto, 2) }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                                        <a href="{{ route('reportes.factura', $factura) }}" target="_blank" class="text-indigo-600 hover:text-indigo-900 font-bold">PDF</a>
+                                        {{ $ingreso->referencia }}
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                                         No hay ingresos en el periodo seleccionado.
                                     </td>
                                 </tr>
@@ -100,21 +108,24 @@
 
                 <!-- Mobile Cards -->
                 <div class="income-cards-mobile divide-y divide-gray-200">
-                    @forelse($facturas as $factura)
-                        @php
-                            $fecha = $factura->fecha_pago ?? $factura->fecha_emision ?? $factura->created_at;
-                            $concepto = data_get($factura->conceptos, '0.descripcion') ?? '—';
-                        @endphp
+                    @forelse($ingresos as $ingreso)
                         <div class="p-4">
                             <div class="flex items-start justify-between gap-3">
                                 <div>
-                                    <div class="text-xs font-bold text-gray-500 uppercase">{{ optional($fecha)->format('d/m/Y H:i') ?? '—' }}</div>
-                                    <div class="mt-1 text-sm font-bold text-gray-900">{{ $factura->cliente->nombre ?? '—' }}</div>
-                                    <div class="mt-1 text-xs text-gray-600">{{ $concepto }}</div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="text-xs font-bold text-gray-500 uppercase">{{ optional($ingreso->fecha)->format('d/m/Y H:i') ?? '—' }}</div>
+                                        @if($ingreso->tipo == 'factura')
+                                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Factura</span>
+                                        @else
+                                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Anticipo</span>
+                                        @endif
+                                    </div>
+                                    <div class="mt-1 text-sm font-bold text-gray-900">{{ $ingreso->cliente }}</div>
+                                    <div class="mt-1 text-xs text-gray-600">{{ $ingreso->concepto }}</div>
+                                    <div class="mt-1 text-xs text-gray-500">Ref: {{ $ingreso->referencia }}</div>
                                 </div>
                                 <div class="text-right">
-                                    <div class="text-sm font-extrabold text-gray-900">${{ number_format($factura->total, 2) }}</div>
-                                    <a href="{{ route('reportes.factura', $factura) }}" target="_blank" class="mt-2 inline-block text-xs font-bold text-indigo-600 hover:text-indigo-900 underline">PDF</a>
+                                    <div class="text-sm font-extrabold text-gray-900">${{ number_format($ingreso->monto, 2) }}</div>
                                 </div>
                             </div>
                         </div>
@@ -127,7 +138,7 @@
             </div>
 
             <div class="mt-4">
-                {{ $facturas->links() }}
+                {{-- Paginación manual --}}
             </div>
         </div>
     </div>

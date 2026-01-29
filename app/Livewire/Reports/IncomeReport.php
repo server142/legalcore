@@ -5,6 +5,7 @@ namespace App\Livewire\Reports;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Factura;
+use App\Models\ExpedientePago;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -15,6 +16,8 @@ class IncomeReport extends Component
     public $startDate;
     public $endDate;
     public $totalIncome = 0;
+    public $totalFacturas = 0;
+    public $totalAnticipos = 0;
     public $hasSearched = false;
 
     public function mount(): void
@@ -43,7 +46,8 @@ class IncomeReport extends Component
         $from = $this->rangeStart();
         $to = $this->rangeEnd();
 
-        return Factura::query()
+        // Query para facturas
+        $facturasQuery = Factura::query()
             ->where('estado', 'pagada')
             ->where(function ($q) use ($from, $to) {
                 $q->whereBetween('fecha_pago', [$from, $to])
@@ -52,13 +56,40 @@ class IncomeReport extends Component
                             ->whereBetween(DB::raw('COALESCE(fecha_emision, created_at)'), [$from, $to]);
                     });
             });
+
+        // Query para anticipos de expedientes
+        $anticiposQuery = ExpedientePago::query()
+            ->where('tipo_pago', 'anticipo')
+            ->whereBetween('fecha_pago', [$from, $to]);
+
+        // Combinar ambas consultas usando union
+        return $facturasQuery->union($anticiposQuery);
     }
 
     public function consultar(): void
     {
         $this->hasSearched = true;
         $this->resetPage();
-        $this->totalIncome = (clone $this->baseQuery())->sum('total');
+        
+        $from = $this->rangeStart();
+        $to = $this->rangeEnd();
+        
+        // Calcular totales por separado
+        $this->totalFacturas = Factura::where('estado', 'pagada')
+            ->where(function ($q) use ($from, $to) {
+                $q->whereBetween('fecha_pago', [$from, $to])
+                    ->orWhere(function ($q2) use ($from, $to) {
+                        $q2->whereNull('fecha_pago')
+                            ->whereBetween(DB::raw('COALESCE(fecha_emision, created_at)'), [$from, $to]);
+                    });
+            })
+            ->sum('total');
+            
+        $this->totalAnticipos = ExpedientePago::where('tipo_pago', 'anticipo')
+            ->whereBetween('fecha_pago', [$from, $to])
+            ->sum('monto');
+            
+        $this->totalIncome = $this->totalFacturas + $this->totalAnticipos;
     }
 
     public function exportarCsv(): StreamedResponse
@@ -107,13 +138,70 @@ class IncomeReport extends Component
 
     public function render()
     {
-        $facturas = $this->baseQuery()
+        $from = $this->rangeStart();
+        $to = $this->rangeEnd();
+        
+        // Obtener facturas pagadas
+        $facturas = Factura::where('estado', 'pagada')
+            ->where(function ($q) use ($from, $to) {
+                $q->whereBetween('fecha_pago', [$from, $to])
+                    ->orWhere(function ($q2) use ($from, $to) {
+                        $q2->whereNull('fecha_pago')
+                            ->whereBetween(DB::raw('COALESCE(fecha_emision, created_at)'), [$from, $to]);
+                    });
+            })
             ->with('cliente')
             ->orderByRaw('COALESCE(fecha_pago, fecha_emision, created_at) desc')
-            ->paginate(20);
+            ->get();
+            
+        // Obtener anticipos
+        $anticipos = ExpedientePago::where('tipo_pago', 'anticipo')
+            ->whereBetween('fecha_pago', [$from, $to])
+            ->with('expediente.cliente')
+            ->orderBy('fecha_pago', 'desc')
+            ->get();
+            
+        // Combinar y ordenar todos los ingresos
+        $ingresos = collect();
+        
+        foreach ($facturas as $factura) {
+            $ingresos->push((object)[
+                'tipo' => 'factura',
+                'fecha' => $factura->fecha_pago ?? $factura->fecha_emision ?? $factura->created_at,
+                'cliente' => $factura->cliente->nombre ?? '',
+                'concepto' => data_get($factura->conceptos, '0.descripcion') ?? 'Factura',
+                'monto' => $factura->total,
+                'moneda' => $factura->moneda,
+                'id' => $factura->id,
+                'referencia' => 'FAC-' . $factura->id,
+            ]);
+        }
+        
+        foreach ($anticipos as $anticipo) {
+            $ingresos->push((object)[
+                'tipo' => 'anticipo',
+                'fecha' => $anticipo->fecha_pago,
+                'cliente' => $anticipo->expediente->cliente->nombre ?? '',
+                'concepto' => 'Anticipo - ' . $anticipo->expediente->numero,
+                'monto' => $anticipo->monto,
+                'moneda' => 'MXN',
+                'id' => $anticipo->id,
+                'referencia' => $anticipo->referencia ?? 'ANT-' . $anticipo->id,
+            ]);
+        }
+        
+        // Ordenar por fecha descendente
+        $ingresos = $ingresos->sortByDesc('fecha');
+        
+        // Paginación manual
+        $page = request()->get('page', 1);
+        $perPage = 20;
+        $total = $ingresos->count();
+        $ingresosPaginados = $ingresos->forPage($page, $perPage);
 
         return view('livewire.reports.income-report', [
-            'facturas' => $facturas,
+            'ingresos' => $ingresosPaginados,
+            'total' => $total,
         ])->layout('layouts.app');
     }
 }

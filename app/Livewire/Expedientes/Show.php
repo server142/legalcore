@@ -23,6 +23,7 @@ class Show extends Component
     public $selectedDoc = null;
     public $showViewer = false;
     public $showEditModal = false;
+    public $showAddPago = false;
 
     // Edit fields
     public $numero, $titulo, $materia, $juzgado, $estado_procesal, $estado_procesal_id, $nombre_juez, $fecha_inicio, $cliente_id, $abogado_responsable_id;
@@ -37,7 +38,7 @@ class Show extends Component
             }
         }
         
-        $this->expediente = $expediente->load(['cliente', 'abogado', 'actuaciones', 'documentos', 'eventos', 'comentarios.user']);
+        $this->expediente = $expediente->load(['cliente', 'abogado', 'actuaciones', 'documentos', 'eventos', 'comentarios.user', 'pagos']);
     }
 
     #[On('actuacion-added')]
@@ -154,6 +155,13 @@ class Show extends Component
         $this->showEditModal = false;
         $this->expediente->refresh();
         $this->dispatch('notify', 'Expediente actualizado exitosamente');
+    }
+
+    #[On('pago-registrado')]
+    public function pagoRegistrado()
+    {
+        $this->expediente->load('pagos');
+        $this->showAddPago = false;
     }
 
     public function render()

@@ -26,6 +26,10 @@ class Expediente extends Model
         'descripcion',
         'fecha_inicio',
         'fecha_cierre',
+        'costo_total',
+        'anticipo',
+        'saldo_pendiente',
+        'estado_cobro',
     ];
 
     protected function casts(): array
@@ -33,6 +37,9 @@ class Expediente extends Model
         return [
             'fecha_inicio' => 'date',
             'fecha_cierre' => 'date',
+            'costo_total' => 'decimal:2',
+            'anticipo' => 'decimal:2',
+            'saldo_pendiente' => 'decimal:2',
         ];
     }
 
@@ -74,5 +81,15 @@ class Expediente extends Model
     public function comentarios()
     {
         return $this->hasMany(Comentario::class)->orderBy('created_at', 'desc');
+    }
+
+    public function pagos()
+    {
+        return $this->hasMany(ExpedientePago::class);
+    }
+
+    public function getTotalPagadoAttribute()
+    {
+        return $this->pagos()->sum('monto');
     }
 }

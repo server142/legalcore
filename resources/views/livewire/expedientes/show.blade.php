@@ -89,6 +89,11 @@
                     <button wire:click="setTab('comentarios')" class="px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap {{ $activeTab == 'comentarios' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
                         Comentarios
                     </button>
+                    @if($expediente->costo_total && $expediente->costo_total > 0)
+                        <button wire:click="setTab('abonos')" class="px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap {{ $activeTab == 'abonos' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
+                            Abonos
+                        </button>
+                    @endif
                 </div>
 
                 <div class="p-6">
@@ -221,6 +226,80 @@
                         </div>
                     @elseif($activeTab == 'comentarios')
                         <livewire:expedientes.comentarios :expediente="$expediente" />
+                    @elseif($activeTab == 'abonos')
+                        <div class="space-y-6">
+                            <!-- Resumen Financiero -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-600">Importe Total</p>
+                                            <p class="text-xl font-bold text-gray-900">${{ number_format($expediente->costo_total, 2) }}</p>
+                                        </div>
+                                        <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-600">Total Abonado</p>
+                                            <p class="text-xl font-bold text-green-600">${{ number_format($expediente->getTotalPagadoAttribute(), 2) }}</p>
+                                        </div>
+                                        <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-600">Saldo Pendiente</p>
+                                            <p class="text-xl font-bold text-orange-600">${{ number_format($expediente->saldo_pendiente, 2) }}</p>
+                                        </div>
+                                        <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Botón para Registrar Nuevo Abono -->
+                            @if($expediente->saldo_pendiente > 0)
+                                <div class="flex justify-between items-center">
+                                    <h4 class="text-lg font-bold text-gray-800">Historial de Abonos</h4>
+                                    <button wire:click="$set('showAddPago', true)" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                                        Nuevo Abono
+                                    </button>
+                                </div>
+                            @else
+                                <h4 class="text-lg font-bold text-gray-800">Historial de Abonos</h4>
+                            @endif
+
+                            <!-- Lista de Abonos -->
+                            <div class="space-y-3">
+                                @forelse($expediente->pagos->sortByDesc('fecha_pago') as $pago)
+                                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div>
+                                                <span class="text-lg font-bold text-gray-900">${{ number_format($pago->monto, 2) }}</span>
+                                                <span class="ml-2 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">{{ $pago->tipo_pago }}</span>
+                                            </div>
+                                            <span class="text-sm text-gray-500">{{ $pago->fecha_pago->format('d/m/Y') }}</span>
+                                        </div>
+                                        <div class="text-sm text-gray-600">
+                                            <p>Método: {{ $pago->metodo_pago }}</p>
+                                            @if($pago->referencia)<p>Referencia: {{ $pago->referencia }}</p>@endif
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="text-center py-8 text-gray-500">
+                                        <p>No hay abonos registrados</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
                     @endif
                 </div>
             </div>
@@ -398,4 +477,45 @@
             </div>
         </div>
     </x-modal-wire>
+
+    <!-- Modal para Registrar Pago -->
+    @if($showAddPago)
+        <x-modal-wire wire:model="showAddPago">
+            <div class="p-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Registrar Nuevo Abono</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Monto</label>
+                        <input type="number" step="0.01" min="0" class="w-full border-gray-300 rounded-md shadow-sm" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Método de Pago</label>
+                        <select class="w-full border-gray-300 rounded-md shadow-sm">
+                            <option value="">Seleccione un método</option>
+                            <option value="efectivo">Efectivo</option>
+                            <option value="transferencia">Transferencia Bancaria</option>
+                            <option value="tarjeta">Tarjeta de Crédito/Débito</option>
+                            <option value="cheque">Cheque</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Referencia (Opcional)</label>
+                        <input type="text" class="w-full border-gray-300 rounded-md shadow-sm" placeholder="Número de referencia, folio, etc.">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+                        <textarea class="w-full border-gray-300 rounded-md shadow-sm" rows="3" placeholder="Notas adicionales"></textarea>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" wire:click="$set('showAddPago', false)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                        Cancelar
+                    </button>
+                    <button type="button" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        Registrar Abono
+                    </button>
+                </div>
+            </div>
+        </x-modal-wire>
+    @endif
 </div>
