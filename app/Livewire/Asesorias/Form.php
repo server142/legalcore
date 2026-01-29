@@ -169,12 +169,16 @@ class Form extends Component
     private function syncAsesoriaToAgenda(): void
     {
         if (!$this->asesoria) {
+            Log::info('syncAsesoriaToAgenda: No hay asesoría');
             return;
         }
+
+        Log::info('syncAsesoriaToAgenda: Iniciando para asesoría ' . $this->asesoria->id . ', estado: ' . $this->asesoria->estado);
 
         $evento = Evento::where('asesoria_id', $this->asesoria->id)->first();
 
         if ($this->asesoria->estado !== 'agendada') {
+            Log::info('syncAsesoriaToAgenda: Estado no agendada, eliminando evento si existe');
             if ($evento) {
                 $evento->delete();
             }
@@ -183,6 +187,8 @@ class Form extends Component
 
         $start = $this->asesoria->fecha_hora;
         $end = (clone $start)->addMinutes((int) $this->asesoria->duracion_minutos);
+
+        Log::info('syncAsesoriaToAgenda: Creando evento del ' . $start->format('Y-m-d H:i:s') . ' al ' . $end->format('Y-m-d H:i:s'));
 
         $descripcion = $this->asesoria->asunto;
         if ($this->asesoria->telefono) {
@@ -207,10 +213,16 @@ class Form extends Component
             'asesoria_id' => $this->asesoria->id,
         ];
 
-        if ($evento) {
-            $evento->update($data);
-        } else {
-            Evento::create($data);
+        try {
+            if ($evento) {
+                $evento->update($data);
+                Log::info('syncAsesoriaToAgenda: Evento actualizado ID: ' . $evento->id);
+            } else {
+                $evento = Evento::create($data);
+                Log::info('syncAsesoriaToAgenda: Evento creado ID: ' . $evento->id);
+            }
+        } catch (\Exception $e) {
+            Log::error('syncAsesoriaToAgenda: Error creando evento: ' . $e->getMessage());
         }
     }
 
@@ -417,6 +429,8 @@ class Form extends Component
         $settings = $tenant?->settings ?? [];
         $enforceAvailability = $settings['asesorias_enforce_availability'] ?? true;
         $syncToAgenda = $settings['asesorias_sync_to_agenda'] ?? true;
+
+        Log::info('guardar: syncToAgenda=' . ($syncToAgenda ? 'true' : 'false') . ', enforceAvailability=' . ($enforceAvailability ? 'true' : 'false'));
 
         if ($this->estado === 'agendada' && $enforceAvailability) {
             $conflict = $this->hasAgendaConflict($fechaHora, (int) $this->duracion_minutos, (int) $effectiveAbogadoId);
