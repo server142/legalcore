@@ -39,6 +39,10 @@
             {{ __('Asesorías') }}
         </x-sidebar-link>
 
+        <x-sidebar-link :href="route('ai.assistant')" :active="request()->routeIs('ai.assistant')" icon="sparkles">
+            {{ __('Asistente IA') }}
+        </x-sidebar-link>
+
         @can('manage billing')
         <x-sidebar-link :href="route('facturacion.index')" :active="request()->routeIs('facturacion.*')" icon="billing">
             {{ __('Facturación') }}

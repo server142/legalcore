@@ -64,9 +64,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('/mensajes', \App\Livewire\Mensajes\Index::class)->name('mensajes.index');
     Route::get('/expedientes/{expediente}/asignaciones', \App\Livewire\Expedientes\ManageAssignments::class)->name('expedientes.assignments')->middleware('can:manage users');
-
-    // AI Global Assistant
-    Route::get('/asistente-ia', \App\Livewire\AiGlobalAssistant::class)->name('ai.assistant');
     
     // Admin only - Trial Management
     // Admin - Tenant Management
