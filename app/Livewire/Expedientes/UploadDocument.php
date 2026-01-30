@@ -89,7 +89,7 @@ class UploadDocument extends Component
 
             $path = $file->store('documentos/' . $this->expediente->id, 'local');
 
-            Documento::create([
+            $doc = Documento::create([
                 'tenant_id' => $tenantId,
                 'expediente_id' => $this->expediente->id,
                 'nombre' => $nombreOriginal,
@@ -100,6 +100,11 @@ class UploadDocument extends Component
                 'size' => $file->getSize(),
                 'uploaded_by' => auth()->id(),
             ]);
+
+            // Dispatch PDF Processing Job
+            if ($tipo === 'pdf') {
+                \App\Jobs\ProcessDocumentContent::dispatch($doc);
+            }
 
             AuditLog::create([
                 'user_id' => auth()->id(),

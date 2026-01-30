@@ -52,10 +52,12 @@
                 <td class="text-right font-bold">SUBTOTAL:</td>
                 <td class="text-right">${{ number_format($factura->subtotal, 2) }}</td>
             </tr>
+            @if(isset($factura->iva) && $factura->iva > 0)
             <tr>
                 <td class="text-right font-bold">IVA (16%):</td>
                 <td class="text-right">${{ number_format($factura->iva, 2) }}</td>
             </tr>
+            @endif
             <tr>
                 <td class="text-right font-bold">TOTAL:</td>
                 <td class="text-right font-bold" style="font-size: 14px; color: #4f46e5;">

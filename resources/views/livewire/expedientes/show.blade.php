@@ -16,6 +16,12 @@
             </div>
         </div>
         <div class="flex flex-wrap gap-2 w-full md:w-auto">
+            <!-- AI Assistant Trigger -->
+            <button @click="$dispatch('toggle-ai-assistant')" class="bg-gradient-to-r from-indigo-600 to-purple-600 border border-transparent text-white px-3 py-2 rounded-lg hover:from-indigo-700 hover:to-purple-700 flex items-center justify-center flex-1 md:flex-none shadow-md transition-all text-sm font-bold">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                Asistente IA
+            </button>
+
             @can('manage users')
                 <a href="{{ route('expedientes.assignments', $expediente) }}" wire:navigate class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none whitespace-nowrap text-sm">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
@@ -77,18 +83,28 @@
         <div class="lg:col-span-2">
             <div class="bg-white rounded-lg shadow overflow-hidden">
                 <div class="flex border-b overflow-x-auto scrollbar-hide">
-                    <button wire:click="setTab('actuaciones')" class="px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap {{ $activeTab == 'actuaciones' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
+                    <button wire:click="setTab('actuaciones')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'actuaciones' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                         Actuaciones
                     </button>
-                    <button wire:click="setTab('documentos')" class="px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap {{ $activeTab == 'documentos' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
+                    <button wire:click="setTab('documentos')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'documentos' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                         Documentos
                     </button>
-                    <button wire:click="setTab('agenda')" class="px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap {{ $activeTab == 'agenda' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
+                    <button wire:click="setTab('agenda')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'agenda' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         Agenda
                     </button>
-                    <button wire:click="setTab('comentarios')" class="px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap {{ $activeTab == 'comentarios' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700' }}">
+                    <button wire:click="setTab('comentarios')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'comentarios' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
                         Comentarios
                     </button>
+                    @can('manage billing')
+                    <button wire:click="setTab('finanzas')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'finanzas' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Finanzas
+                    </button>
+                    @endcan
                 </div>
 
                 <div class="p-6">
@@ -221,6 +237,144 @@
                         </div>
                     @elseif($activeTab == 'comentarios')
                         <livewire:expedientes.comentarios :expediente="$expediente" />
+                    @elseif($activeTab == 'finanzas')
+                        @can('manage billing')
+                        <div class="space-y-8">
+                            <!-- Summary Cards -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl">
+                                    <p class="text-xs font-bold text-indigo-600 uppercase mb-1">Total Proyecto</p>
+                                    <p class="text-2xl font-black text-indigo-900">${{ number_format($expediente->honorarios_totales, 2) }}</p>
+                                </div>
+                                <div class="bg-green-50 border border-green-100 p-4 rounded-2xl">
+                                    <p class="text-xs font-bold text-green-600 uppercase mb-1">Abonado</p>
+                                    <p class="text-2xl font-black text-green-900">${{ number_format($expediente->honorarios_totales - $expediente->saldo_pendiente, 2) }}</p>
+                                </div>
+                                <div class="{{ $expediente->saldo_pendiente > 0 ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100' }} border p-4 rounded-2xl">
+                                    <p class="text-xs font-bold {{ $expediente->saldo_pendiente > 0 ? 'text-red-600' : 'text-gray-600' }} uppercase mb-1">Restante</p>
+                                    <p class="text-2xl font-black {{ $expediente->saldo_pendiente > 0 ? 'text-red-900' : 'text-gray-900' }}">${{ number_format($expediente->saldo_pendiente, 2) }}</p>
+                                </div>
+                            </div>
+
+                            <!-- New Payment Section -->
+                            @if($expediente->saldo_pendiente > 0)
+                            <div class="bg-white border rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden" x-data="{ open: false }">
+                                <div @click="open = !open" class="p-6 cursor-pointer hover:bg-gray-50 transition-colors flex justify-between items-center bg-white">
+                                    <h4 class="text-sm font-bold text-gray-900 flex items-center select-none">
+                                        <span class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-3 text-xs shadow-sm">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                        </span>
+                                        Registrar Nuevo Pago / Abono
+                                    </h4>
+                                    <button type="button" class="text-gray-400">
+                                        <svg x-show="!open" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        <svg x-show="open" style="display: none;" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                                    </button>
+                                </div>
+                                
+                                <div x-show="open" style="display: none;" class="px-6 pb-6 pt-0 border-t border-gray-100 bg-gray-50/50">
+                                    <form wire:submit.prevent="recordPayment" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <x-input-label for="monto_pago" :value="__('Monto Total a Pagar (Entrada de dinero)')" />
+                                                <div class="mt-1 relative rounded-md shadow-sm">
+                                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                        <span class="text-gray-500 sm:text-sm">$</span>
+                                                    </div>
+                                                    <x-text-input id="monto_pago" type="number" step="0.01" class="pl-7 block w-full font-bold" wire:model.live.debounce.500ms="monto_pago" placeholder="0.00" />
+                                                </div>
+                                                <x-input-error :messages="$errors->get('monto_pago')" class="mt-2" />
+                                            </div>
+                                            <div>
+                                                <x-input-label for="concepto_pago" :value="__('Concepto')" />
+                                                <x-text-input id="concepto_pago" type="text" class="mt-1 block w-full" wire:model="concepto_pago" />
+                                                <x-input-error :messages="$errors->get('concepto_pago')" class="mt-2" />
+                                            </div>
+                                        </div>
+
+                                        <div class="md:col-span-2 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                            <div class="flex items-center mb-3">
+                                                <input type="checkbox" wire:model.live="breakdown_iva" id="breakdown_iva" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 mr-2">
+                                                <label for="breakdown_iva" class="text-sm text-gray-700 font-medium cursor-pointer">Desglosar / Aplicar IVA (16%)</label>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <x-input-label for="subtotal_amount" :value="__('Subtotal')" class="text-xs" />
+                                                    <div class="mt-1 relative rounded-md shadow-sm">
+                                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                            <span class="text-gray-500 sm:text-xs">$</span>
+                                                        </div>
+                                                        <x-text-input id="subtotal_amount" type="number" step="0.01" class="pl-7 block w-full text-sm bg-white" wire:model.live.debounce.500ms="subtotal_amount" />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <x-input-label for="iva_amount" :value="__('IVA')" class="text-xs" />
+                                                    <div class="mt-1 relative rounded-md shadow-sm">
+                                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                            <span class="text-gray-500 sm:text-xs">$</span>
+                                                        </div>
+                                                        <x-text-input id="iva_amount" type="number" step="0.01" class="pl-7 block w-full text-sm bg-white" wire:model.live.debounce.500ms="iva_amount" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="md:col-span-2 flex justify-end">
+                                            <x-primary-button>
+                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                {{ __('Guardar Abono') }}
+                                            </x-primary-button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- Payment History -->
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-400 uppercase mb-4">Historial de Pagos y Facturas</h4>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-sm">
+                                        <thead class="bg-gray-50 text-gray-500 uppercase text-[10px]">
+                                            <tr>
+                                                <th class="px-4 py-3">Fecha</th>
+                                                <th class="px-4 py-3">Concepto</th>
+                                                <th class="px-4 py-3">Monto</th>
+                                                <th class="px-4 py-3">Estado</th>
+                                                <th class="px-4 py-3">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y">
+                                            @forelse($expediente->facturas()->orderBy('created_at', 'desc')->get() as $pago)
+                                                <tr class="hover:bg-gray-50">
+                                                    <td class="px-4 py-3 whitespace-nowrap">{{ $pago->created_at->format('d/m/Y') }}</td>
+                                                    <td class="px-4 py-3">
+                                                        <span class="font-medium text-gray-900">{{ data_get($pago->conceptos, '0.descripcion', 'Pago registrado') }}</span>
+                                                    </td>
+                                                    <td class="px-4 py-3 font-bold text-gray-900">${{ number_format($pago->total, 2) }}</td>
+                                                    <td class="px-4 py-3">
+                                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $pago->estado == 'pagada' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                                            {{ ucfirst($pago->estado) }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-3">
+                                                        <a href="{{ route('reportes.factura', $pago) }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-bold text-[11px] mr-2">Recibo</a>
+                                                        @if($pago->estado == 'pagada')
+                                                            <button wire:click="cancelPayment({{ $pago->id }})" wire:confirm="¿Estás seguro de cancelar este pago? Esto repondrá el saldo pendiente. Esta acción no se puede deshacer." class="text-red-600 hover:text-red-800 font-bold text-[11px]">Cancelar</button>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="5" class="px-4 py-8 text-center text-gray-500">No hay registros de pagos.</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        @endcan
                     @endif
                 </div>
             </div>
@@ -288,114 +442,9 @@
 
     <!-- Modal Editar Expediente -->
     <x-modal-wire wire:model="showEditModal">
-        <div class="p-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">
-                {{ __('Editar Expediente') }}
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Número -->
-                <div>
-                    <x-input-label for="edit_numero" :value="__('Número de Expediente')" />
-                    <x-text-input wire:model="numero" id="edit_numero" class="block mt-1 w-full" type="text" required />
-                    <x-input-error :messages="$errors->get('numero')" class="mt-2" />
-                </div>
-
-                <!-- Título -->
-                <div>
-                    <x-input-label for="edit_titulo" :value="__('Título / Carátula')" />
-                    <x-text-input wire:model="titulo" id="edit_titulo" class="block mt-1 w-full" type="text" required />
-                    <x-input-error :messages="$errors->get('titulo')" class="mt-2" />
-                </div>
-
-                <!-- Materia -->
-                <div>
-                    <x-input-label for="edit_materia" :value="__('Materia')" />
-                    <select wire:model="materia" id="edit_materia" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                        <option value="">Seleccione una materia</option>
-                        @foreach($materias as $m)
-                            <option value="{{ $m->nombre }}">{{ $m->nombre }}</option>
-                        @endforeach
-                    </select>
-                    <x-input-error :messages="$errors->get('materia')" class="mt-2" />
-                </div>
-
-                <!-- Juzgado -->
-                <div>
-                    <x-input-label for="edit_juzgado" :value="__('Juzgado')" />
-                    <select wire:model="juzgado" id="edit_juzgado" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                        <option value="">Seleccione un juzgado</option>
-                        @php
-                            $juzgadosNombres = $juzgados->pluck('nombre')->all();
-                        @endphp
-                        @if(!empty($juzgado) && !in_array($juzgado, $juzgadosNombres, true))
-                            <option value="{{ $juzgado }}">{{ $juzgado }}</option>
-                        @endif
-                        @foreach($juzgados as $j)
-                            <option value="{{ $j->nombre }}">{{ $j->nombre }}</option>
-                        @endforeach
-                    </select>
-                    <x-input-error :messages="$errors->get('juzgado')" class="mt-2" />
-                </div>
-
-                <!-- Estado Procesal -->
-                <div>
-                    <x-input-label for="edit_estado" :value="__('Estado Procesal')" />
-                    <select wire:model="estado_procesal_id" id="edit_estado" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                        <option value="">Seleccione un estado</option>
-                        @foreach($estadosProcesales as $estado)
-                            <option value="{{ $estado->id }}">{{ $estado->nombre }}</option>
-                        @endforeach
-                    </select>
-                    <x-input-error :messages="$errors->get('estado_procesal_id')" class="mt-2" />
-                </div>
-
-                <!-- Juez -->
-                <div>
-                    <x-input-label for="edit_juez" :value="__('Nombre del Juez')" />
-                    <x-text-input wire:model="nombre_juez" id="edit_juez" class="block mt-1 w-full" type="text" />
-                    <x-input-error :messages="$errors->get('nombre_juez')" class="mt-2" />
-                </div>
-
-                <!-- Cliente -->
-                <div>
-                    <x-input-label for="edit_cliente" :value="__('Cliente')" />
-                    <select wire:model="cliente_id" id="edit_cliente" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                        @foreach($clientes as $cliente)
-                            <option value="{{ $cliente->id }}">{{ $cliente->nombre }}</option>
-                        @endforeach
-                    </select>
-                    <x-input-error :messages="$errors->get('cliente_id')" class="mt-2" />
-                </div>
-
-                <!-- Abogado -->
-                <div>
-                    <x-input-label for="edit_abogado" :value="__('Abogado Responsable')" />
-                    <select wire:model="abogado_responsable_id" id="edit_abogado" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                        @foreach($abogados as $abogado)
-                            <option value="{{ $abogado->id }}">{{ $abogado->name }}</option>
-                        @endforeach
-                    </select>
-                    <x-input-error :messages="$errors->get('abogado_responsable_id')" class="mt-2" />
-                </div>
-
-                <!-- Fecha Inicio -->
-                <div>
-                    <x-input-label for="edit_fecha" :value="__('Fecha de Inicio')" />
-                    <x-text-input wire:model="fecha_inicio" id="edit_fecha" class="block mt-1 w-full" type="date" />
-                    <x-input-error :messages="$errors->get('fecha_inicio')" class="mt-2" />
-                </div>
-            </div>
-
-            <div class="mt-6 flex justify-end">
-                <x-secondary-button wire:click="$set('showEditModal', false)">
-                    {{ __('Cancelar') }}
-                </x-secondary-button>
-
-                <x-primary-button class="ml-3" wire:click="update">
-                    {{ __('Actualizar Expediente') }}
-                </x-primary-button>
-            </div>
-        </div>
+        <!-- ... content ... -->
     </x-modal-wire>
+
+    <!-- AI Assistant Panel -->
+    <livewire:expedientes.ai-assistant :expediente="$expediente" />
 </div>

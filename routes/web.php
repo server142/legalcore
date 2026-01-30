@@ -1,7 +1,14 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Models\Plan;
+use App\Models\Expediente; // Added for the moved route
+
+// RUTA DE PRUEBA AISLADA PARA IA (Pública temporalmente)
+Route::get('/test-ia/{expediente}', function (Expediente $expediente) {
+    return view('test-ia', compact('expediente'));
+});
 
 Route::get('/', function () {
     $plans = Plan::where('is_active', true)
@@ -44,6 +51,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/asesorias/nueva', \App\Livewire\Asesorias\Form::class)->name('asesorias.create');
     Route::get('/asesorias/{asesoria}/editar', \App\Livewire\Asesorias\Form::class)->name('asesorias.edit');
 
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // RUTA DE PRUEBA AISLADA PARA IA
+    Route::get('/test-ia/{expediente}', function (App\Models\Expediente $expediente) {
+        return view('test-ia', compact('expediente'));
+    });
     Route::get('/documentos/{documento}', [\App\Http\Controllers\DocumentController::class, 'show'])->name('documentos.show');
     Route::get('/bitacora', \App\Livewire\Audit\Index::class)->name('audit.index');
     

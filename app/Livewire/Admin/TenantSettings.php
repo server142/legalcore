@@ -45,7 +45,7 @@ class TenantSettings extends Component
     public $asesorias_enforce_availability = true;
     public $asesorias_sync_to_agenda = true;
     public $asesorias_billing_enabled = false;
-    public $asesorias_billing_apply_iva = true;
+    public $billing_apply_iva = true;
 
     public $agenda_enforce_availability = false;
 
@@ -90,7 +90,13 @@ class TenantSettings extends Component
         $this->asesorias_enforce_availability = $settings['asesorias_enforce_availability'] ?? true;
         $this->asesorias_sync_to_agenda = $settings['asesorias_sync_to_agenda'] ?? true;
         $this->asesorias_billing_enabled = $settings['asesorias_billing_enabled'] ?? false;
-        $this->asesorias_billing_apply_iva = $settings['asesorias_billing_apply_iva'] ?? true;
+        
+        // Check for new key 'billing_apply_iva' first, fallback to old 'asesorias_billing_apply_iva', default true
+        if (isset($settings['billing_apply_iva'])) {
+            $this->billing_apply_iva = $settings['billing_apply_iva'];
+        } else {
+            $this->billing_apply_iva = $settings['asesorias_billing_apply_iva'] ?? true;
+        }
 
         $this->agenda_enforce_availability = $settings['agenda_enforce_availability'] ?? false;
 
@@ -139,7 +145,7 @@ class TenantSettings extends Component
             'asesorias_enforce_availability' => 'boolean',
             'asesorias_sync_to_agenda' => 'boolean',
             'asesorias_billing_enabled' => 'boolean',
-            'asesorias_billing_apply_iva' => 'boolean',
+            'billing_apply_iva' => 'boolean',
             'agenda_enforce_availability' => 'boolean',
         ], [
             'logo.max' => 'La imagen es demasiado pesada. El límite es de 5MB.',
@@ -183,7 +189,8 @@ class TenantSettings extends Component
         $settings['asesorias_enforce_availability'] = (bool) $this->asesorias_enforce_availability;
         $settings['asesorias_sync_to_agenda'] = (bool) $this->asesorias_sync_to_agenda;
         $settings['asesorias_billing_enabled'] = (bool) $this->asesorias_billing_enabled;
-        $settings['asesorias_billing_apply_iva'] = (bool) $this->asesorias_billing_apply_iva;
+        $settings['billing_apply_iva'] = (bool) $this->billing_apply_iva;
+        unset($settings['asesorias_billing_apply_iva']); // Cleanup old key if moving forward
 
         $settings['agenda_enforce_availability'] = (bool) $this->agenda_enforce_availability;
 

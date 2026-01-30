@@ -273,10 +273,10 @@
                                 @if($asesorias_billing_enabled)
                                     <div class="md:col-span-2">
                                         <div class="flex items-center space-x-3">
-                                            <input type="checkbox" wire:model.live="asesorias_billing_apply_iva" id="asesorias_billing_apply_iva" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                            <x-input-label for="asesorias_billing_apply_iva" :value="__('Aplicar IVA (16%) en recibos de asesorías')" />
+                                            <input type="checkbox" wire:model.live="billing_apply_iva" id="billing_apply_iva" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                            <x-input-label for="billing_apply_iva" :value="__('Aplicar IVA (16%) en Recibos (Abonos y Asesorías)')" />
                                         </div>
-                                        <p class="mt-1 text-xs text-gray-500 italic">Si está desactivado, el total se registrará como subtotal y el IVA será $0.00.</p>
+                                        <p class="mt-1 text-xs text-gray-500 italic">Si está activado, se calcula el IVA (16%) del monto total recibido. Si se desactiva, el total se registra íntegro sin impuestos.</p>
                                     </div>
                                 @endif
 

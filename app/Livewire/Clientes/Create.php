@@ -8,6 +8,7 @@ use App\Models\Cliente;
 
 class Create extends Component
 {
+    use \App\Traits\Auditable;
     public $nombre;
     public $tipo = 'persona_fisica';
     public $rfc;
@@ -26,13 +27,19 @@ class Create extends Component
     {
         $this->validate();
 
-        Cliente::create([
+        $cliente = Cliente::create([
             'nombre' => $this->nombre,
             'tipo' => $this->tipo,
             'rfc' => $this->rfc,
             'email' => $this->email,
             'telefono' => $this->telefono,
             'direccion' => $this->direccion,
+        ]);
+
+        // Audit Log
+        $this->logAudit('crear', 'Clientes', "Registró al cliente: {$this->nombre}", [
+            'cliente_id' => $cliente->id,
+            'rfc' => $this->rfc
         ]);
 
         session()->flash('message', 'Cliente creado exitosamente.');

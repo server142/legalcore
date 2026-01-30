@@ -139,6 +139,18 @@
                 </main>
             </div>
         </div>
+        <!-- Notifications Toast -->
+        <div x-data="{ show: false, message: '' }" 
+             x-on:notify.window="show = true; message = $event.detail; setTimeout(() => show = false, 3000)"
+             class="fixed bottom-5 right-5 z-50">
+            <div x-show="show" x-transition.duration.300ms 
+                 class="bg-gray-800 text-white px-6 py-3 rounded-lg shadow-xl flex items-center">
+                <svg class="w-5 h-5 mr-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span x-text="message" class="font-medium"></span>
+            </div>
+        </div>
+
         @stack('scripts')
+        <livewire:welcome-overlay />
     </body>
 </html>

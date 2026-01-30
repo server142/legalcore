@@ -1,4 +1,4 @@
-<div>
+<div id="manual-top">
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
@@ -21,7 +21,8 @@
             <div class="flex flex-col lg:flex-row gap-8">
                 <!-- Sidebar Navigation -->
                 <div class="lg:w-1/4">
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 p-6 lg:sticky lg:top-8 h-[calc(100vh-4rem)] overflow-y-auto">
+                    <!-- Adjusted height and position for reliable scrolling -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 p-6">
                         <h3 class="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-6">Índice de Temas</h3>
                         <nav class="space-y-2 pr-2">
                             @foreach($pages as $page)
@@ -37,6 +38,25 @@
 
                 <!-- Content Area -->
                 <div class="lg:w-3/4 space-y-8">
+                    
+                    @if($welcomeVideo['type'] !== 'none')
+                        <div class="bg-slate-900 rounded-3xl shadow-lg border border-gray-700 overflow-hidden">
+                            <div class="p-8 pb-4">
+                                <h2 class="text-xl font-bold text-white mb-2">👋 Bienvenido a Diogenes</h2>
+                                <p class="text-gray-400 text-sm mb-4">{{ $welcomeVideo['message'] }}</p>
+                                <div class="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl relative">
+                                    @if($welcomeVideo['type'] === 'youtube')
+                                        <iframe class="w-full h-full" src="{{ $welcomeVideo['url'] }}" frameborder="0" allowfullscreen></iframe>
+                                    @else
+                                        <video class="w-full h-full" controls>
+                                            <source src="{{ $welcomeVideo['url'] }}" type="video/mp4">
+                                        </video>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     @forelse($pages as $page)
                         <article id="{{ $page->slug }}" class="bg-white rounded-3xl shadow-sm border border-gray-200/60 overflow-hidden hover:shadow-md transition-shadow duration-300">
                             <!-- Header del Post -->
@@ -75,7 +95,7 @@
                             <!-- Footer del Post -->
                             <div class="px-8 py-4 bg-gray-50/50 border-t border-gray-50 flex justify-between items-center">
                                 <span class="text-xs text-gray-400">Diogenes v1.0 • Manual de Usuario</span>
-                                <a href="#header" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition">Volver arriba ↑</a>
+                                <a href="#manual-top" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition">Volver arriba ↑</a>
                             </div>
                         </article>
                     @empty

@@ -14,6 +14,7 @@ class Factura extends Model
     protected $fillable = [
         'tenant_id',
         'cliente_id',
+        'expediente_id',
         'subtotal',
         'iva',
         'total',
@@ -36,5 +37,10 @@ class Factura extends Model
     public function cliente()
     {
         return $this->belongsTo(Cliente::class);
+    }
+
+    public function expediente()
+    {
+        return $this->belongsTo(Expediente::class);
     }
 }

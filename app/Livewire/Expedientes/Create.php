@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 
 class Create extends Component
 {
+    use \App\Traits\Auditable;
     public $numero;
     public $titulo;
     public $materia;
@@ -23,6 +24,8 @@ class Create extends Component
     public $estado_procesal_id;
     public $descripcion;
     public $fecha_inicio;
+    public $honorarios_totales = 0;
+    public $anticipo_inicial = 0;
 
     // Modals
     public $showMateriaModal = false;
@@ -64,6 +67,8 @@ class Create extends Component
         'cliente_id' => 'required|exists:clientes,id',
         'abogado_responsable_id' => 'required|exists:users,id',
         'estado_procesal_id' => 'nullable|exists:estados_procesales,id',
+        'honorarios_totales' => 'nullable|numeric|min:0',
+        'anticipo_inicial' => 'nullable|numeric|min:0',
     ];
 
     public function save()
@@ -99,8 +104,9 @@ class Create extends Component
         }
 
         $estado = $this->estado_procesal_id ? EstadoProcesal::find($this->estado_procesal_id) : null;
+        $saldo = (float)$this->honorarios_totales - (float)$this->anticipo_inicial;
 
-        Expediente::create([
+        $expediente = Expediente::create([
             'numero' => $this->numero,
             'titulo' => $this->titulo,
             'materia' => $this->materia,
@@ -112,6 +118,46 @@ class Create extends Component
             'fecha_inicio' => $this->fecha_inicio,
             'estado_procesal' => $estado?->nombre ?? 'inicial',
             'estado_procesal_id' => $this->estado_procesal_id,
+            'honorarios_totales' => $this->honorarios_totales ?: 0,
+            'saldo_pendiente' => $saldo > 0 ? $saldo : 0,
+        ]);
+
+        // Crear factura por el anticipo si existe
+        if ($this->anticipo_inicial > 0) {
+            \App\Models\Factura::create([
+                'tenant_id' => $user->tenant_id,
+                'cliente_id' => $this->cliente_id,
+                'expediente_id' => $expediente->id,
+                'subtotal' => $this->anticipo_inicial / 1.16,
+                'iva' => $this->anticipo_inicial - ($this->anticipo_inicial / 1.16),
+                'total' => $this->anticipo_inicial,
+                'estado' => 'pagada',
+                'fecha_pago' => now(),
+                'conceptos' => [['descripcion' => "Anticipo honorarios - Exp: {$this->numero}", 'monto' => $this->anticipo_inicial]],
+                'fecha_emision' => now(),
+            ]);
+        }
+
+        // Crear factura pendiente por el resto si existe
+        if ($saldo > 0) {
+            \App\Models\Factura::create([
+                'tenant_id' => $user->tenant_id,
+                'cliente_id' => $this->cliente_id,
+                'expediente_id' => $expediente->id,
+                'subtotal' => $saldo / 1.16,
+                'iva' => $saldo - ($saldo / 1.16),
+                'total' => $saldo,
+                'estado' => 'pendiente',
+                'fecha_vencimiento' => now()->addDays(30),
+                'conceptos' => [['descripcion' => "Saldo pendiente honorarios - Exp: {$this->numero}", 'monto' => $saldo]],
+                'fecha_emision' => now(),
+            ]);
+        }
+
+        // Audit Log
+        $this->logAudit('crear', 'Expedientes', "Creó el expediente: {$this->numero}", [
+            'expediente_id' => $expediente->id,
+            'titulo' => $this->titulo
         ]);
 
         session()->flash('message', 'Expediente creado exitosamente.');

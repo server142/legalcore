@@ -64,6 +64,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $cliente = Role::firstOrCreate(['name' => 'cliente']);
         $cliente->syncPermissions(['view own expedientes']);
 
+        $contable = Role::firstOrCreate(['name' => 'contable']);
+        $contable->syncPermissions(['manage billing', 'view all expedientes', 'view all terminos']);
+
         // Ensure Super Admin user exists and has role
         $user = User::where('email', 'admin@legalcore.com')->first();
         if ($user) {

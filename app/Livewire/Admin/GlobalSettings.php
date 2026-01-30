@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class GlobalSettings extends Component
 {
+    use \App\Traits\Auditable;
     // Stripe Settings
     public $stripe_key;
     public $stripe_secret;
@@ -30,6 +31,18 @@ class GlobalSettings extends Component
 
     // File Upload Settings
     public $max_file_size_mb = 100;
+
+    // AI Settings
+    public $ai_provider = 'openai';
+    public $ai_api_key;
+    public $ai_model = 'gpt-4o-mini';
+
+    // Welcome Settings
+    public $welcome_video_url;
+    public $welcome_message;
+    public $welcome_title;
+    public $welcome_version = 1;
+    public $welcome_target = 'all'; // all, super_admin, tenant_admin, regular_user
 
     public function mount()
     {
@@ -58,6 +71,16 @@ class GlobalSettings extends Component
         $this->mail_from_name = $settings['mail_from_name'] ?? '';
 
         $this->max_file_size_mb = $settings['max_file_size_mb'] ?? 100;
+
+        $this->ai_provider = $settings['ai_provider'] ?? 'openai';
+        $this->ai_api_key = $settings['ai_api_key'] ?? '';
+        $this->ai_model = $settings['ai_model'] ?? 'gpt-4o-mini';
+
+        $this->welcome_video_url = $settings['welcome_video_url'] ?? '';
+        $this->welcome_message = $settings['welcome_message'] ?? 'Bienvenido a Diogenes, tu plataforma de gestión legal.';
+        $this->welcome_title = $settings['welcome_title'] ?? 'Bienvenido a tu Espacio Legal';
+        $this->welcome_version = intval($settings['welcome_version'] ?? 1);
+        $this->welcome_target = $settings['welcome_target'] ?? 'all';
     }
 
     public function save()
@@ -78,6 +101,14 @@ class GlobalSettings extends Component
             'mail_from_address' => $this->mail_from_address,
             'mail_from_name' => $this->mail_from_name,
             'max_file_size_mb' => $this->max_file_size_mb,
+            'ai_provider' => $this->ai_provider,
+            'ai_api_key' => $this->ai_api_key,
+            'ai_model' => $this->ai_model,
+            'welcome_video_url' => $this->welcome_video_url,
+            'welcome_message' => $this->welcome_message,
+            'welcome_title' => $this->welcome_title,
+            'welcome_version' => $this->welcome_version,
+            'welcome_target' => $this->welcome_target,
         ];
 
         foreach ($data as $key => $value) {
@@ -87,7 +118,86 @@ class GlobalSettings extends Component
             );
         }
 
-        session()->flash('message', 'Configuraciones globales actualizadas correctamente.');
+        // Audit Log
+        $this->logAudit('editar', 'Configuración', "Actualizó la configuración global del despacho", []);
+
+        session()->flash('message', 'Configuración guardada correctamente.');
+        $this->dispatch('notify', 'Configuraciones globales actualizadas correctamente.');
+    }
+
+
+
+    public function testAI()
+    {
+        if (empty($this->ai_api_key)) {
+            session()->flash('error', 'Debe configurar la API Key de IA primero.');
+            return;
+        }
+
+        try {
+            $url = 'https://api.openai.com/v1/models'; // Default OpenAI
+            
+            if ($this->ai_provider === 'groq') {
+                $url = 'https://api.groq.com/openai/v1/models';
+            } elseif ($this->ai_provider === 'deepseek') {
+                $url = 'https://api.deepseek.com/models';
+            } elseif ($this->ai_provider === 'anthropic') {
+                // Anthropic doesn't have a simple public 'models' endpoint that behaves exactly the same, 
+                // but checking account or a simple message is better. Let's send a dummy message for all.
+                // Sending a dummy message is the most reliable test.
+                $url = null; 
+            }
+
+            // Real Test: Send a minimal "Hello" message
+            // To do this simply without instantiating the full service logic again here, 
+            // let's just do a provider check.
+            
+            $service = new \App\Services\AIService();
+            // We need to temporarily force the settings into the service or just trust the manual check.
+            // Since AIService reads from DB in constructor, and we haven't saved DB yet if user just typed it...
+            // We'll do a direct HTTP check mirroring AIService logic.
+
+            if ($this->ai_provider === 'anthropic') {
+                 $response = \Illuminate\Support\Facades\Http::withHeaders([
+                    'x-api-key' => $this->ai_api_key,
+                    'anthropic-version' => '2023-06-01',
+                ])->post('https://api.anthropic.com/v1/messages', [
+                    'model' => 'claude-3-haiku-20240307',
+                    'max_tokens' => 10,
+                    'messages' => [['role' => 'user', 'content' => 'Hi']],
+                ]);
+            } else {
+                // OpenAI Compatible (OpenAI, DeepSeek, Groq)
+                $targetUrl = match($this->ai_provider) {
+                    'groq' => 'https://api.groq.com/openai/v1/chat/completions',
+                    'deepseek' => 'https://api.deepseek.com/chat/completions',
+                    default => 'https://api.openai.com/v1/chat/completions'
+                };
+                
+                $model = match($this->ai_provider) {
+                    'groq' => 'llama-3.1-8b-instant', // Smallest/Fastest for test
+                    'deepseek' => 'deepseek-chat',
+                    default => 'gpt-3.5-turbo'
+                };
+
+                $response = \Illuminate\Support\Facades\Http::withToken($this->ai_api_key)
+                    ->post($targetUrl, [
+                        'model' => $model,
+                        'messages' => [['role' => 'user', 'content' => 'Hi']],
+                        'max_tokens' => 5
+                    ]);
+            }
+
+            if ($response->successful()) {
+                session()->flash('message', 'Conexión Exitosa con ' . ucfirst($this->ai_provider));
+                $this->dispatch('notify', 'Conexión Exitosa con ' . ucfirst($this->ai_provider));
+            } else {
+                throw new \Exception('Error ' . $response->status() . ': ' . $response->body());
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error de conexión IA: ' . $e->getMessage());
+            $this->dispatch('notify', 'Error: ' . $e->getMessage());
+        }
     }
 
     public function testStripe()

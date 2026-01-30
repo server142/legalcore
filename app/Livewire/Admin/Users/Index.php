@@ -11,7 +11,9 @@ use Illuminate\Validation\Rules;
 
 class Index extends Component
 {
+
     use WithPagination;
+    use \App\Traits\Auditable;
 
     public $search = '';
     public $showModal = false;
@@ -32,48 +34,14 @@ class Index extends Component
         'selectedRoles' => 'required|array|min:1',
     ];
 
-    public function render()
-    {
-        $users = User::with('roles')
-            ->where('tenant_id', auth()->user()->tenant_id)
-            ->where(function($query) {
-                $query->where('name', 'like', '%' . $this->search . '%')
-                      ->orWhere('email', 'like', '%' . $this->search . '%');
-            })
-            ->paginate(10);
-
-        $roles = Role::all();
-
-        return view('livewire.admin.users.index', [
-            'users' => $users,
-            'roles' => $roles,
-        ]);
-    }
-
-
-
-    public function create()
-    {
-        $this->reset(['name', 'email', 'password', 'password_confirmation', 'selectedRoles', 'userId', 'editMode']);
-        $this->showModal = true;
-    }
-
-    public function edit($id)
-    {
-        $this->editMode = true;
-        $this->userId = $id;
-        $user = User::findOrFail($id);
-        
-        $this->name = $user->name;
-        $this->email = $user->email;
-        $this->selectedRoles = $user->roles->pluck('name')->toArray();
-        
-        $this->showModal = true;
-    }
-
     public function store()
     {
         $this->validate();
+
+        // Security Check: Prevent assigning super_admin if not super_admin
+        if (in_array('super_admin', $this->selectedRoles) && !auth()->user()->hasRole('super_admin')) {
+            abort(403, 'No tienes permiso para asignar el rol de Super Admin.');
+        }
 
         $user = User::create([
             'name' => $this->name,
@@ -84,6 +52,12 @@ class Index extends Component
         ]);
 
         $user->syncRoles($this->selectedRoles);
+
+        // Audit Log
+        $this->logAudit('crear', 'Usuarios', "Creó al usuario: {$this->name} ({$this->email})", [
+            'new_user_id' => $user->id,
+            'roles' => $this->selectedRoles
+        ]);
 
         // Enviar correo con los datos de acceso
         try {
@@ -104,8 +78,14 @@ class Index extends Component
             'selectedRoles' => 'required|array|min:1',
         ]);
 
+        // Security Check: Prevent assigning super_admin if not super_admin
+        if (in_array('super_admin', $this->selectedRoles) && !auth()->user()->hasRole('super_admin')) {
+            abort(403, 'No tienes permiso para asignar el rol de Super Admin.');
+        }
+
         $user = User::findOrFail($this->userId);
-        
+        $oldData = $user->only(['name', 'email', 'role']);
+
         $user->update([
             'name' => $this->name,
             'email' => $this->email,
@@ -117,9 +97,19 @@ class Index extends Component
                 'password' => 'confirmed|min:8',
             ]);
             $user->update(['password' => Hash::make($this->password)]);
+            // Log variable to note password change
+            $passChanged = true;
         }
 
         $user->syncRoles($this->selectedRoles);
+
+        // Audit Log
+        $this->logAudit('editar', 'Usuarios', "Editó al usuario: {$user->name}", [
+            'user_id' => $user->id,
+            'changes' => $user->getChanges(), // Eloquent changes
+            'roles_assigned' => $this->selectedRoles,
+            'password_changed' => $passChanged ?? false
+        ]);
 
         $this->showModal = false;
         $this->dispatch('notify', 'Usuario actualizado exitosamente');
@@ -137,9 +127,29 @@ class Index extends Component
     public function deleteUser()
     {
         $user = User::findOrFail($this->userToDeleteId);
+        $userName = $user->name;
+        $userEmail = $user->email;
+        
         $user->delete();
+
+        // Audit Log
+        $this->logAudit('eliminar', 'Usuarios', "Eliminó al usuario: {$userName} ({$userEmail})", [
+            'deleted_user_id' => $this->userToDeleteId
+        ]);
+
         $this->confirmingUserDeletion = false;
         $this->dispatch('notify', 'Usuario eliminado exitosamente');
         $this->reset(['userToDeleteId']);
+    }
+    public function render()
+    {
+        $users = User::where('name', 'like', '%'.$this->search.'%')
+            ->orWhere('email', 'like', '%'.$this->search.'%')
+            ->paginate(10);
+
+        return view('livewire.admin.users.index', [
+            'users' => $users,
+            'roles' => Role::all(),
+        ]);
     }
 }

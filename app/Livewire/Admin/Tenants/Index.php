@@ -148,6 +148,16 @@ class Index extends Component
         }
     }
 
+    public function resetWelcomeForTenant($tenantId)
+    {
+        $tenant = Tenant::find($tenantId);
+        if (!$tenant) return;
+
+        $tenant->users()->update(['has_seen_welcome' => false]);
+
+        session()->flash('message', "Se ha habilitado de nuevo el video de bienvenida para todos los usuarios de '{$tenant->name}'.");
+    }
+
     public function render()
     {
         $query = Tenant::query()->with(['users', 'planRelation']);

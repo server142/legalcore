@@ -21,6 +21,8 @@ class Documento extends Model
         'version',
         'size',
         'uploaded_by',
+        'extracted_text',
+        'processing_status',
     ];
 
     public function expediente()

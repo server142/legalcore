@@ -24,6 +24,8 @@ class Expediente extends Model
         'cliente_id',
         'abogado_responsable_id',
         'descripcion',
+        'honorarios_totales',
+        'saldo_pendiente',
         'fecha_inicio',
         'fecha_cierre',
     ];
@@ -74,5 +76,10 @@ class Expediente extends Model
     public function comentarios()
     {
         return $this->hasMany(Comentario::class)->orderBy('created_at', 'desc');
+    }
+
+    public function facturas()
+    {
+        return $this->hasMany(Factura::class);
     }
 }

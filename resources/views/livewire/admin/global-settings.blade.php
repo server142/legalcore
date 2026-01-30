@@ -25,6 +25,8 @@
                     <button @click="$dispatch('set-tab', 'stripe')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Configuración Stripe</button>
                     <button @click="$dispatch('set-tab', 'sms')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Configuración SMS</button>
                     <button @click="$dispatch('set-tab', 'mail')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Servidor de Correo</button>
+                    <button @click="$dispatch('set-tab', 'ai')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Inteligencia Artificial</button>
+                    <button @click="$dispatch('set-tab', 'onboarding')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Onboarding (Bienvenida)</button>
                     <button @click="$dispatch('set-tab', 'general')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Configuración General</button>
                 </div>
             </div>
@@ -130,6 +132,57 @@
                         </div>
                     </div>
 
+                    <!-- AI Settings -->
+                    <div x-show="tab === 'ai'" class="bg-white rounded-lg shadow p-6 space-y-4" style="display: none;">
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <h3 class="text-lg font-bold text-gray-800">Inteligencia Artificial (Diogenes AI)</h3>
+                            <button type="button" wire:click="testAI" wire:loading.attr="disabled" class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold hover:bg-indigo-200 transition">
+                                <span wire:loading.remove wire:target="testAI">Probar Conexión OpenAI</span>
+                                <span wire:loading wire:target="testAI">Conectando...</span>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <x-input-label for="ai_provider" value="Proveedor de IA" />
+                                <select wire:model="ai_provider" id="ai_provider" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <option value="openai">OpenAI (Recomendado)</option>
+                <option value="groq">Groq (Gratis/Rápido)</option>
+                <option value="anthropic">Anthropic (Claude)</option>
+                <option value="deepseek">DeepSeek (Económico)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <x-input-label for="ai_model" value="Modelo por Defecto" />
+                                <x-text-input wire:model="ai_model" id="ai_model" class="mt-1 block w-full" type="text" placeholder="ej. gpt-4o-mini" />
+                                <p class="text-xs text-gray-500 mt-1">Recomendado: <code>gpt-4o-mini</code> (Bajo Costo) o <code>gpt-4o</code> (Alta Precisión).</p>
+                            </div>
+                            <div>
+                                <x-input-label for="ai_api_key" value="API Key" />
+                                <x-text-input wire:model="ai_api_key" id="ai_api_key" class="mt-1 block w-full" type="password" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Onboarding Settings -->
+                    <div x-show="tab === 'onboarding'" class="bg-white rounded-lg shadow p-6 space-y-4" style="display: none;">
+                        <h3 class="text-lg font-bold text-gray-800 border-b pb-2">Configuración de Bienvenida (Onboarding)</h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <x-input-label for="welcome_title" value="Título de Bienvenida" />
+                                <x-text-input wire:model="welcome_title" id="welcome_title" class="mt-1 block w-full" type="text" placeholder="ej. Bienvenido a LegalCore" />
+                            </div>
+                            <div>
+                                <x-input-label for="welcome_video_url" value="URL del Video de Bienvenida" />
+                                <x-text-input wire:model="welcome_video_url" id="welcome_video_url" class="mt-1 block w-full" type="text" placeholder="https://www.youtube.com/watch?v=..." />
+                                <p class="text-xs text-gray-500 mt-1">Soporta enlaces de YouTube o archivos directos (.mp4).</p>
+                            </div>
+                            <div>
+                                <x-input-label for="welcome_message" value="Mensaje de Bienvenida" />
+                                <textarea wire:model="welcome_message" id="welcome_message" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- General Settings -->
                     <div x-show="tab === 'general'" class="bg-white rounded-lg shadow p-6 space-y-4" style="display: none;">
                         <h3 class="text-lg font-bold text-gray-800 border-b pb-2">Configuración General</h3>
@@ -148,8 +201,9 @@
                     </div>
 
                     <div class="mt-6 flex justify-end">
-                        <x-primary-button type="submit">
-                            {{ __('Guardar Configuraciones') }}
+                        <x-primary-button type="submit" wire:loading.attr="disabled">
+                            <span wire:loading.remove>Guardar Configuraciones</span>
+                            <span wire:loading>Guardando...</span>
                         </x-primary-button>
                     </div>
                 </form>

@@ -32,6 +32,7 @@ class User extends Authenticatable
         'google_refresh_token',
         'google_token_expires_at',
         'calendar_email',
+        'has_seen_welcome',
     ];
 
     /**
@@ -57,6 +58,8 @@ class User extends Authenticatable
             'google_token_expires_at' => 'datetime',
         ];
     }
+
+
 
     public function sentMessages()
     {

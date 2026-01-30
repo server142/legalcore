@@ -122,10 +122,44 @@
                     <x-input-error :messages="$errors->get('fecha_inicio')" class="mt-2" />
                 </div>
 
+                <!-- Información Financiera -->
+                <div class="md:col-span-2 mt-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{ __('Información Financiera') }}
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <x-input-label for="honorarios_totales" :value="__('Presupuesto / Honorarios Totales')" />
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">$</span>
+                                </div>
+                                <x-text-input id="honorarios_totales" type="number" step="0.01" class="pl-7 mt-1 block w-full border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" wire:model="honorarios_totales" placeholder="0.00" />
+                            </div>
+                            <x-input-error :messages="$errors->get('honorarios_totales')" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="anticipo_inicial" :value="__('Monto de Anticipo (Pagado hoy)')" />
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">$</span>
+                                </div>
+                                <x-text-input id="anticipo_inicial" type="number" step="0.01" class="pl-7 mt-1 block w-full border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" wire:model="anticipo_inicial" placeholder="0.00" />
+                            </div>
+                            <x-input-error :messages="$errors->get('anticipo_inicial')" class="mt-2" />
+                            <p class="text-[10px] text-gray-500 mt-1 italic">{{ __('El restante se marcará como saldo pendiente.') }}</p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Descripción -->
                 <div class="md:col-span-2">
                     <x-input-label for="descripcion" :value="__('Descripción / Notas Iniciales')" />
-                    <textarea id="descripcion" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" rows="4" wire:model="descripcion"></textarea>
+                    <textarea id="descripcion" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" rows="3" wire:model="descripcion"></textarea>
                     <x-input-error :messages="$errors->get('descripcion')" class="mt-2" />
                 </div>
 

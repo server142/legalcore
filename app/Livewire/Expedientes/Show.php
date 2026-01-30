@@ -26,6 +26,14 @@ class Show extends Component
 
     // Edit fields
     public $numero, $titulo, $materia, $juzgado, $estado_procesal, $estado_procesal_id, $nombre_juez, $fecha_inicio, $cliente_id, $abogado_responsable_id;
+    public $honorarios_totales, $saldo_pendiente;
+
+    // Payment fields
+    public $monto_pago;
+    public $concepto_pago = 'Abono a honorarios';
+    public $breakdown_iva = true;
+    public $iva_amount = 0;
+    public $subtotal_amount = 0;
 
     public function mount(Expediente $expediente)
     {
@@ -38,6 +46,56 @@ class Show extends Component
         }
         
         $this->expediente = $expediente->load(['cliente', 'abogado', 'actuaciones', 'documentos', 'eventos', 'comentarios.user']);
+
+        // Check IVA setting
+        $settings = $user->tenant->settings ?? [];
+        // Default to true if not set, or check both keys for backward compatibility
+        if (isset($settings['billing_apply_iva'])) {
+            $this->breakdown_iva = (bool)$settings['billing_apply_iva'];
+        } else {
+            $this->breakdown_iva = $settings['asesorias_billing_apply_iva'] ?? true;
+        }
+    }
+
+    public function updatedMontoPago($value)
+    {
+        $value = (float)$value;
+        if ($this->breakdown_iva) {
+            $this->subtotal_amount = round($value / 1.16, 2);
+            $this->iva_amount = round($value - $this->subtotal_amount, 2);
+        } else {
+            $this->subtotal_amount = $value;
+            $this->iva_amount = 0;
+        }
+    }
+
+    public function updatedBreakdownIva($value)
+    {
+        $monto = (float)$this->monto_pago;
+        if ($value) {
+            $this->subtotal_amount = round($monto / 1.16, 2);
+            $this->iva_amount = round($monto - $this->subtotal_amount, 2);
+        } else {
+            $this->subtotal_amount = $monto;
+            $this->iva_amount = 0;
+        }
+    }
+
+    public function updatedIvaAmount($value)
+    {
+        // If user manually changes IVA, we recalculate Total (Monto Pago) keeping Subtotal fixed?
+        // Or Recalculate Subtotal keeping Total fixed? 
+        // User requested: "se calcule el total si lo quita o cambia" -> Calculate Total.
+        // Assuming Subtotal is the base.
+        // But wait, if user just typed the Total previously, Subtotal was derived.
+        // Let's assume Subtotal is the 'real' value and we add tax on top.
+        $this->monto_pago = (float)$this->subtotal_amount + (float)$value;
+    }
+
+    public function updatedSubtotalAmount($value)
+    {
+        // If user manually changes Subtotal
+        $this->monto_pago = (float)$value + (float)$this->iva_amount;
     }
 
     #[On('actuacion-added')]
@@ -120,6 +178,8 @@ class Show extends Component
         $this->fecha_inicio = $this->expediente->fecha_inicio?->format('Y-m-d');
         $this->cliente_id = $this->expediente->cliente_id;
         $this->abogado_responsable_id = $this->expediente->abogado_responsable_id;
+        $this->honorarios_totales = $this->expediente->honorarios_totales;
+        $this->saldo_pendiente = $this->expediente->saldo_pendiente;
         
         $this->showEditModal = true;
     }
@@ -149,11 +209,134 @@ class Show extends Component
             'fecha_inicio' => $this->fecha_inicio,
             'cliente_id' => $this->cliente_id,
             'abogado_responsable_id' => $this->abogado_responsable_id,
+            'honorarios_totales' => $this->honorarios_totales,
+            // We don't update saldo_pendiente here automatically unless they change honorarios_totales
+            // If they change honorarios, we should recalculate saldo based on paid facturas
         ]);
+
+        if ($this->honorarios_totales != $this->expediente->getOriginal('honorarios_totales')) {
+            $pagado = $this->expediente->facturas()->where('estado', 'pagada')->sum('total');
+            $this->expediente->update(['saldo_pendiente' => (float)$this->honorarios_totales - $pagado]);
+        }
 
         $this->showEditModal = false;
         $this->expediente->refresh();
         $this->dispatch('notify', 'Expediente actualizado exitosamente');
+    }
+
+    public function recordPayment()
+    {
+        $this->validate([
+            'monto_pago' => 'required|numeric|min:0.01',
+            'concepto_pago' => 'required|string|max:255',
+        ]);
+
+        if ($this->monto_pago > $this->expediente->saldo_pendiente) {
+             $this->addError('monto_pago', 'El monto no puede ser mayor al saldo pendiente.');
+             return;
+        }
+
+        $user = auth()->user();
+
+        // 1. Create Receipt Invoice (Income)
+        // Use calculated breakdown
+        $subtotal = $this->subtotal_amount > 0 ? $this->subtotal_amount : ($this->monto_pago / 1.16);
+        $iva = $this->iva_amount >= 0 ? $this->iva_amount : ($this->monto_pago - $subtotal);
+        // Fallback safety if 0
+        if ($this->breakdown_iva && $this->iva_amount == 0 && $this->monto_pago > 0) {
+             // User explicitly set 0? If so, respect it.
+             // If implicit from code, respect logic.
+             // Our updatedMontoPago logic handles this.
+        }
+
+        \App\Models\Factura::create([
+            'tenant_id' => $user->tenant_id,
+            'cliente_id' => $this->expediente->cliente_id,
+            'expediente_id' => $this->expediente->id,
+            'subtotal' => $this->subtotal_amount,
+            'iva' => $this->iva_amount,
+            'total' => $this->monto_pago,
+            'estado' => 'pagada',
+            'fecha_pago' => now(),
+            'conceptos' => [['descripcion' => $this->concepto_pago . " - Exp: {$this->expediente->numero}", 'monto' => $this->monto_pago]],
+            'fecha_emision' => now(),
+        ]);
+
+        // 2. Reduce Pending Invoices (Accounts Receivable)
+        $remainingToDeduct = $this->monto_pago;
+        
+        $pendingInvoices = \App\Models\Factura::where('expediente_id', $this->expediente->id)
+            ->where('estado', 'pendiente')
+            ->orderBy('created_at', 'asc') // Pay oldest debt first
+            ->get();
+
+        foreach ($pendingInvoices as $invoice) {
+            if ($remainingToDeduct <= 0) break;
+
+            if ($invoice->total <= $remainingToDeduct) {
+                // This invoice is fully paid off
+                $deducted = $invoice->total;
+                $invoice->delete(); 
+                $remainingToDeduct -= $deducted;
+            } else {
+                // Partial payment of this invoice
+                $newTotal = $invoice->total - $remainingToDeduct;
+                $newSubtotal = $newTotal / 1.16;
+                $newIva = $newTotal - $newSubtotal;
+
+                $invoice->update([
+                    'total' => $newTotal,
+                    'subtotal' => $newSubtotal,
+                    'iva' => $newIva,
+                ]);
+                $remainingToDeduct = 0;
+            }
+        }
+
+        // 3. Update Expediente Saldo
+        $newSaldo = (float)$this->expediente->saldo_pendiente - (float)$this->monto_pago;
+        $this->expediente->update(['saldo_pendiente' => $newSaldo > 0 ? $newSaldo : 0]);
+
+        $this->reset(['monto_pago', 'iva_amount', 'subtotal_amount']);
+        $this->expediente->refresh();
+        $this->dispatch('notify', 'Pago registrado exitosamente');
+    }
+
+    public function cancelPayment($facturaId)
+    {
+        $factura = \App\Models\Factura::find($facturaId);
+
+        if (!$factura || $factura->estado != 'pagada') {
+            return;
+        }
+
+        // 1. Mark as cancelled
+        $factura->update(['estado' => 'cancelada']);
+
+        // 2. Increase Expediente Saldo (Restore Debt)
+        $montoCancelado = $factura->total;
+        $newSaldo = (float)$this->expediente->saldo_pendiente + (float)$montoCancelado;
+        $this->expediente->update(['saldo_pendiente' => $newSaldo]);
+
+        // 3. Create a new Pending Invoice to represent the debt that came back
+        // Since we don't know exactly which pending invoices were paid by this specific payment
+        // (because we deleted them or reduced them), the safest bet is to create a new
+        // pending invoice for this amount.
+        \App\Models\Factura::create([
+            'tenant_id' => $factura->tenant_id,
+            'cliente_id' => $factura->cliente_id,
+            'expediente_id' => $factura->expediente_id,
+            'subtotal' => $factura->subtotal,
+            'iva' => $factura->iva,
+            'total' => $factura->total,
+            'estado' => 'pendiente', // Back to pending
+            'fecha_emision' => now(),
+            'fecha_vencimiento' => now()->addDays(7), // Give it a short due date as it's a reversed payment
+            'conceptos' => [['descripcion' => "Saldo pendiente (Cancelación de pago #{$factura->id}) - Exp: {$this->expediente->numero}", 'monto' => $factura->total]],
+        ]);
+
+        $this->expediente->refresh();
+        $this->dispatch('notify', 'Pago cancelado y saldo actualizado correchamente');
     }
 
     public function render()
