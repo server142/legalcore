@@ -24,7 +24,7 @@ class AIService
     /**
      * Send a completion request to the AI (Text Generation)
      */
-    public function ask(array $messages, float $temperature = 0.2, int $maxTokens = 2000)
+    public function ask(array $messages, float $temperature = 0.2, int $maxTokens = 6000)
     {
         if (empty($this->apiKey)) {
             return ['error' => 'AI API Key not configured.'];
@@ -100,9 +100,15 @@ class AIService
                 $tokenParam => $maxTokens,
             ];
 
-            // Only add temperature if it's NOT an o1 model, as o1 restricts this parameter strictly
-            if (!str_starts_with($this->model, 'o1-')) {
+            // Only add temperature if it's NOT an o1 model (o1-preview, o1-mini, etc.)
+            // o1 models strictly require temperature to be 1 or omitted.
+            // Using str_contains is safer than str_starts_with in case the model name has prefixes/suffixes.
+            if (!str_contains($this->model, 'o1')) {
                 $payload['temperature'] = $temperature;
+            } else {
+                 // For o1 models, we might want to explicitly force temperature to 1 just in case, 
+                 // but omitting it is the safest bet as per current docs.
+                 // $payload['temperature'] = 1; 
             }
 
             $response = Http::withToken($this->apiKey)
