@@ -1,5 +1,5 @@
 <div class="p-6">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <!-- Expedientes Activos -->
         <div class="bg-white p-4 rounded-lg shadow border-l-4 border-indigo-500 relative overflow-hidden group hover:shadow-md transition-shadow">
             <div class="absolute right-0 top-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -53,7 +53,7 @@
             </div>
 
             <!-- Proyección -->
-            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-indigo-500 relative overflow-hidden group hover:shadow-md transition-shadow sm:col-span-2 lg:col-span-1">
+            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-indigo-500 relative overflow-hidden group hover:shadow-md transition-shadow md:col-span-2">
                  <div class="absolute right-0 top-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
                     <svg class="w-16 h-16 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 </div>
