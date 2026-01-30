@@ -62,6 +62,14 @@
                                         </svg>
                                     </button>
 
+                                    <button type="button" wire:click="exportChatHistory" 
+                                            class="p-1.5 rounded text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition-colors" 
+                                            title="Descargar Historial">
+                                        <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 9.75V1.5m0 0 3 3m-3-3-3 3" />
+                                        </svg>
+                                    </button>
+
                                     <button type="button" wire:click="resetChat" 
                                             class="p-1.5 rounded text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition-colors" 
                                             title="Reiniciar Chat">
@@ -146,9 +154,10 @@
                                         </div>
 
                                         @if($msg['role'] === 'assistant')
-                                            <!-- Select Text functionality for TTS -->
-                                            <!-- Select Text functionality for TTS -->
-                                            <div class="flex justify-end mt-1 mr-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+                                            <!-- Action Buttons -->
+                                            <div class="flex justify-end mt-1 mr-1 gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+                                                
+                                                <!-- Select Text -->
                                                 <button type="button" 
                                                         @click="
                                                             let content = $el.closest('.flex-col').querySelector('.text-message-content');
@@ -158,11 +167,26 @@
                                                             selection.removeAllRanges();
                                                             selection.addRange(range);
                                                         "
+                                                        title="Seleccionar para leer"
                                                         class="text-[10px] text-gray-400 hover:text-indigo-600 flex items-center bg-gray-50 px-2 py-1 rounded border border-gray-100 shadow-sm transition-all focus:ring-1 focus:ring-indigo-300">
-                                                    <!-- Icon: Text Selection / Cursor -->
-                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 16h10M12 8v8M5 3a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2H5z"></path></svg>
-                                                    Seleccionar
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 16h10M12 8v8M5 3a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2H5z"></path></svg>
                                                 </button>
+
+                                                <!-- Export to Word -->
+                                                <button type="button" wire:click="exportToWord(@js($msg['content']))"
+                                                        title="Descargar DOCX"
+                                                        class="text-[10px] text-gray-400 hover:text-blue-600 flex items-center bg-gray-50 px-2 py-1 rounded border border-gray-100 shadow-sm transition-all">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                </button>
+
+                                                <!-- Save to AI Notes -->
+                                                <button type="button" wire:click="saveAsAiNote(@js($msg['content']))"
+                                                        wire:confirm="¿Guardar respuesta en Notas de IA?"
+                                                        title="Guardar Nota IA"
+                                                        class="text-[10px] text-gray-400 hover:text-green-600 flex items-center bg-gray-50 px-2 py-1 rounded border border-gray-100 shadow-sm transition-all">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                </button>
+                                                
                                             </div>
                                         @endif
                                     </div>
@@ -181,14 +205,51 @@
                         </div>
 
                         <!-- Footer Input -->
-                        <div class="border-t border-gray-200 px-4 py-3 sm:px-6 sm:py-6 bg-white pb-safe">
+                        <div class="border-t border-gray-200 px-4 py-3 sm:px-6 sm:py-6 bg-white pb-safe"
+                             x-data="{ 
+                                recording: false,
+                                recognition: null,
+                                startRecording() {
+                                    if (!('webkitSpeechRecognition' in window)) {
+                                        alert('Tu navegador no soporta dictado por voz.');
+                                        return;
+                                    }
+                                    this.recognition = new webkitSpeechRecognition();
+                                    this.recognition.lang = 'es-ES';
+                                    this.recognition.continuous = false;
+                                    this.recognition.interimResults = false;
+                                    
+                                    this.recognition.onstart = () => { this.recording = true; };
+                                    this.recognition.onend = () => { this.recording = false; };
+                                    this.recognition.onresult = (event) => {
+                                        const transcript = event.results[0][0].transcript;
+                                        $wire.set('input', transcript); // Set Livewire model directly
+                                    };
+                                    
+                                    this.recognition.start();
+                                },
+                                stopRecording() {
+                                    if(this.recognition) this.recognition.stop();
+                                }
+                             }">
                             <form wire:submit.prevent="sendMessage" class="relative">
                                 <div class="relative rounded-md shadow-sm">
                                     <input type="text" 
                                            wire:model="input" 
-                                           class="block w-full rounded-md border-0 py-3 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" 
-                                           placeholder="Escribe tu consulta..." 
+                                           class="block w-full rounded-md border-0 py-3 pl-10 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" 
+                                           placeholder="Escribe o dicta tu consulta..." 
                                            {{ $isLoading ? 'disabled' : '' }}>
+                                           
+                                    <!-- Microphone Button -->
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-2">
+                                        <button type="button" 
+                                                @click="recording ? stopRecording() : startRecording()"
+                                                class="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                                                :class="recording ? 'text-red-600 animate-pulse' : 'text-gray-400 hover:text-gray-600'">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                                        </button>
+                                    </div>
+
                                     <div class="absolute inset-y-0 right-0 flex items-center pr-2">
                                         <button type="submit" 
                                                 class="p-1 rounded-md text-indigo-600 hover:text-indigo-500 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors"

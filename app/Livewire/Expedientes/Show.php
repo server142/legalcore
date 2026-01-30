@@ -23,6 +23,7 @@ class Show extends Component
     public $selectedDoc = null;
     public $showViewer = false;
     public $showEditModal = false;
+    public $viewingNote = null;
 
     // Edit fields
     public $numero, $titulo, $materia, $juzgado, $estado_procesal, $estado_procesal_id, $nombre_juez, $fecha_inicio, $cliente_id, $abogado_responsable_id;
@@ -45,7 +46,7 @@ class Show extends Component
             }
         }
         
-        $this->expediente = $expediente->load(['cliente', 'abogado', 'actuaciones', 'documentos', 'eventos', 'comentarios.user']);
+        $this->expediente = $expediente->load(['cliente', 'abogado', 'actuaciones', 'documentos', 'eventos', 'comentarios.user', 'aiNotes.user']);
 
         // Check IVA setting
         $settings = $user->tenant->settings ?? [];
@@ -337,6 +338,26 @@ class Show extends Component
 
         $this->expediente->refresh();
         $this->dispatch('notify', 'Pago cancelado y saldo actualizado correchamente');
+    }
+
+    public function viewNote($noteId)
+    {
+        $this->viewingNote = \App\Models\AiNote::find($noteId);
+    }
+
+    public function closeNote()
+    {
+        $this->viewingNote = null;
+    }
+
+    public function deleteAiNote($noteId)
+    {
+        $note = \App\Models\AiNote::find($noteId);
+        if ($note) {
+            $note->delete();
+            $this->expediente->load('aiNotes.user');
+            $this->dispatch('notify', 'Nota eliminada correctamente');
+        }
     }
 
     public function render()

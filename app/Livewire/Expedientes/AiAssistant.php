@@ -255,6 +255,54 @@ class AiAssistant extends Component
             return "Error leyendo el archivo. Asegúrese de que sea un PDF de texto y no una imagen escaneada.";
         }
     }
+    public function saveAsAiNote($content)
+    {
+        try {
+            \App\Models\AiNote::create([
+                'tenant_id' => $this->expediente->tenant_id, 
+                'expediente_id' => $this->expediente->id,
+                'user_id' => auth()->id(),
+                'content' => $content,
+            ]);
+
+            $this->js("alert('Guardado exitosamente en Notas de IA.')");
+        } catch (\Exception $e) {
+            $this->js("alert('Error al guardar: " . addslashes($e->getMessage()) . "')");
+        }
+    }
+
+    public function exportToWord($content)
+    {
+        $fileName = 'Diogenes_Draft_' . now()->format('Ymd_His') . '.doc';
+        
+        return response()->streamDownload(function () use ($content) {
+            echo "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>";
+            echo "<head><meta charset='utf-8'><title>Export Header</title></head>";
+            echo "<body>";
+            echo nl2br($content);
+            echo "</body></html>";
+        }, $fileName, [
+            'Content-Type' => 'application/msword',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"'
+        ]);
+    }
+
+    public function exportChatHistory()
+    {
+        $history = "Historial de Chat - Expediente " . $this->expediente->codigo . "\n";
+        $history .= "Fecha: " . now()->format('d/m/Y H:i') . "\n\n";
+        
+        foreach ($this->messages as $msg) {
+            $role = strtoupper($msg['role']);
+            $history .= "[{$role}]:\n" . $msg['content'] . "\n\n" . str_repeat('-', 20) . "\n\n";
+        }
+
+        $fileName = 'Chat_History_' . now()->format('Ymd_His') . '.txt';
+
+        return response()->streamDownload(function () use ($history) {
+            echo $history;
+        }, $fileName);
+    }
 
     public function render()
     {

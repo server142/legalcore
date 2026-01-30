@@ -82,4 +82,9 @@ class Expediente extends Model
     {
         return $this->hasMany(Factura::class);
     }
+
+    public function aiNotes()
+    {
+        return $this->hasMany(AiNote::class)->orderBy('created_at', 'desc');
+    }
 }

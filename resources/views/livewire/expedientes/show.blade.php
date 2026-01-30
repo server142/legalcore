@@ -95,6 +95,10 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         Agenda
                     </button>
+                    <button wire:click="setTab('notas_ai')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'notas_ai' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Notas IA
+                    </button>
                     <button wire:click="setTab('comentarios')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'comentarios' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
                         Comentarios
@@ -373,13 +377,90 @@
                                     </table>
                                 </div>
                             </div>
+                            </div>
                         </div>
                         @endcan
+                    @elseif($activeTab == 'notas_ai')
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                @forelse($expediente->aiNotes as $note)
+                                    <div class="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition relative flex flex-col h-full">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <span class="text-[10px] uppercase font-bold text-gray-400">
+                                                {{ $note->created_at->format('d/m/Y H:i') }}
+                                            </span>
+                                            <button wire:click="deleteAiNote({{ $note->id }})" wire:confirm="¿Borrar esta nota permanentemente?" class="text-gray-300 hover:text-red-500 transition">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="flex-1 mb-4 prose prose-sm max-w-none text-gray-600 line-clamp-4 text-xs">
+                                            {{ \Illuminate\Support\Str::limit($note->content, 200) }}
+                                        </div>
+                                        
+                                        <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
+                                            <div class="flex items-center">
+                                                <div class="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 text-[10px] font-bold mr-2">
+                                                    {{ substr($note->user->name ?? '?', 0, 1) }}
+                                                </div>
+                                                <span class="text-[10px] text-gray-500">{{ $note->user->name ?? 'Usuario' }}</span>
+                                            </div>
+                                            <button wire:click="viewNote({{ $note->id }})" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center">
+                                                Leer nota
+                                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="col-span-1 md:col-span-2 text-center py-12 bg-gray-50 rounded-xl border border-dashed text-gray-400">
+                                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                        <p>No hay notas de IA guardadas.</p>
+                                        <p class="text-xs mt-1">Usa el botón "Guardar" en el chat del asistente.</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
                     @endif
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal Ver Nota IA -->
+    @if($viewingNote)
+        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="closeNote"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                    <div class="bg-indigo-600 px-4 py-3 sm:px-6 flex justify-between items-center">
+                        <h3 class="text-lg leading-6 font-bold text-white flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Nota de IA
+                        </h3>
+                        <button wire:click="closeNote" class="text-indigo-200 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+                        <div class="prose prose-sm max-w-none text-gray-700">
+                             {!! \Illuminate\Support\Str::markdown($viewingNote->content) !!}
+                        </div>
+                        <div class="mt-6 pt-4 border-t text-xs text-gray-400 flex justify-between">
+                            <span>Guardado por: {{ $viewingNote->user->name ?? 'Usuario' }}</span>
+                            <span>{{ $viewingNote->created_at->format('d/m/Y H:i') }}</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="button" wire:click="closeNote" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
 
     <!-- Modal Visor de Archivos -->
     @if($showViewer && $selectedDoc)
