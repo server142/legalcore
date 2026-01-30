@@ -15,10 +15,19 @@ class TenantAdmin extends Component
     public $totalClientes;
     public $recentExpedientes;
     public $urgentTerminos;
+    public $eventos;
+    
+    // Financial Stats
     public $totalCobrado;
     public $pendienteCobro;
     public $facturasMes;
-    public $eventos;
+    public $monthlyIncome;
+    public $lastMonthIncome;
+    public $projectedIncome;
+    public $incomeHistory = [];
+    public $incomeByMateria = ['labels' => [], 'values' => []];
+    public $recentPayments = [];
+    public $topDebtors = [];
 
     public function mount()
     {
@@ -54,7 +63,7 @@ class TenantAdmin extends Component
             ->where('fecha_vencimiento', '<=', now()->addDays(7))
             ->count();
 
-        $this->totalClientes = Cliente::count(); // Clientes are usually shared, but could be filtered too if needed
+        $this->totalClientes = Cliente::count(); 
         $this->recentExpedientes = $expedienteQuery->with('estadoProcesal')->latest()->take(5)->get();
         
         $this->urgentTerminos = (clone $actuacionQuery)
@@ -62,7 +71,7 @@ class TenantAdmin extends Component
             ->take(5)
             ->get();
 
-        // Logic for "Próximos 7 días" (Agenda)
+        // Agenda
         $agendaQuery = \App\Models\Evento::with('user');
         if ($user->hasRole('abogado') && !$user->can('view all expedientes')) {
             $agendaQuery->where(function($q) use ($user) {
@@ -84,25 +93,95 @@ class TenantAdmin extends Component
             ->take(10)
             ->get();
         
-        // Financial Stats - Only for those who can manage billing
+        // Financial Stats
         if ($user->can('manage billing')) {
             try {
+                // KPIs
                 $this->totalCobrado = \App\Models\Factura::where('estado', 'pagada')->sum('total');
                 $this->pendienteCobro = \App\Models\Factura::where('estado', 'pendiente')->sum('total');
                 $this->facturasMes = \App\Models\Factura::whereMonth('created_at', now()->month)
                     ->whereYear('created_at', now()->year)
                     ->count();
+
+                // Advanced Logic
+                $this->monthlyIncome = \App\Models\Factura::where('estado', 'pagada')
+                    ->whereMonth('fecha_pago', now()->month)
+                    ->whereYear('fecha_pago', now()->year)
+                    ->sum('total');
+
+                $this->lastMonthIncome = \App\Models\Factura::where('estado', 'pagada')
+                    ->whereMonth('fecha_pago', now()->subMonth()->month)
+                    ->whereYear('fecha_pago', now()->subMonth()->year)
+                    ->sum('total');
+
+                $pendingDueThisMonth = \App\Models\Factura::where('estado', 'pendiente')
+                    ->whereMonth('fecha_vencimiento', now()->month)
+                    ->whereYear('fecha_vencimiento', now()->year)
+                    ->sum('total');
+                $this->projectedIncome = $this->monthlyIncome + $pendingDueThisMonth;
+
+                // History
+                $this->incomeHistory = [];
+                for ($i = 5; $i >= 0; $i--) {
+                    $date = now()->subMonths($i);
+                    $amount = \App\Models\Factura::where('estado', 'pagada')
+                        ->whereMonth('fecha_pago', $date->month)
+                        ->whereYear('fecha_pago', $date->year)
+                        ->sum('total');
+                    $this->incomeHistory[] = [
+                        'label' => $date->translatedFormat('M'), 
+                        'value' => $amount
+                    ];
+                }
+
+                // By Materia
+                $facturasYear = \App\Models\Factura::where('estado', 'pagada')
+                    ->whereYear('fecha_pago', now()->year)
+                    ->with('expediente:id,materia')
+                    ->get();
+                
+                $byMateria = $facturasYear->groupBy('expediente.materia')->map(function ($row) {
+                    return $row->sum('total');
+                })->sortDesc()->take(5);
+
+                $this->incomeByMateria = [
+                    'labels' => $byMateria->keys()->toArray(),
+                    'values' => $byMateria->values()->toArray(),
+                ];
+
+                // Tables
+                $this->recentPayments = \App\Models\Factura::where('estado', 'pagada')
+                    ->with(['expediente', 'cliente'])
+                    ->latest('fecha_pago')
+                    ->take(5)
+                    ->get();
+                
+                $this->topDebtors = \App\Models\Expediente::where('saldo_pendiente', '>', 0)
+                    ->orderBy('saldo_pendiente', 'desc')
+                    ->take(5)
+                    ->get();
+
             } catch (\Throwable $e) {
-                $this->totalCobrado = 0;
-                $this->pendienteCobro = 0;
-                $this->facturasMes = 0;
-                \Illuminate\Support\Facades\Log::warning('TenantAdmin Dashboard: Error al calcular estadísticas financieras. ' . $e->getMessage());
+                $this->resetFinancials();
+                \Illuminate\Support\Facades\Log::warning('TenantAdmin Dashboard Financial Error: ' . $e->getMessage());
             }
         } else {
-            $this->totalCobrado = 0;
-            $this->pendienteCobro = 0;
-            $this->facturasMes = 0;
+            $this->resetFinancials();
         }
+    }
+
+    private function resetFinancials()
+    {
+        $this->totalCobrado = 0;
+        $this->pendienteCobro = 0;
+        $this->facturasMes = 0;
+        $this->monthlyIncome = 0;
+        $this->lastMonthIncome = 0;
+        $this->projectedIncome = 0;
+        $this->incomeHistory = [];
+        $this->incomeByMateria = ['labels' => [], 'values' => []];
+        $this->recentPayments = [];
+        $this->topDebtors = [];
     }
 
     public function render()
