@@ -33,7 +33,7 @@
                      x-transition:leave-end="translate-x-full"
                      class="w-screen max-w-md">
                     
-                    <div class="flex h-[100dvh] flex-col bg-white shadow-xl relative">
+                    <div class="flex h-full flex-col bg-white shadow-xl relative">
                         <!-- Header -->
                         <!-- Header refined: Cleaner, Dashboard-aligned Slate/Gray tones -->
                         <div class="px-5 py-4 sticky top-0 z-10 shadow-sm border-b border-gray-200" 
@@ -107,7 +107,7 @@
 
                         <!-- Chat Body -->
                         <div x-ref="chatContainer" 
-                             class="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col space-y-4 custom-scrollbar overscroll-contain"
+                             class="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col space-y-4 custom-scrollbar"
                              x-init="$watch('$wire.messages', () => { 
                                 setTimeout(() => { $refs.chatContainer.scrollTop = $refs.chatContainer.scrollHeight }, 100); 
                              })">
@@ -142,20 +142,20 @@
                         </div>
 
                         <!-- Footer Input -->
-                        <div class="border-t border-gray-200 px-4 py-3 sm:py-6 bg-white pb-safe">
+                        <div class="border-t border-gray-200 px-4 py-6 sm:px-6 bg-white">
                             <form wire:submit.prevent="sendMessage" class="flex items-center gap-2">
                                 <input type="text" wire:model="input" 
-                                       class="block w-full rounded-md border-0 py-2 sm:py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 text-base sm:text-sm sm:leading-6" 
+                                       class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" 
                                        placeholder="Escribe tu consulta..."
                                        {{ $isLoading ? 'disabled' : '' }}>
                                 <button type="submit" 
-                                        class="rounded-md bg-indigo-600 p-2 sm:px-3 sm:py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+                                        class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
                                         {{ $isLoading ? 'disabled' : '' }}>
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                                 </button>
                             </form>
-                            <p class="mt-2 text-center text-[10px] text-gray-400 sm:text-xs">
-                                Diogenes AI puede cometer errores.
+                            <p class="mt-2 text-center text-xs text-gray-400">
+                                Diogenes AI puede cometer errores. Verifica la información importante.
                             </p>
                         </div>
                     </div>
