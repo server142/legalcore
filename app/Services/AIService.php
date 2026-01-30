@@ -112,8 +112,16 @@ class AIService
             }
 
             $response = Http::withToken($this->apiKey)
-                ->timeout(120) // Increased timeout for reasoning models
+                ->timeout(120)
                 ->post($url, $payload);
+
+            // Auto-retry mechanism for 'temperature' errors (common with o1 models if name detection fails)
+            if ($response->status() === 400 && str_contains($response->body(), 'temperature')) {
+                unset($payload['temperature']);
+                $response = Http::withToken($this->apiKey)
+                    ->timeout(120)
+                    ->post($url, $payload);
+            }
 
             if ($response->successful()) {
                 return [
