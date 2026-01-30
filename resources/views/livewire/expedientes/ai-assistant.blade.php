@@ -26,13 +26,15 @@
             <!-- Mobile: Full Screen (inset-0). Desktop: Slide Over (right-0, pl-10) -->
             <div class="fixed inset-0 sm:inset-y-0 sm:right-0 flex max-w-full sm:pl-10 justify-end">
                 <div x-show="open"
+                     x-data="{ isMaximized: false }"
                      x-transition:enter="transform transition ease-in-out duration-500 sm:duration-700"
                      x-transition:enter-start="translate-x-full"
                      x-transition:enter-end="translate-x-0"
                      x-transition:leave="transform transition ease-in-out duration-500 sm:duration-700"
                      x-transition:leave-start="translate-x-0"
                      x-transition:leave-end="translate-x-full"
-                     class="w-full h-full sm:w-screen sm:max-w-md">
+                     class="w-full h-full sm:w-screen transition-all duration-300 ease-in-out"
+                     :class="isMaximized ? 'sm:max-w-5xl' : 'sm:max-w-md'">
                     
                     <div class="flex h-full flex-col bg-white shadow-xl relative" style="height: 100dvh;">
                         <!-- Header -->
@@ -46,6 +48,20 @@
                                     <p class="text-[11px] text-slate-500 font-medium hidden sm:block">Asistente Jurídico Contextual v1.0</p>
                                 </div>
                                 <div class="flex items-center gap-1">
+                                    <!-- Maximize Button (Desktop only) -->
+                                    <button type="button" @click="isMaximized = !isMaximized" 
+                                            class="hidden sm:block p-1.5 rounded text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition-colors" 
+                                            :title="isMaximized ? 'Restaurar tamaño' : 'Maximizar panel'">
+                                        <!-- Icon for Maximize -->
+                                        <svg x-show="!isMaximized" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                                        </svg>
+                                        <!-- Icon for Minimize -->
+                                        <svg x-show="isMaximized" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="display: none;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5M15 15l5.25 5.25" />
+                                        </svg>
+                                    </button>
+
                                     <button type="button" wire:click="resetChat" 
                                             class="p-1.5 rounded text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition-colors" 
                                             title="Reiniciar Chat">
@@ -112,9 +128,9 @@
                                 setTimeout(() => { $refs.chatContainer.scrollTop = $refs.chatContainer.scrollHeight }, 100); 
                              })">
                             @foreach($messages as $msg)
-                                <div class="flex {{ $msg['role'] === 'user' ? 'justify-end' : 'justify-start' }}">
+                                <div class="flex {{ $msg['role'] === 'user' ? 'justify-end' : 'justify-start' }} group mb-4">
                                     @if($msg['role'] !== 'user')
-                                        <div class="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center mr-2">
+                                        <div class="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center mr-2 mt-1">
                                             @if($msg['role'] === 'system')
                                                 <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                             @else
@@ -123,9 +139,32 @@
                                         </div>
                                     @endif
                                     
-                                    <div class="max-w-[85%] rounded-lg px-4 py-2 text-sm shadow-sm
-                                        {{ $msg['role'] === 'user' ? 'bg-indigo-600 text-white' : ($msg['role'] === 'system' ? 'bg-gray-200 text-gray-600 text-xs italic' : 'bg-white text-gray-800') }}">
-                                        {!! \Illuminate\Support\Str::markdown($msg['content']) !!}
+                                    <div class="flex flex-col max-w-[85%]">
+                                        <div class="rounded-lg px-4 py-2 text-sm shadow-sm relative text-message-content
+                                            {{ $msg['role'] === 'user' ? 'bg-indigo-600 text-white' : ($msg['role'] === 'system' ? 'bg-gray-200 text-gray-600 text-xs italic' : 'bg-white text-gray-800') }}">
+                                            {!! \Illuminate\Support\Str::markdown($msg['content']) !!}
+                                        </div>
+
+                                        @if($msg['role'] === 'assistant')
+                                            <!-- Select Text functionality for TTS -->
+                                            <!-- Select Text functionality for TTS -->
+                                            <div class="flex justify-end mt-1 mr-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+                                                <button type="button" 
+                                                        @click="
+                                                            let content = $el.closest('.flex-col').querySelector('.text-message-content');
+                                                            let range = document.createRange();
+                                                            range.selectNodeContents(content);
+                                                            let selection = window.getSelection();
+                                                            selection.removeAllRanges();
+                                                            selection.addRange(range);
+                                                        "
+                                                        class="text-[10px] text-gray-400 hover:text-indigo-600 flex items-center bg-gray-50 px-2 py-1 rounded border border-gray-100 shadow-sm transition-all focus:ring-1 focus:ring-indigo-300">
+                                                    <!-- Icon: Text Selection / Cursor -->
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 16h10M12 8v8M5 3a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2H5z"></path></svg>
+                                                    Seleccionar
+                                                </button>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
