@@ -88,14 +88,26 @@ class AIService
     protected function sendOpenAIStyleRequest($url, $messages, $temperature, $maxTokens)
     {
         try {
+            // OpenAI o1 and newer models replaced 'max_tokens' with 'max_completion_tokens'.
+            // DeepSeek and Groq still use 'max_tokens'.
+            $tokenParam = str_contains($url, 'api.openai.com') ? 'max_completion_tokens' : 'max_tokens';
+            
+            // OpenAI o1 models do not support 'temperature' (it must be 1, or omitted/default).
+            // We'll keep it for now unless it causes errors, but usually they just ignore it or we might need to suppress it for o1.
+            $payload = [
+                'model' => $this->model,
+                'messages' => $messages,
+                $tokenParam => $maxTokens,
+            ];
+
+            // Only add temperature if it's NOT an o1 model, as o1 restricts this parameter strictly
+            if (!str_starts_with($this->model, 'o1-')) {
+                $payload['temperature'] = $temperature;
+            }
+
             $response = Http::withToken($this->apiKey)
-                ->timeout(60)
-                ->post($url, [
-                    'model' => $this->model,
-                    'messages' => $messages,
-                    'temperature' => $temperature,
-                    'max_tokens' => $maxTokens,
-                ]);
+                ->timeout(120) // Increased timeout for reasoning models
+                ->post($url, $payload);
 
             if ($response->successful()) {
                 return [
