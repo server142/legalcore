@@ -100,10 +100,59 @@
     <div class="section-title">RESUMEN DE DOCUMENTOS</div>
     <p>Este expediente cuenta con <strong>{{ $expediente->documentos->count() }}</strong> documentos anexos en el sistema digital.</p>
 
-    @if(is_array($tenant->settings) && isset($tenant->settings['titulares_adjuntos']))
-        <div style="margin-top: 30px;">
-            <div class="font-bold">Titulares Adjuntos:</div>
-            <div style="font-size: 11px;">{{ $tenant->settings['titulares_adjuntos'] }}</div>
-        </div>
+    @can('manage billing')
+    <div class="section-title">ESTADO FINANCIERO</div>
+    
+    <table style="width: 100%; margin-bottom: 15px;">
+        <tr>
+            <td style="width: 33%; padding: 10px; background-color: #f3f4f6; border-radius: 5px;">
+                <div style="font-size: 10px; color: #4b5563; font-weight: bold; text-transform: uppercase;">Honorarios Totales</div>
+                <div style="font-size: 14px; color: #1f2937; font-weight: bold;">${{ number_format($expediente->honorarios_totales, 2) }}</div>
+            </td>
+            <td style="width: 33%; padding: 10px; background-color: #ecfdf5; border-radius: 5px; margin-left: 5px;">
+                <div style="font-size: 10px; color: #059669; font-weight: bold; text-transform: uppercase;">Pagado / Abonado</div>
+                <div style="font-size: 14px; color: #065f46; font-weight: bold;">
+                    ${{ number_format($expediente->honorarios_totales - $expediente->saldo_pendiente, 2) }}
+                </div>
+            </td>
+            <td style="width: 33%; padding: 10px; background-color: {{ $expediente->saldo_pendiente > 0 ? '#fef2f2' : '#f9fafb' }}; border-radius: 5px; margin-left: 5px;">
+                <div style="font-size: 10px; color: {{ $expediente->saldo_pendiente > 0 ? '#dc2626' : '#6b7280' }}; font-weight: bold; text-transform: uppercase;">Saldo Pendiente</div>
+                <div style="font-size: 14px; color: {{ $expediente->saldo_pendiente > 0 ? '#991b1b' : '#374151' }}; font-weight: bold;">
+                    ${{ number_format($expediente->saldo_pendiente, 2) }}
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    @if($expediente->facturas->count() > 0)
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Concepto</th>
+                    <th>Estado</th>
+                    <th style="text-align: right;">Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($expediente->facturas as $factura)
+                    <tr>
+                        <td>{{ $factura->created_at->format('d/m/Y') }}</td>
+                        <td>{{ data_get($factura->conceptos, '0.descripcion', 'General') }}</td>
+                        <td>
+                             <span style="font-size: 10px; padding: 2px 6px; border-radius: 10px; background-color: {{ $factura->estado == 'pagada' ? '#d1fae5' : '#fee2e2' }}; color: {{ $factura->estado == 'pagada' ? '#065f46' : '#991b1b' }};">
+                                {{ ucfirst($factura->estado) }}
+                            </span>
+                        </td>
+                        <td style="text-align: right;">${{ number_format($factura->total, 2) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @else
+        <p style="color: #6b7280; font-size: 12px; font-style: italic;">No hay facturas o recibos registrados.</p>
     @endif
+    @endcan
+
+
 @endsection

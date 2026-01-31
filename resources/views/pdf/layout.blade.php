@@ -88,7 +88,7 @@
     @yield('content')
 
     <div class="footer">
-        Generado por Despacho Judicial - {{ now()->format('d/m/Y H:i') }}
+        Generado por www.diogenes.com.mx - {{ now()->format('d/m/Y H:i') }}
     </div>
 </body>
 </html>

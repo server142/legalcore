@@ -69,13 +69,14 @@ class ReportController extends Controller
         }
 
         $tenant = auth()->user()->tenant;
-        $expediente->load(['cliente', 'abogado', 'actuaciones', 'documentos', 'eventos']);
+        $expediente->load(['cliente', 'abogado', 'actuaciones', 'documentos', 'eventos', 'facturas']);
         
         // Convert logo to base64 for better compatibility
+        // Convert logo to base64 for better compatibility
         $logoBase64 = null;
-        if (isset($tenant->settings['logo_path'])) {
+        if (!empty($tenant->settings['logo_path'])) {
             $path = storage_path('app/public/' . $tenant->settings['logo_path']);
-            if (file_exists($path)) {
+            if (file_exists($path) && is_file($path)) {
                 $type = pathinfo($path, PATHINFO_EXTENSION);
                 $data = file_get_contents($path);
                 $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
@@ -86,7 +87,7 @@ class ReportController extends Controller
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.expediente', compact('expediente', 'tenant', 'logoBase64'));
             
             $filename = str_replace(['/', '\\'], '-', $expediente->numero);
-            return $pdf->download("reporte-expediente-{$filename}.pdf");
+            return $pdf->stream("reporte-expediente-{$filename}.pdf");
         } catch (\Exception $e) {
             \Log::error('Error generando PDF de expediente: ' . $e->getMessage());
             \Log::error($e->getTraceAsString());

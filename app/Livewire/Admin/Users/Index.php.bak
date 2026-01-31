@@ -34,28 +34,6 @@ class Index extends Component
         'selectedRoles' => 'required|array|min:1',
     ];
 
-    public function create()
-    {
-        $this->reset(['name', 'email', 'password', 'password_confirmation', 'selectedRoles', 'userId']);
-        $this->editMode = false;
-        $this->showModal = true;
-    }
-
-    public function edit($id)
-    {
-        $user = User::findOrFail($id);
-        $this->userId = $user->id;
-        $this->name = $user->name;
-        $this->email = $user->email;
-        $this->selectedRoles = $user->roles->pluck('name')->toArray();
-        // Password fields remain empty
-        $this->password = '';
-        $this->password_confirmation = '';
-        
-        $this->editMode = true;
-        $this->showModal = true;
-    }
-
     public function store()
     {
         $this->validate();
