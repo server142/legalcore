@@ -26,10 +26,12 @@ class AiAssistant extends Component
 
     // Services
     protected $aiService;
+    protected $ocrService;
 
-    public function boot(AIService $aiService)
+    public function boot(AIService $aiService, \App\Services\OcrService $ocrService)
     {
         $this->aiService = $aiService;
+        $this->ocrService = $ocrService;
     }
 
     public function mount(Expediente $expediente)
@@ -57,9 +59,9 @@ class AiAssistant extends Component
 
     public function loadDocuments()
     {
-        // Solo cargamos PDFs o archivos de texto
+        // Solo cargamos PDFs, TXT o Imágenes soportadas por OCR
         $this->documents = $this->expediente->documentos()
-            ->whereIn('extension', ['pdf', 'txt'])
+            ->whereIn('extension', ['pdf', 'txt', 'jpg', 'jpeg', 'png'])
             ->latest()
             ->get();
     }
@@ -212,47 +214,60 @@ class AiAssistant extends Component
             $doc = $this->documents->firstWhere('id', $docId);
             if (!$doc) return null;
 
-            // Check if extracted_text exists in DB first
+            // 1. Check DB Cache
             if (!empty($doc->extracted_text)) {
                 return $doc->extracted_text;
             }
 
-            // Intentar resolver la ruta del archivo en varias ubicaciones posibles
-            $possiblePaths = [
-                storage_path('app/' . $doc->path),           // Ruta estándar storage/app
-                storage_path('app/public/' . $doc->path),    // Ruta pública storage/app/public
-                storage_path('app/private/' . $doc->path),   // Ruta privada (Laravel 11+)
-                public_path($doc->path),                     // Ruta en carpeta public real
-                base_path($doc->path),                       // Ruta relativa a la raíz
-                $doc->path                                   // Ruta absoluta almacenada tal cual
-            ];
-
             $finalPath = null;
-            foreach ($possiblePaths as $tryPath) {
-                if (file_exists($tryPath) && is_file($tryPath)) {
-                    $finalPath = $tryPath;
-                    break;
+            // 2. Resolve Path using Storage Facade (disk 'local')
+            // This is safer than manual string concatenation
+            if (\Illuminate\Support\Facades\Storage::disk('local')->exists($doc->path)) {
+                $finalPath = \Illuminate\Support\Facades\Storage::disk('local')->path($doc->path);
+            } else {
+                 // Fallback checks just in case it was stored disjointly
+                $possiblePaths = [
+                    storage_path('app/' . $doc->path),
+                    storage_path('app/public/' . $doc->path),
+                    public_path($doc->path),
+                    base_path($doc->path),
+                    $doc->path
+                ];
+
+                foreach ($possiblePaths as $tryPath) {
+                    if (file_exists($tryPath) && is_file($tryPath)) {
+                        $finalPath = $tryPath;
+                        break;
+                    }
                 }
             }
 
             if (!$finalPath) {
-                // Debugging info (visible in logs only)
-                \Illuminate\Support\Facades\Log::warning("AI Assistant: Archivo no encontrado. Probado: " . implode(', ', $possiblePaths));
-                return "Error: El archivo físico no se encuentra en el servidor. (Ruta: {$doc->path})";
+                return "Error: Documento físico no encontrado. ({$doc->path})";
             }
 
-            if ($doc->extension === 'pdf') {
-                $parser = new \Smalot\PdfParser\Parser();
-                $pdf = $parser->parseFile($finalPath);
-                return $pdf->getText();
-            } elseif ($doc->extension === 'txt') {
-                return file_get_contents($finalPath);
+            // 3. Extract Text using Service (Handles PDF & OCR)
+            $text = $this->ocrService->extractText($finalPath);
+
+            // 4. Save to DB Cache if successful
+            // Only save if it's meaningful text and not an error message
+            if (!empty($text) && strlen($text) > 20 && !str_starts_with($text, 'Error')) {
+                // We reload the model from DB to ensure it's updatable
+                $dbDoc = \App\Models\Documento::find($doc->id);
+                if ($dbDoc) {
+                    $dbDoc->extracted_text = $text;
+                    $dbDoc->saveQuietly(); // Avoid triggering updated events if unnecessary
+                    
+                    // Update our local collection too
+                    $doc->extracted_text = $text;
+                }
             }
-            
-            return null;
+
+            return $text;
+
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error("Error leyendo PDF: " . $e->getMessage());
-            return "Error leyendo el archivo. Asegúrese de que sea un PDF de texto y no una imagen escaneada.";
+            Log::error("Error leyendo documento (AI/OCR): " . $e->getMessage());
+            return "Error inesperado al leer el documento.";
         }
     }
     public function saveAsAiNote($content)
