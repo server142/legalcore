@@ -28,13 +28,30 @@ class OcrService
 
         // 2. Si el texto es muy corto o vacío, usamos OCR local.
         
-        // Verificar si OCR está habilitado globalmente (Circuit Breaker para servidores pequeños)
-        $ocrEnabled = DB::table('global_settings')->where('key', 'ocr_enabled')->value('value');
+        // 2. Si el texto es muy corto o vacío, usamos OCR local.
         
-        // Por defecto habilitado (true/null), solo si es explícitamente '0' se deshabilita
-        if ($ocrEnabled !== null && (string)$ocrEnabled === '0') {
-             Log::info("OCR deshabilitado globalmente. Omitiendo escaneo profundo de {$filePath}");
-             return $text . "\n[Nota del Sistema: Lectura profunda de documentos (OCR) está deshabilitada temporalmente en la configuración global.]"; 
+        // Verificar modo de OCR global
+        $ocrMode = DB::table('global_settings')->where('key', 'ocr_mode')->value('value');
+        
+        // Fallback legado si no existe ocr_mode
+        if (!$ocrMode) {
+             $legacyEnabled = DB::table('global_settings')->where('key', 'ocr_enabled')->value('value');
+             if ($legacyEnabled !== null && (string)$legacyEnabled === '0') {
+                 $ocrMode = 'off';
+             } else {
+                 $ocrMode = 'local';
+             }
+        }
+
+        if ($ocrMode === 'off') {
+             Log::info("OCR deshabilitado globalmente (Modo OFF). Omitiendo escaneo profundo de {$filePath}");
+             return $text . "\n[Nota del Sistema: Lectura profunda de documentos (OCR) desactivada en configuración.]"; 
+        }
+
+        if ($ocrMode === 'vision') {
+            // TODO: Implementar Vision API aquí. Por ahora, advertimos.
+            Log::warning("Modo OCR 'Vision' seleccionado pero no implementado completamente aún. Usando Local como fallback.");
+            // return $this->extractWithVision($filePath); 
         }
 
         Log::info("Texto nativo insuficiente para {$filePath}. Iniciando Tesseract OCR local...");

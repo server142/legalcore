@@ -199,11 +199,17 @@
                             </div>
                             
                             <div class="block mt-4">
-                                <label for="ocr_enabled" class="inline-flex items-center">
-                                    <input id="ocr_enabled" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" wire:model="ocr_enabled">
-                                    <span class="ml-2 text-sm text-gray-600 font-medium">{{ __('Habilitar Lectura de Documentos (OCR)') }}</span>
-                                </label>
-                                <p class="text-xs text-gray-500 mt-1 ml-6">Permite al sistema leer el contenido de PDFs e Imágenes escaneadas. Si experimenta errores (502 Bad Gateway) en servidores pequeños, puede deshabilitar esto temporalmente.</p>
+                                <x-input-label for="ocr_mode" value="Estrategia de Lectura de Documentos (OCR)" />
+                                <select wire:model="ocr_mode" id="ocr_mode" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <option value="off">DESACTIVADO - Solo leer texto nativo (Ahorra RAM)</option>
+                                    <option value="local">LOCAL (Tesseract) - Gratis, Procesamiento en Servidor (Requiere RAM)</option>
+                                    <option value="vision">NUBE (OpenAI Vision) - Pago por Uso, Cero carga al Servidor</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <span x-show="$wire.ocr_mode === 'off'">El sistema solo leerá PDFs que ya tengan texto digital seleccionable. Las imágenes o escaneos serán ignorados.</span>
+                                    <span x-show="$wire.ocr_mode === 'local'">Usa el motor Tesseract instalado en este servidor. Puede causar lentitud o errores 502 si el servidor tiene poca RAM (< 2GB).</span>
+                                    <span x-show="$wire.ocr_mode === 'vision'">Envía las imágenes de los documentos a OpenAI para ser leídas. Es la opción más robusta y precisa, pero genera costos extra de API (~$0.01 por 50 páginas).</span>
+                                </p>
                             </div>
                         </div>
                     </div>
