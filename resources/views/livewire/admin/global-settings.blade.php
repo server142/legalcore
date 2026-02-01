@@ -197,6 +197,14 @@
                                     </p>
                                 </div>
                             </div>
+                            
+                            <div class="block mt-4">
+                                <label for="ocr_enabled" class="inline-flex items-center">
+                                    <input id="ocr_enabled" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" wire:model="ocr_enabled">
+                                    <span class="ml-2 text-sm text-gray-600 font-medium">{{ __('Habilitar Lectura de Documentos (OCR)') }}</span>
+                                </label>
+                                <p class="text-xs text-gray-500 mt-1 ml-6">Permite al sistema leer el contenido de PDFs e Imágenes escaneadas. Si experimenta errores (502 Bad Gateway) en servidores pequeños, puede deshabilitar esto temporalmente.</p>
+                            </div>
                         </div>
                     </div>
 

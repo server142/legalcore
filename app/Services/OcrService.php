@@ -4,13 +4,12 @@ namespace App\Services;
 
 use thiagoalessio\TesseractOCR\TesseractOCR;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Smalot\PdfParser\Parser;
 
 class OcrService
 {
-    public function __construct()
-    {
-    }
+    // ...
 
     /**
      * Intenta extraer texto de un archivo.
@@ -28,6 +27,16 @@ class OcrService
         }
 
         // 2. Si el texto es muy corto o vacío, usamos OCR local.
+        
+        // Verificar si OCR está habilitado globalmente (Circuit Breaker para servidores pequeños)
+        $ocrEnabled = DB::table('global_settings')->where('key', 'ocr_enabled')->value('value');
+        
+        // Por defecto habilitado (true/null), solo si es explícitamente '0' se deshabilita
+        if ($ocrEnabled !== null && (string)$ocrEnabled === '0') {
+             Log::info("OCR deshabilitado globalmente. Omitiendo escaneo profundo de {$filePath}");
+             return $text . "\n[Nota del Sistema: Lectura profunda de documentos (OCR) está deshabilitada temporalmente en la configuración global.]"; 
+        }
+
         Log::info("Texto nativo insuficiente para {$filePath}. Iniciando Tesseract OCR local...");
         return $this->extractWithTesseract($filePath);
     }

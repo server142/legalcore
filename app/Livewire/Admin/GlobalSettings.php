@@ -29,58 +29,27 @@ class GlobalSettings extends Component
     public $mail_from_address;
     public $mail_from_name;
 
-    // File Upload Settings
+    // File Upload & Processing Settings
     public $max_file_size_mb = 100;
+    public $ocr_enabled = true;
 
     // AI Settings
     public $ai_provider = 'openai';
     public $ai_api_key;
     public $ai_model = 'gpt-4o-mini';
-
-    // Welcome Settings
-    public $welcome_video_url;
-    public $welcome_message;
-    public $welcome_title;
-    public $welcome_version = 1;
-    public $welcome_target = 'all'; // all, super_admin, tenant_admin, regular_user
-
-    public function mount()
-    {
-        $this->loadSettings();
-    }
+    
+    // ...
 
     public function loadSettings()
     {
         $settings = DB::table('global_settings')->pluck('value', 'key')->toArray();
 
-        $this->stripe_key = $settings['stripe_key'] ?? '';
-        $this->stripe_secret = $settings['stripe_secret'] ?? '';
-        $this->stripe_webhook_secret = $settings['stripe_webhook_secret'] ?? '';
-
-        $this->sms_sid = $settings['sms_sid'] ?? '';
-        $this->sms_token = $settings['sms_token'] ?? '';
-        $this->sms_from = $settings['sms_from'] ?? '';
-
-        $this->mail_mailer = $settings['mail_mailer'] ?? 'smtp';
-        $this->mail_host = $settings['mail_host'] ?? '';
-        $this->mail_port = $settings['mail_port'] ?? '587';
-        $this->mail_username = $settings['mail_username'] ?? '';
-        $this->mail_password = $settings['mail_password'] ?? '';
-        $this->mail_encryption = $settings['mail_encryption'] ?? 'tls';
-        $this->mail_from_address = $settings['mail_from_address'] ?? '';
-        $this->mail_from_name = $settings['mail_from_name'] ?? '';
-
+        // ...
         $this->max_file_size_mb = $settings['max_file_size_mb'] ?? 100;
+        $this->ocr_enabled = isset($settings['ocr_enabled']) ? (bool)$settings['ocr_enabled'] : true;
 
         $this->ai_provider = $settings['ai_provider'] ?? 'openai';
-        $this->ai_api_key = $settings['ai_api_key'] ?? '';
-        $this->ai_model = $settings['ai_model'] ?? 'gpt-4o-mini';
-
-        $this->welcome_video_url = $settings['welcome_video_url'] ?? '';
-        $this->welcome_message = $settings['welcome_message'] ?? 'Bienvenido a Diogenes, tu plataforma de gestión legal.';
-        $this->welcome_title = $settings['welcome_title'] ?? 'Bienvenido a tu Espacio Legal';
-        $this->welcome_version = intval($settings['welcome_version'] ?? 1);
-        $this->welcome_target = $settings['welcome_target'] ?? 'all';
+        // ...
     }
 
     public function save()
@@ -101,6 +70,7 @@ class GlobalSettings extends Component
             'mail_from_address' => $this->mail_from_address,
             'mail_from_name' => $this->mail_from_name,
             'max_file_size_mb' => $this->max_file_size_mb,
+            'ocr_enabled' => $this->ocr_enabled ? 1 : 0,
             'ai_provider' => $this->ai_provider,
             'ai_api_key' => $this->ai_api_key,
             'ai_model' => $this->ai_model,
