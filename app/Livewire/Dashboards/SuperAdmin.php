@@ -15,6 +15,12 @@ class SuperAdmin extends Component
     public $tenants;
     public $monthlyIncome;
 
+    public $domainDaysLeft;
+    public $vpsCost;
+    public $aiBudget;
+    public $aiCurrentSpend;
+    public $aiTenantUsage;
+
     public function mount()
     {
         $this->totalTenants = Tenant::count();
@@ -31,6 +37,44 @@ class SuperAdmin extends Component
         } catch (\Throwable $e) {
             $this->monthlyIncome = 0;
             \Illuminate\Support\Facades\Log::warning('SuperAdmin Dashboard: Error al calcular ingresos. ' . $e->getMessage());
+        }
+
+        // --- Infrastructure & AI Monitoring ---
+        
+        $settings = \Illuminate\Support\Facades\DB::table('global_settings')
+            ->whereIn('key', ['infrastructure_domain_expiry', 'infrastructure_vps_cost', 'infrastructure_ai_budget'])
+            ->pluck('value', 'key');
+
+        // Domain Expiry
+        $expiryDate = $settings['infrastructure_domain_expiry'] ?? null;
+        if ($expiryDate) {
+            $this->domainDaysLeft = now()->diffInDays(\Carbon\Carbon::parse($expiryDate), false);
+        } else {
+            $this->domainDaysLeft = null;
+        }
+
+        $this->vpsCost = floatval($settings['infrastructure_vps_cost'] ?? 0);
+        $this->aiBudget = floatval($settings['infrastructure_ai_budget'] ?? 1);
+
+        // AI Consumption (This Month)
+        try {
+            $this->aiCurrentSpend = \App\Models\AiUsageLog::whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('cost');
+
+            // Usage Per Tenant
+            $this->aiTenantUsage = \App\Models\AiUsageLog::whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->selectRaw('tenant_id, sum(cost) as total_cost, count(*) as requests')
+                ->groupBy('tenant_id')
+                ->with('tenant')
+                ->orderByDesc('total_cost')
+                ->take(5)
+                ->get();
+
+        } catch (\Throwable $e) {
+            $this->aiCurrentSpend = 0;
+            $this->aiTenantUsage = collect();
         }
     }
 

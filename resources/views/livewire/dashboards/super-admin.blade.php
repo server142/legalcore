@@ -20,6 +20,67 @@
         </div>
     </div>
 
+    <!-- Infrastructure & AI Monitoring -->
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Widget 1: Domain & VPS -->
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 {{ $domainDaysLeft !== null && $domainDaysLeft < 30 ? 'border-red-500' : 'border-indigo-500' }}">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Infraestructura</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-700">Dominio / SSL</span>
+                    @if($domainDaysLeft !== null)
+                        <span class="px-2 py-1 rounded text-xs font-bold {{ $domainDaysLeft < 30 ? 'bg-red-100 text-red-800' : ($domainDaysLeft < 60 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
+                            Vence en {{ $domainDaysLeft }} días
+                        </span>
+                    @else
+                        <span class="text-xs text-gray-400">Sin configurar</span>
+                    @endif
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-700">Costo VPS</span>
+                    <span class="font-bold text-gray-900">${{ number_format($vpsCost, 2) }} <span class="text-xs font-normal text-gray-500">USD/mes</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Widget 2: AI Budget -->
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-purple-500">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Presupuesto IA Mensual</h3>
+            <div class="flex justify-between items-end mb-1">
+                <span class="text-2xl font-bold text-gray-800">${{ number_format($aiCurrentSpend, 2) }}</span>
+                <span class="text-sm text-gray-500">de ${{ number_format($aiBudget, 2) }} USD</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                @php
+                    $percentage = $aiBudget > 0 ? ($aiCurrentSpend / $aiBudget) * 100 : 0;
+                    $color = $percentage > 90 ? 'bg-red-600' : ($percentage > 75 ? 'bg-yellow-400' : 'bg-green-600');
+                @endphp
+                <div class="{{ $color }} h-2.5 rounded-full" style="width: {{ min($percentage, 100) }}%"></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2 text-right">{{ number_format($percentage, 1) }}% consumido</p>
+        </div>
+
+        <!-- Widget 3: Top AI Consumers -->
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Top Consumo por Tenant</h3>
+            <div class="overflow-y-auto max-h-32">
+                <table class="w-full text-sm text-left">
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse($aiTenantUsage as $usage)
+                            <tr>
+                                <td class="py-1 text-gray-700">{{ $usage->tenant->name ?? 'Sistema' }}</td>
+                                <td class="py-1 text-right font-bold text-gray-900">${{ number_format($usage->total_cost, 4) }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="2" class="text-center text-gray-400 text-xs py-2">Sin consumo registrado este mes</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="p-4 border-b">
             <h3 class="text-lg font-semibold">Tenants Recientes</h3>
