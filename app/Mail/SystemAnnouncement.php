@@ -34,6 +34,10 @@ class SystemAnnouncement extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
+            from: new \Illuminate\Mail\Mailables\Address(
+                config('mail.from.address') ?: 'soporte@diogenes.com.mx', 
+                config('mail.from.name') ?: config('app.name')
+            ),
             subject: $this->subjectLine,
         );
     }
