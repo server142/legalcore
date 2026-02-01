@@ -135,14 +135,25 @@ class OcrService
                         return $text;
                         
                     } catch (\Throwable $e) {
-                         Log::warning("Imagick falló, intentando Tesseract directo sobre PDF: " . $e->getMessage());
-                         // Fallback a intento directo
+                         Log::warning("Imagick falló, intentando Tesseract directo sobre PDF. Error: " . $e->getMessage());
+                         // Guardamos el error para diagnóstico
+                         $imagickError = "Fallo conversión PDF->Imagen (Imagick): " . $e->getMessage();
                     }
+                } else {
+                    $imagickError = "Imagick NO está instalado/cargado en PHP.";
                 }
             }
 
             // Ejecución normal (Imagen o PDF directo si soportado)
-            return $ocr->run();
+            try {
+                return $ocr->run();
+            } catch (\Throwable $tesseractError) {
+                // Si teníamos un error previo de Imagick, lo adjuntamos para contexto
+                if (isset($imagickError)) {
+                    throw new \Exception($imagickError . " | Y Tesseract directo falló: " . $tesseractError->getMessage());
+                }
+                throw $tesseractError;
+            }
 
         } catch (\Throwable $e) {
             Log::error("Error local Tesseract OCR: " . $e->getMessage());
