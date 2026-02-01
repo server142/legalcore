@@ -57,11 +57,10 @@ class OcrService
 
     protected function extractWithTesseract($filePath)
     {
-        // AJUSTES DE ESTABILIDAD (CRÍTICO PARA EVITAR ERROR 502)
-        set_time_limit(300); // 5 minutos
-        ini_set('memory_limit', '1024M'); // 1GB de RAM para este proceso
+        // AJUSTES DE ESTABILIDAD
+        set_time_limit(300); 
+        ini_set('memory_limit', '512M'); // 512MB es más seguro si el servidor es pequeño
         
-        // Evitar que Imagick use multithreading (causa común de crashes en PHP-FPM)
         putenv('MAGICK_THREAD_LIMIT=1');
         putenv('OMP_NUM_THREADS=1');
 
@@ -70,14 +69,11 @@ class OcrService
             
             // Configuración de ruta del binario según OS
             if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                // Ruta común en Windows XAMPP/Laragon setups o instalador oficial
-                // Se asume que el usuario instaló Tesseract for Windows
                 $possiblePaths = [
-                    'C:\Program Files\Tesseract-OCR\tesseract.exe',
-                    'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe',
-                    getenv('TESSERACT_PATH') // Opción custom por variable de entorno
+                    'C:\\Program Files\\Tesseract-OCR\\tesseract.exe',
+                    'C:\\Program Files (x86)\\Tesseract-OCR\\tesseract.exe',
+                    getenv('TESSERACT_PATH')
                 ];
-                
                 $found = false;
                 foreach ($possiblePaths as $path) {
                     if ($path && file_exists($path)) {
@@ -100,55 +96,72 @@ class OcrService
             // Detección de Idioma (Español por defecto, luego Inglés)
             $ocr->lang('spa', 'eng');
 
-            // Manejo especial para PDFs con Imagick (si está disponible)
+            // --- MANEJO OPTIMIZADO DE PDF ---
             $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
             
             if ($ext === 'pdf') {
-                // Tesseract puro a veces falla con PDFs multipágina directamente
-                // Intentamos convertir a imagen si tenemos Imagick
                 if (extension_loaded('imagick')) {
                     try {
-                        $imagick = new \Imagick();
-                        $imagick->setResolution(300, 300); // Buena calidad para OCR
-                        $imagick->readImage($filePath);
+                        // 1. Contar páginas sin cargar el PDF entero (usando pingImage o identify)
+                        // Como Imagick a veces falla con ping en PDFs complejos, intentamos una carga ligera
+                        // O simplemente, iteramos hasta que falle.
                         
                         $text = '';
-                        // Procesar cada página
-                        foreach ($imagick as $page) {
-                            $page->setImageFormat('jpg');
-                            // Guardar tmp
-                            $tmpFile = tempnam(sys_get_temp_dir(), 'ocr_') . '.jpg';
-                            $page->writeImage($tmpFile);
-                            
-                            // OCR a la página
-                            $ocrPage = new TesseractOCR($tmpFile);
-                            // Replicar config de ejecutable
-                            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' && isset($found) && $found) {
-                                // No tenemos acceso a la variable $path del scope anterior fácil, 
-                                // pero idealmente instanciamos uno nuevo.
-                                // Simplificación: reusamos la lógica de detección si fuera necesario, 
-                                // pero por ahora confiamos en el PATH o reconfiguramos.
-                                $ocrPage->executable('C:\Program Files\Tesseract-OCR\tesseract.exe'); 
-                            } elseif (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
-                                $ocrPage->executable('/usr/bin/tesseract');
+                        $pageIndex = 0;
+                        $maxPages = 50; // Límite de seguridad
+                        
+                        while ($pageIndex < $maxPages) {
+                            try {
+                                // Cargar SOLO una página a la vez: "archivo.pdf[0]"
+                                $imagick = new \Imagick();
+                                $imagick->setResolution(200, 200); // Bajamos a 200 DPI para ahorrar RAM (suficiente para OCR)
+                                $imagick->readImage($filePath . '[' . $pageIndex . ']'); 
+                                
+                                $imagick->setImageFormat('jpg');
+                                $imagick->setImageCompressionQuality(80);
+                                
+                                $tmpFile = tempnam(sys_get_temp_dir(), 'ocr_pg' . $pageIndex . '_') . '.jpg';
+                                $imagick->writeImage($tmpFile);
+                                
+                                // Liberar memoria INMEDIATAMENTE
+                                $imagick->clear();
+                                $imagick->destroy();
+                                unset($imagick);
+
+                                // Procesar OCR de esta página
+                                $ocrPage = new TesseractOCR($tmpFile);
+                                // (Replicar config ejecutable...)
+                                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' && isset($found) && $found) {
+                                    $ocrPage->executable('C:\\Program Files\\Tesseract-OCR\\tesseract.exe'); 
+                                } elseif (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+                                    $ocrPage->executable('/usr/bin/tesseract');
+                                }
+                                $ocrPage->lang('spa', 'eng');
+                                
+                                $pageText = $ocrPage->run();
+                                $text .= $pageText . "\n\n";
+                                
+                                unlink($tmpFile);
+                                $pageIndex++;
+                                
+                            } catch (\ImagickException $e) {
+                                // Si falla al leer la página X, asumimos que se acabaron las páginas
+                                break;
                             }
-                            
-                            $ocrPage->lang('spa', 'eng');
-                            $text .= $ocrPage->run() . "\n\n";
-                            
-                            unlink($tmpFile);
                         }
                         
-                        $imagick->clear();
+                        if (empty($text) && $pageIndex === 0) {
+                             throw new \Exception("No se pudo leer ninguna página del PDF.");
+                        }
+                        
                         return $text;
                         
                     } catch (\Throwable $e) {
-                         Log::warning("Imagick falló, intentando Tesseract directo sobre PDF. Error: " . $e->getMessage());
-                         // Guardamos el error para diagnóstico
-                         $imagickError = "Fallo conversión PDF->Imagen (Imagick): " . $e->getMessage();
+                         Log::warning("Imagick Page-by-Page falló: " . $e->getMessage());
+                         $imagickError = "Error Imagick: " . $e->getMessage();
                     }
                 } else {
-                    $imagickError = "Imagick NO está instalado/cargado en PHP.";
+                    $imagickError = "Imagick NO está instalado.";
                 }
             }
 
