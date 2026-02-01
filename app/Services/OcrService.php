@@ -2,26 +2,20 @@
 
 namespace App\Services;
 
-use Google\Client;
-use Google\Service\Vision;
+use thiagoalessio\TesseractOCR\TesseractOCR;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Smalot\PdfParser\Parser;
 
 class OcrService
 {
-    protected $client;
-    protected $vision;
-
     public function __construct()
     {
-        // Solo inicializamos Google Client si es necesario para ahorrar recursos
     }
 
     /**
      * Intenta extraer texto de un archivo.
-     * 1. Primero intenta extracción nativa (rápida y gratis).
-     * 2. Si falla o devuelve poco texto, usa OCR de Google Vision (costo/lento).
+     * 1. Primero intenta extracción nativa (rápida).
+     * 2. Si falla o es escaneado, usa Tesseract OCR local.
      */
     public function extractText($filePath)
     {
@@ -33,114 +27,126 @@ class OcrService
             return $text;
         }
 
-        // 2. Si el texto es muy corto o vacío, probablemente es un escaneo. Usar OCR.
-        Log::info("Texto nativo insuficiente para {$filePath}. Iniciando OCR de Google Vision...");
-        return $this->extractWithGoogleVision($filePath);
+        // 2. Si el texto es muy corto o vacío, usamos OCR local.
+        Log::info("Texto nativo insuficiente para {$filePath}. Iniciando Tesseract OCR local...");
+        return $this->extractWithTesseract($filePath);
     }
 
     protected function extractNativeText($filePath)
     {
         try {
-            $parser = new Parser();
-            // Need absolute path for Parser
+            // Validar existencia real para Smalot Parser
             if (!file_exists($filePath)) {
-                // Try relative to storage/app if full path not valid
-                $storagePath = storage_path('app/' . $filePath);
-                if (file_exists($storagePath)) {
-                    $filePath = $storagePath;
-                }
+                return '';
             }
             
+            // Solo intentar parser nativo si es PDF
+            $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+            if ($ext !== 'pdf') {
+                return ''; 
+            }
+
+            $parser = new Parser();
             $pdf = $parser->parseFile($filePath);
             return $pdf->getText();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::warning("Fallo en extracción nativa de PDF: " . $e->getMessage());
             return '';
         }
     }
 
-    protected function extractWithGoogleVision($filePath)
+    protected function extractWithTesseract($filePath)
     {
-        $credentialsPath = config('services.google.credentials_path', storage_path('app/google-credentials.json'));
-
-        if (!file_exists($credentialsPath)) {
-            Log::error("No se encontró el archivo de credenciales de Google en: {$credentialsPath}");
-            return "Error: No se ha configurado el OCR. Falta el archivo de credenciales de Google Cloud.";
-        }
-
         try {
-            $client = new Client();
-            $client->setAuthConfig($credentialsPath);
-            $client->addScope(Vision::CLOUD_PLATFORM);
-
-            $vision = new Vision($client);
-
-            // Google Vision API espera el contenido del archivo en base64
-            // o un GCS URI. Para simplicidad local, enviamos el contenido.
-            // OJO: Hay límites de tamaño (10MB aprox). Si es muy grande, habría que dividirlo.
-            // Para PDFs multipágina, Google recomienda usar AsyncBatchAnnotate y GCS.
-            // Para simplicidad en esta v1, convertiremos las primeras páginas a imágenes o enviaremos el PDF si es pequeño.
+            $ocr = new TesseractOCR($filePath);
             
-            // Limitación: La API síncrona de Vision 'annotate' funciona mejor con IMAGENES.
-            // Para PDFs completos, se requiere 'asyncBatchAnnotate' y Google Storage.
-            // TRUCO: Para evitar GCS (complicado de configurar), podemos intentar enviar el contenido del PDF
-            // con mime_type 'application/pdf' soportado en versiones recientes, o mejor aún:
-            // Advertir al usuario que OCR completo de PDFs multipágina requiere GCS.
-            
-            // Por ahora, implementaremos una lectura básica asumiendo que el archivo se puede leer.
-            // Si es PDF, la API standard requiere async.
-            // Alternativa rápida: Usar 'ghostscript' o 'imagick' para convertir la primera página a imagen y leer esa? 
-            // Eso requiere dependencias del sistema.
-            
-            // VARIANTE: Usar la API sincrona enviando el contenido como 'application/pdf' se puede si el archivo es pequeño?
-            // Documentación dice: "PDF/TIFF supported in AsyncBatchAnnotateFile only".
-            
-            // Entonces, sin GCS, no podemos leer PDFs escaneados directamente con una simple llamada HTTP.
-            // SOLUCIÓN: Usar un conversor local (si existe) o pedirle al usuario que suba imágenes.
-            // O... Usar AsyncBatchAnnotateFile pero apuntando a un bucket público? No.
-
-            // Vvamos a intentar leerlo como binario, a ver si la API nos da una alegría, 
-            // si no, tendremos que advertir.
-            
-            $data = file_get_contents($filePath);
-            
-            // Creamos la solicitud de imagen
-            // NOTA: Si enviamos PDF directo a `annotate`, fallará.
-            // Vamos a asumir por un momento que la librería `spatie/pdf-to-image` pudiera estar disponible, o `imagick`.
-            // Si no, estamos limitados.
-            
-            // PLAN B: Requerir que el usuario suba imágenes para OCR, o implementar conversión.
-            // Sin embargo, Google Vision TIENE soporte para archivos, pero usualmente asíncrono.
-            
-            // Para no complicarnos con Buckets ahora mismo:
-            // Vamos a devolver un mensaje de "Pendiente implementar Buckets",
-            // PERO si el usuario subió una IMAGEN (jpg/png), sí funcionará directo.
-            
-            $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-            if (in_array($ext, ['jpg', 'jpeg', 'png', 'bmp', 'webp'])) {
-                // Procesar Imagen
-                $image = new Vision\Image();
-                $image->setContent($data);
-
-                $feature = new Vision\Feature();
-                $feature->setType('DOCUMENT_TEXT_DETECTION');
-
-                $request = new Vision\AnnotateImageRequest();
-                $request->setImage($image);
-                $request->setFeatures([$feature]);
-
-                $batch = new Vision\BatchAnnotateImagesRequest();
-                $batch->setRequests([$request]);
-
-                $response = $vision->images->annotate($batch);
-                return $response->getResponses()[0]->getFullTextAnnotation()->getText();
+            // Configuración de ruta del binario según OS
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // Ruta común en Windows XAMPP/Laragon setups o instalador oficial
+                // Se asume que el usuario instaló Tesseract for Windows
+                $possiblePaths = [
+                    'C:\Program Files\Tesseract-OCR\tesseract.exe',
+                    'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe',
+                    getenv('TESSERACT_PATH') // Opción custom por variable de entorno
+                ];
+                
+                $found = false;
+                foreach ($possiblePaths as $path) {
+                    if ($path && file_exists($path)) {
+                        $ocr->executable($path);
+                        $found = true;
+                        break;
+                    }
+                }
+                
+                if (!$found) {
+                    // Intento final: asumir que está en el PATH
+                    // No seteamos executable(), dejamos que el wrapper use 'tesseract' del sistema
+                }
             } else {
-                return "El sistema OCR actual solo soporta imágenes (JPG, PNG) directamente. Para PDFs escaneados multipágina, se requiere configuración de Google Cloud Storage. Intente subir una captura de la página relevante o conviértalo a texto digital.";
+                // Linux (Ubuntu Production)
+                // Generalmente está en /usr/bin/tesseract, el wrapper lo encuentra solo
+                $ocr->executable('/usr/bin/tesseract');
             }
 
-        } catch (\Exception $e) {
-            Log::error("Error de Google Vision: " . $e->getMessage());
-            return "Error al conectar con el servicio OCR: " . $e->getMessage();
+            // Detección de Idioma (Español por defecto, luego Inglés)
+            $ocr->lang('spa', 'eng');
+
+            // Manejo especial para PDFs con Imagick (si está disponible)
+            $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+            
+            if ($ext === 'pdf') {
+                // Tesseract puro a veces falla con PDFs multipágina directamente
+                // Intentamos convertir a imagen si tenemos Imagick
+                if (extension_loaded('imagick')) {
+                    try {
+                        $imagick = new \Imagick();
+                        $imagick->setResolution(300, 300); // Buena calidad para OCR
+                        $imagick->readImage($filePath);
+                        
+                        $text = '';
+                        // Procesar cada página
+                        foreach ($imagick as $page) {
+                            $page->setImageFormat('jpg');
+                            // Guardar tmp
+                            $tmpFile = tempnam(sys_get_temp_dir(), 'ocr_') . '.jpg';
+                            $page->writeImage($tmpFile);
+                            
+                            // OCR a la página
+                            $ocrPage = new TesseractOCR($tmpFile);
+                            // Replicar config de ejecutable
+                            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' && isset($found) && $found) {
+                                // No tenemos acceso a la variable $path del scope anterior fácil, 
+                                // pero idealmente instanciamos uno nuevo.
+                                // Simplificación: reusamos la lógica de detección si fuera necesario, 
+                                // pero por ahora confiamos en el PATH o reconfiguramos.
+                                $ocrPage->executable('C:\Program Files\Tesseract-OCR\tesseract.exe'); 
+                            } elseif (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+                                $ocrPage->executable('/usr/bin/tesseract');
+                            }
+                            
+                            $ocrPage->lang('spa', 'eng');
+                            $text .= $ocrPage->run() . "\n\n";
+                            
+                            unlink($tmpFile);
+                        }
+                        
+                        $imagick->clear();
+                        return $text;
+                        
+                    } catch (\Throwable $e) {
+                         Log::warning("Imagick falló, intentando Tesseract directo sobre PDF: " . $e->getMessage());
+                         // Fallback a intento directo
+                    }
+                }
+            }
+
+            // Ejecución normal (Imagen o PDF directo si soportado)
+            return $ocr->run();
+
+        } catch (\Throwable $e) {
+            Log::error("Error local Tesseract OCR: " . $e->getMessage());
+            return "Error procesando OCR local. Asegúrese de que Tesseract está instalado en el servidor. Detalles: " . $e->getMessage();
         }
     }
 }

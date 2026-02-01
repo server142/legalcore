@@ -267,7 +267,8 @@ class AiAssistant extends Component
 
         } catch (\Throwable $e) {
             Log::error("Error leyendo documento (AI/OCR): " . $e->getMessage());
-            return "Error inesperado al leer el documento.";
+            // Show real error for debugging purposes (create a more user-friendly message later)
+            return "Error técnico al leer el documento: " . $e->getMessage();
         }
     }
     public function saveAsAiNote($content)
