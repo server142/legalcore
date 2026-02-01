@@ -57,6 +57,10 @@ class OcrService
 
     protected function extractWithTesseract($filePath)
     {
+        // Aumentar tiempo límite a 5 minutos para PDFs largos
+        set_time_limit(300);
+        ini_set('memory_limit', '512M'); // También aumentar memoria por si acaso
+
         try {
             $ocr = new TesseractOCR($filePath);
             
