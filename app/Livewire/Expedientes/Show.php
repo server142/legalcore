@@ -169,6 +169,7 @@ class Show extends Component
 
     public function edit()
     {
+        $this->resetErrorBag();
         $this->numero = $this->expediente->numero;
         $this->titulo = $this->expediente->titulo;
         $this->materia = $this->expediente->materia;

@@ -4,8 +4,8 @@
     </h2>
 </x-slot>
 
-<div class="p-6">
-    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<div class="p-6" wire:key="show-root-{{ $expediente->id }}">
+    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4" wire:key="show-header">
         <div class="flex items-center space-x-4 w-full md:w-auto">
             <a href="{{ route('expedientes.index') }}" class="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition text-gray-500 flex-shrink-0">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -15,7 +15,7 @@
                 <p class="text-gray-500 text-sm truncate">{{ $expediente->materia }} | {{ $expediente->juzgado }}</p>
             </div>
         </div>
-        <div class="flex flex-wrap gap-2 w-full md:w-auto">
+        <div class="flex flex-wrap gap-2 w-full md:w-auto" wire:key="header-actions">
             <!-- AI Assistant Trigger -->
             <button @click="$dispatch('toggle-ai-assistant')" class="bg-gradient-to-r from-indigo-600 to-purple-600 border border-transparent text-white px-3 py-2 rounded-lg hover:from-indigo-700 hover:to-purple-700 flex items-center justify-center flex-1 md:flex-none shadow-md transition-all text-sm font-bold">
                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
@@ -32,11 +32,11 @@
                 <svg class="w-4 h-4 mr-1.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                 Imprimir
             </a>
-            <button wire:click="edit" class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none text-sm transition shadow-sm">
+            <button type="button" wire:click="edit" wire:key="btn-edit-exp" class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none text-sm transition shadow-sm">
                 <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                 Editar
             </button>
-            <button wire:click="toggleAddActuacion" class="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 flex-1 md:flex-none whitespace-nowrap text-sm font-bold">
+            <button type="button" wire:click="toggleAddActuacion" wire:key="btn-add-act" class="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 flex-1 md:flex-none whitespace-nowrap text-sm font-bold">
                 + Actuación
             </button>
         </div>
@@ -85,36 +85,36 @@
         <!-- Main Content (Tabs) -->
         <div class="lg:col-span-2">
             <div class="bg-white rounded-lg shadow overflow-hidden">
-                <div class="flex border-b overflow-x-auto scrollbar-hide">
-                    <button wire:click="setTab('actuaciones')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'actuaciones' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                <div class="flex border-b overflow-x-auto scrollbar-hide" wire:key="tabs-nav">
+                    <button type="button" wire:click="setTab('actuaciones')" wire:key="tab-btn-act" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'actuaciones' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                         Actuaciones
                     </button>
-                    <button wire:click="setTab('documentos')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'documentos' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                    <button type="button" wire:click="setTab('documentos')" wire:key="tab-btn-doc" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'documentos' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                         Documentos
                     </button>
-                    <button wire:click="setTab('agenda')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'agenda' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                    <button type="button" wire:click="setTab('agenda')" wire:key="tab-btn-age" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'agenda' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         Agenda
                     </button>
-                    <button wire:click="setTab('notas_ai')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'notas_ai' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                    <button type="button" wire:click="setTab('notas_ai')" wire:key="tab-btn-nai" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'notas_ai' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         Notas IA
                     </button>
-                    <button wire:click="setTab('comentarios')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'comentarios' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                    <button type="button" wire:click="setTab('comentarios')" wire:key="tab-btn-com" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'comentarios' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
                         Comentarios
                     </button>
                     @can('manage billing')
-                    <button wire:click="setTab('finanzas')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'finanzas' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                    <button type="button" wire:click="setTab('finanzas')" wire:key="tab-btn-fin" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'finanzas' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         Finanzas
                     </button>
                     @endcan
                 </div>
 
-                <div class="p-6">
+                <div class="p-6" wire:key="tab-content-area-{{ $activeTab }}">
                     @if($activeTab == 'actuaciones')
                         <div class="space-y-4">
                             @forelse($expediente->actuaciones as $actuacion)
@@ -131,7 +131,7 @@
                         </div>
                     @elseif($activeTab == 'documentos')
                         <div class="mb-6">
-                            <livewire:expedientes.upload-document :expediente="$expediente" />
+                            <livewire:expedientes.upload-document :expediente="$expediente" wire:key="comp-upload-{{ $expediente->id }}" />
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -243,7 +243,7 @@
                             @endforelse
                         </div>
                     @elseif($activeTab == 'comentarios')
-                        <livewire:expedientes.comentarios :expediente="$expediente" />
+                        <livewire:expedientes.comentarios :expediente="$expediente" wire:key="comp-comms-{{ $expediente->id }}" />
                     @elseif($activeTab == 'finanzas')
                         @can('manage billing')
                         <div class="space-y-8">
@@ -524,7 +524,7 @@
         </div>
     @endif
 
-    <x-modal-wire wire:model="showEditModal">
+    <x-modal-wire wire:model="showEditModal" wire:key="modal-edit-exp">
         <div class="px-6 py-4 border-b">
             <h3 class="text-lg font-bold text-gray-900">Editar Expediente</h3>
         </div>
@@ -639,5 +639,5 @@
     </x-modal-wire>
 
     <!-- AI Assistant Panel -->
-    <livewire:expedientes.ai-assistant :expediente="$expediente" />
+    <livewire:expedientes.ai-assistant :expediente="$expediente" wire:key="comp-ai-ast-{{ $expediente->id }}" />
 </div>

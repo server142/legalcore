@@ -1,6 +1,9 @@
 <div class="p-6">
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-        <div class="p-6 border-b bg-indigo-600">
+        <div class="px-6 py-4 border-b bg-indigo-600 flex items-center space-x-3">
+            <a href="{{ route('clientes.index') }}" class="p-1.5 bg-indigo-500 rounded-lg hover:bg-indigo-400 transition text-white flex-shrink-0 shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </a>
             <h2 class="text-xl font-bold text-white">Nuevo Cliente</h2>
         </div>
         
