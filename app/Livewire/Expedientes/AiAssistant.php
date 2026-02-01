@@ -190,6 +190,17 @@ class AiAssistant extends Component
         // 2. Document Content (if selected)
         if ($this->selectedDocumentId) {
             $docContent = $this->extractDocumentContent($this->selectedDocumentId);
+            
+            // ERROR DEBUGGING: If content is an error, show it to the user in the chat
+            if ($docContent && str_starts_with($docContent, 'Error')) {
+                 $this->messages[] = [
+                    'role' => 'system', 
+                    'content' => "⚠️ **DIAGNOSTICO TÉCNICO**: " . $docContent
+                 ];
+                 // Save cache immediately so user sees it even if AI fails next
+                 Cache::put($this->getCacheKey(), $this->messages, now()->addDays(7));
+            }
+
             if ($docContent) {
                 $summary .= "== CONTENIDO DEL DOCUMENTO SELECCIONADO ==\n";
                 $summary .= substr($docContent, 0, 15000); // Limit to ~15k chars to save tokens
@@ -199,7 +210,7 @@ class AiAssistant extends Component
             }
         }
 
-        // 3. Recent Actuaciones (Only if no document selected, or as supplement)
+        // 3. Recent Actuaciones
         $summary .= "Últimas Actuaciones:\n";
         foreach ($this->expediente->actuaciones()->latest()->take(5)->get() as $act) {
             $summary .= "- [{$act->fecha->format('d/m/Y')}] {$act->titulo}: {$act->descripcion}\n";
