@@ -20,6 +20,7 @@ class SuperAdmin extends Component
     public $aiBudget;
     public $aiCurrentSpend;
     public $aiTenantUsage;
+    public $aiDailySpend;
 
     public function mount()
     {
@@ -72,9 +73,17 @@ class SuperAdmin extends Component
                 ->take(5)
                 ->get();
 
+            // Daily History (Last 30 days) for the Graph
+            $this->aiDailySpend = \App\Models\AiUsageLog::where('created_at', '>=', now()->subDays(30))
+                ->selectRaw('DATE(created_at) as date, sum(cost) as total_cost')
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
         } catch (\Throwable $e) {
             $this->aiCurrentSpend = 0;
             $this->aiTenantUsage = collect();
+            $this->aiDailySpend = collect();
         }
     }
 

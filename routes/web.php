@@ -51,9 +51,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/asesorias/nueva', \App\Livewire\Asesorias\Form::class)->name('asesorias.create');
     Route::get('/asesorias/{asesoria}/editar', \App\Livewire\Asesorias\Form::class)->name('asesorias.edit');
 
+    /*
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    */
 
     // RUTA DE PRUEBA AISLADA PARA IA
     Route::get('/test-ia/{expediente}', function (App\Models\Expediente $expediente) {

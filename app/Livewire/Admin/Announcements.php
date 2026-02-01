@@ -22,6 +22,22 @@ class Announcements extends Component
         'target' => 'required|in:all,admins,superadmins'
     ];
 
+    public function sendTest()
+    {
+        $this->validate([
+            'subject' => 'required|min:5|max:255',
+            'content' => 'required|min:10',
+        ]);
+
+        try {
+            Mail::to(auth()->user()->email)->send(new SystemAnnouncement($this->subject, $this->content));
+            session()->flash('success', "¡Correo de prueba enviado a " . auth()->user()->email . "!");
+        } catch (\Exception $e) {
+            \Log::error("Failed to send test announcement: " . $e->getMessage());
+            session()->flash('error', "Error al enviar la prueba: " . $e->getMessage());
+        }
+    }
+
     public function send()
     {
         $this->validate();
@@ -31,7 +47,7 @@ class Announcements extends Component
         if ($this->target === 'admins') {
             $query->role('admin');
         } elseif ($this->target === 'superadmins') {
-            $query->role('super-admin');
+            $query->role('super_admin');
         }
 
         $users = $query->get();
