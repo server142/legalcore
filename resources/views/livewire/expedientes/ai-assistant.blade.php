@@ -131,9 +131,11 @@
 
                         <!-- Chat Body -->
                         <div x-ref="chatContainer" 
-                             class="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col space-y-4 custom-scrollbar"
+                             class="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col space-y-4 custom-scrollbar scroll-smooth"
                              x-init="$watch('$wire.messages', () => { 
-                                setTimeout(() => { $refs.chatContainer.scrollTop = $refs.chatContainer.scrollHeight }, 100); 
+                                setTimeout(() => { 
+                                    $refs.chatContainer.scrollTo({ top: $refs.chatContainer.scrollHeight, behavior: 'smooth' });
+                                }, 100); 
                              })">
                             @foreach($messages as $msg)
                                 <div class="flex {{ $msg['role'] === 'user' ? 'justify-end' : 'justify-start' }} group mb-4">
@@ -266,11 +268,24 @@
                                 },
                                 stopRecording() {
                                     if(this.recognition) this.recognition.stop();
+                                },
+                                submitAndScroll() {
+                                    if ($wire.input.trim() === '') return;
+                                    
+                                    // 1. Send Message via Livewire
+                                    $wire.sendMessage();
+                                    
+                                    // 2. Scroll to bottom & Refocus
+                                    setTimeout(() => { 
+                                         $refs.chatContainer.scrollTo({ top: $refs.chatContainer.scrollHeight, behavior: 'smooth' });
+                                         $refs.chatInput.focus();
+                                    }, 50);
                                 }
                              }">
-                            <form wire:submit.prevent="sendMessage" class="relative">
+                            <form @submit.prevent="submitAndScroll()" class="relative">
                                 <div class="relative rounded-md shadow-sm">
                                     <input type="text" 
+                                           x-ref="chatInput"
                                            wire:model="input" 
                                            class="block w-full rounded-md border-0 py-3 pl-10 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" 
                                            placeholder="Escribe o dicta tu consulta..." 

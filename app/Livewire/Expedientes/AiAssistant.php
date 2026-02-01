@@ -8,6 +8,7 @@ use App\Services\AIService;
 use Illuminate\Support\Facades\Log;
 
 use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\On;
 
 class AiAssistant extends Component
 {
@@ -117,16 +118,24 @@ class AiAssistant extends Component
     {
         $this->validate(['input' => 'required|string']);
 
-        // User Message
+        // 1. Add User Message & Clear Input Immediately
         $userMessage = $this->input;
         $this->messages[] = ['role' => 'user', 'content' => $userMessage];
         $this->input = '';
         $this->isLoading = true;
 
-        // Save immediately
+        // Save state immediately
         Cache::put($this->getCacheKey(), $this->messages, now()->addDays(7));
 
-        // Build Context (Includes Document if selected)
+        // 2. Dispatch event to self to trigger AI generation in a separate round-trip
+        // This allows the UI to update (clear input) before the heavy AI processing starts
+        $this->dispatch('trigger-ai-generation');
+    }
+
+    #[On('trigger-ai-generation')]
+    public function generateResponse()
+    {
+        // Build Context
         $context = $this->buildContext();
         
         // Prepare API Messages
@@ -135,7 +144,7 @@ class AiAssistant extends Component
             ['role' => 'user', 'content' => "Contexto del Expediente y/o Documentos:\n" . $context],
         ];
 
-        // Append recent chat history (limit to last 10)
+        // Append recent chat history
         foreach (array_slice($this->messages, -10) as $msg) {
             if ($msg['role'] !== 'system') { 
                 $apiMessages[] = ['role' => $msg['role'], 'content' => $msg['content']];
@@ -159,7 +168,7 @@ class AiAssistant extends Component
             $this->messages[] = ['role' => 'system', 'content' => 'Error: ' . ($response['error'] ?? 'No se pudo conectar con la IA.')];
         }
         
-        // Save after AI response
+        // Save final state
         Cache::put($this->getCacheKey(), $this->messages, now()->addDays(7));
     }
 
