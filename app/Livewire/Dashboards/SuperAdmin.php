@@ -16,6 +16,8 @@ class SuperAdmin extends Component
     public $monthlyIncome;
 
     public $domainDaysLeft;
+    public $domainHoursLeft;
+    public $domainIsExpired = false;
     public $vpsCost;
     public $aiBudget;
     public $aiCurrentSpend;
@@ -49,9 +51,20 @@ class SuperAdmin extends Component
         // Domain Expiry
         $expiryDate = $settings['infrastructure_domain_expiry'] ?? null;
         if ($expiryDate) {
-            $this->domainDaysLeft = now()->diffInDays(\Carbon\Carbon::parse($expiryDate), false);
+            try {
+                $expiry = \Carbon\Carbon::parse($expiryDate);
+                $diff = now()->diff($expiry);
+                
+                $this->domainIsExpired = $diff->invert;
+                $this->domainDaysLeft = $this->domainIsExpired ? 0 : $diff->days;
+                $this->domainHoursLeft = $this->domainIsExpired ? 0 : $diff->h;
+            } catch (\Exception $e) {
+                $this->domainDaysLeft = null;
+                $this->domainHoursLeft = null;
+            }
         } else {
             $this->domainDaysLeft = null;
+            $this->domainHoursLeft = null;
         }
 
         $this->vpsCost = floatval($settings['infrastructure_vps_cost'] ?? 0);

@@ -12,8 +12,8 @@ class Announcements extends Component
 {
     use Auditable;
 
-    public $subject;
-    public $content;
+    public $subject = '';
+    public $content = '';
     public $target = 'all';
 
     protected $rules = [

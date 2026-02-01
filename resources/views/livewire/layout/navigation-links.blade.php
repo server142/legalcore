@@ -13,12 +13,6 @@
             {{ __('Expedientes') }}
         </x-sidebar-link>
 
-        @if(auth()->user()->hasRole(['super_admin', 'admin', 'abogado']))
-        <x-sidebar-link :href="route('admin.estados-procesales.index')" :active="request()->routeIs('admin.estados-procesales.*')" icon="book">
-            {{ __('Estados Procesales') }}
-        </x-sidebar-link>
-        @endif
-
         @can('view terminos')
         <x-sidebar-link :href="route('terminos.index')" :active="request()->routeIs('terminos.*')" icon="calendar">
             {{ __('Términos') }}
