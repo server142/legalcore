@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('documentos', function (Blueprint $table) {
-            $table->longText('extracted_text')->nullable()->after('version');
+            if (!Schema::hasColumn('documentos', 'extracted_text')) {
+                $table->longText('extracted_text')->nullable()->after('version');
+            }
         });
     }
 

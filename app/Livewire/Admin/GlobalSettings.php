@@ -45,6 +45,12 @@ class GlobalSettings extends Component
     public $welcome_version = 1;
     public $welcome_target = 'all';
 
+    // Infrastructure Settings
+    public $infrastructure_domain_expiry;
+    public $infrastructure_vps_cost;
+    public $infrastructure_vps_provider;
+    public $infrastructure_ai_budget;
+
     public function mount()
     {
         $this->loadSettings();
@@ -91,6 +97,11 @@ class GlobalSettings extends Component
         $this->welcome_title = $settings['welcome_title'] ?? 'Bienvenido a tu Espacio Legal';
         $this->welcome_version = intval($settings['welcome_version'] ?? 1);
         $this->welcome_target = $settings['welcome_target'] ?? 'all';
+
+        $this->infrastructure_domain_expiry = $settings['infrastructure_domain_expiry'] ?? '';
+        $this->infrastructure_vps_cost = $settings['infrastructure_vps_cost'] ?? '';
+        $this->infrastructure_vps_provider = $settings['infrastructure_vps_provider'] ?? '';
+        $this->infrastructure_ai_budget = $settings['infrastructure_ai_budget'] ?? '';
     }
 
     public function save()
@@ -120,6 +131,10 @@ class GlobalSettings extends Component
             'welcome_title' => $this->welcome_title,
             'welcome_version' => $this->welcome_version,
             'welcome_target' => $this->welcome_target,
+            'infrastructure_domain_expiry' => $this->infrastructure_domain_expiry,
+            'infrastructure_vps_cost' => $this->infrastructure_vps_cost,
+            'infrastructure_vps_provider' => $this->infrastructure_vps_provider,
+            'infrastructure_ai_budget' => $this->infrastructure_ai_budget,
         ];
 
         foreach ($data as $key => $value) {

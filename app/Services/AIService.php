@@ -30,25 +30,76 @@ class AIService
             return ['error' => 'AI API Key not configured.'];
         }
 
+        $result = ['error' => 'Provider not fully implemented yet.'];
+
         if ($this->provider === 'openai') {
-            return $this->askOpenAI($messages, $temperature, $maxTokens);
+            $result = $this->askOpenAI($messages, $temperature, $maxTokens);
+        } elseif ($this->provider === 'deepseek') {
+            $result = $this->askDeepSeek($messages, $temperature, $maxTokens);
+        } elseif ($this->provider === 'groq') {
+            $result = $this->askGroq($messages, $temperature, $maxTokens);
+        } elseif ($this->provider === 'anthropic') {
+            $result = $this->askAnthropic($messages, $temperature, $maxTokens);
         }
 
-        if ($this->provider === 'deepseek') {
-            return $this->askDeepSeek($messages, $temperature, $maxTokens);
+        if (isset($result['success']) && $result['success']) {
+            $this->logUsage($result);
         }
 
-        if ($this->provider === 'groq') {
-            return $this->askGroq($messages, $temperature, $maxTokens);
-        }
-
-        if ($this->provider === 'anthropic') {
-            return $this->askAnthropic($messages, $temperature, $maxTokens);
-        }
-
-        return ['error' => 'Provider not fully implemented yet.'];
+        return $result;
     }
 
+    protected function logUsage($result)
+    {
+        try {
+            $usage = $result['usage'] ?? [];
+            $input = $usage['prompt_tokens'] ?? ($usage['input_tokens'] ?? 0);
+            $output = $usage['completion_tokens'] ?? ($usage['output_tokens'] ?? 0);
+            
+            $cost = $this->calculateCost($this->model, $input, $output);
+
+            \App\Models\AiUsageLog::create([
+                'tenant_id' => auth()->user()?->tenant_id,
+                'user_id' => auth()->id(), // System tasks might be null
+                'feature' => 'chat',
+                'provider' => $this->provider,
+                'model' => $this->model,
+                'input_tokens' => $input,
+                'output_tokens' => $output,
+                'cost' => $cost
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('Failed to log AI usage: ' . $e->getMessage());
+        }
+    }
+
+    protected function calculateCost($model, $input, $output)
+    {
+        // Prices per 1M tokens (USD)
+        $prices = [
+            'gpt-4o' => ['in' => 5.00, 'out' => 15.00],
+            'gpt-4o-mini' => ['in' => 0.15, 'out' => 0.60],
+            'gpt-4-turbo' => ['in' => 10.00, 'out' => 30.00],
+            'gpt-3.5-turbo' => ['in' => 0.50, 'out' => 1.50],
+            'claude-3-opus' => ['in' => 15.00, 'out' => 75.00],
+            'claude-3-sonnet' => ['in' => 3.00, 'out' => 15.00],
+            'claude-3-haiku' => ['in' => 0.25, 'out' => 1.25],
+            'deepseek-chat' => ['in' => 0.14, 'out' => 0.28], // Approx
+            'llama-3' => ['in' => 0.10, 'out' => 0.10], // Groq is cheap
+        ];
+
+        // Find closest match logic
+        $match = 'gpt-4o-mini'; // default fallback
+        foreach ($prices as $key => $price) {
+            if (str_contains(strtolower($model), $key)) {
+                $match = $key;
+                break;
+            }
+        }
+
+        $p = $prices[$match];
+        return ($input * ($p['in'] / 1000000)) + ($output * ($p['out'] / 1000000));
+    }
     protected function askOpenAI($messages, $temperature, $maxTokens)
     {
         return $this->sendOpenAIStyleRequest(

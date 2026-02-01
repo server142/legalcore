@@ -25,6 +25,7 @@
                     <button @click="$dispatch('set-tab', 'mail')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Servidor de Correo</button>
                     <button @click="$dispatch('set-tab', 'ai')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Inteligencia Artificial</button>
                     <button @click="$dispatch('set-tab', 'onboarding')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Onboarding (Bienvenida)</button>
+                    <button @click="$dispatch('set-tab', 'infrastructure')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Infraestructura & Costos</button>
                     <button @click="$dispatch('set-tab', 'general')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Configuración General</button>
                 </div>
             </div>
@@ -178,6 +179,33 @@
                                 <x-input-label for="welcome_message" value="Mensaje de Bienvenida" />
                                 <textarea wire:model="welcome_message" id="welcome_message" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></textarea>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Infrastructure Settings -->
+                    <div x-show="tab === 'infrastructure'" class="bg-white rounded-lg shadow p-6 space-y-4" style="display: none;">
+                        <div class="border-b pb-2">
+                            <h3 class="text-lg font-bold text-gray-800">Infraestructura y Costos</h3>
+                            <p class="text-sm text-gray-500">Monitoreo de vencimientos y presupuestos.</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div>
+                                <x-input-label for="infrastructure_domain_expiry" value="Fecha de Vencimiento de Dominio / SSL" />
+                                <x-text-input wire:model="infrastructure_domain_expiry" id="infrastructure_domain_expiry" class="mt-1 block w-full" type="date" />
+                                <p class="text-xs text-gray-500 mt-1">El sistema alertará cuando falten 30 días.</p>
+                             </div>
+                             <div>
+                                <x-input-label for="infrastructure_vps_provider" value="Proveedor de Hosting (VPS)" />
+                                <x-text-input wire:model="infrastructure_vps_provider" id="infrastructure_vps_provider" class="mt-1 block w-full" type="text" placeholder="Ej: DigitalOcean, AWS" />
+                             </div>
+                             <div>
+                                <x-input-label for="infrastructure_vps_cost" value="Costo Mensual VPS (USD)" />
+                                <x-text-input wire:model="infrastructure_vps_cost" id="infrastructure_vps_cost" class="mt-1 block w-full" type="number" step="0.01" />
+                             </div>
+                             <div>
+                                <x-input-label for="infrastructure_ai_budget" value="Presupuesto Mensual IA (USD)" />
+                                <x-text-input wire:model="infrastructure_ai_budget" id="infrastructure_ai_budget" class="mt-1 block w-full" type="number" step="0.01" />
+                             </div>
                         </div>
                     </div>
 
