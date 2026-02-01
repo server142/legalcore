@@ -76,6 +76,10 @@
         <x-sidebar-link :href="route('admin.global-settings')" :active="request()->routeIs('admin.global-settings')" icon="settings">
             {{ __('Configuración Global') }}
         </x-sidebar-link>
+        
+        <x-sidebar-link :href="route('admin.announcements')" :active="request()->routeIs('admin.announcements')" icon="speakerphone">
+            {{ __('Anuncios') }}
+        </x-sidebar-link>
     </div>
     @endif
 
