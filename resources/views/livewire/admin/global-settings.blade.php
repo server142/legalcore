@@ -1,8 +1,6 @@
 <div class="p-6">
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Configuración Global del Sistema') }}
-        </h2>
+        <x-header title="{{ __('Configuración Global del Sistema') }}" />
     </x-slot>
 
     <div class="max-w-7xl mx-auto">
