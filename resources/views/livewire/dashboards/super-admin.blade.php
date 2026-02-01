@@ -93,27 +93,30 @@
 
         <!-- Widget 3: Top AI Consumers -->
         <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
-            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Consumo por Cliente</h3>
-            <div class="space-y-4 max-h-[160px] overflow-y-auto custom-scrollbar">
-                @php 
-                    $maxCost = $aiTenantUsage->max('total_cost') ?: 1; 
-                @endphp
-                @forelse($aiTenantUsage as $usage)
-                    <div class="space-y-1.5">
-                        <div class="flex justify-between text-[11px] items-baseline">
-                            <span class="font-bold text-gray-800 truncate max-w-[140px]">{{ $usage->tenant->name ?? 'Sistema' }}</span>
-                            <span class="text-gray-900 font-black tabular-nums font-mono">${{ number_format($usage->total_cost, 4) }}</span>
-                        </div>
-                        <div class="w-full bg-gray-50 rounded-full h-2 shadow-inner">
-                            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-full rounded-full transition-all duration-1000" style="width: {{ ($usage->total_cost / $maxCost) * 100 }}%"></div>
-                        </div>
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Consumo por Cliente</h3>
+            
+            <div class="flex flex-col h-full">
+                @if($aiTenantUsage->count() > 0)
+                    <div class="h-32 mb-4">
+                        <canvas id="tenantDistribution"></canvas>
                     </div>
-                @empty
-                    <div class="flex flex-col items-center justify-center py-6 opacity-40 grayscale">
+                    <div class="space-y-3 max-h-[120px] overflow-y-auto custom-scrollbar pr-1">
+                        @foreach($aiTenantUsage as $usage)
+                            <div class="flex justify-between text-[11px] items-center">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full" style="background-color: {{ ['#4f46e5', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'][$loop->index % 5] }}"></div>
+                                    <span class="font-bold text-gray-700 truncate max-w-[120px]">{{ $usage->tenant->name ?? 'Sistema' }}</span>
+                                </div>
+                                <span class="text-gray-900 font-black tabular-nums font-mono">${{ number_format($usage->total_cost, 4) }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="flex flex-col items-center justify-center py-10 opacity-40 grayscale">
                         <svg class="w-12 h-12 mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                         <p class="text-[10px] uppercase font-black tracking-widest">Sin datos este mes</p>
                     </div>
-                @endforelse
+                @endif
             </div>
         </div>
     </div>
@@ -162,81 +165,126 @@
 <script>
     let domainChart = null;
     let aiTrendChart = null;
+    let tenantChart = null;
 
     function initDashboardCharts() {
         const domainCanvas = document.getElementById('domainGauge');
         const aiTrendCanvas = document.getElementById('aiSpendTrend');
-
-        if (!domainCanvas || !aiTrendCanvas) return;
+        const tenantCanvas = document.getElementById('tenantDistribution');
 
         // Cleanup existing charts
         if (domainChart) domainChart.destroy();
         if (aiTrendChart) aiTrendChart.destroy();
+        if (tenantChart) tenantChart.destroy();
 
-        // 1. Gauge for Domain
-        const ctxGauge = domainCanvas.getContext('2d');
-        const daysLeft = {{ $domainDaysLeft ?? 0 }};
-        const percentageLeft = Math.min(Math.max((daysLeft / 365) * 100, 0), 100);
-        
-        domainChart = new Chart(ctxGauge, {
-            type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: [percentageLeft, 100 - percentageLeft],
-                    backgroundColor: [daysLeft < 30 ? '#ef4444' : '#4f46e5', '#f8fafc'],
-                    borderWidth: 0,
-                    circumference: 220,
-                    rotation: 250,
-                    borderRadius: 10
-                }]
-            },
-            options: {
-                cutout: '85%',
-                plugins: { tooltip: { enabled: false } },
-                events: [],
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
+        // 1. Gauge for Domain (Semi-circle)
+        if (domainCanvas) {
+            const ctxGauge = domainCanvas.getContext('2d');
+            const daysLeft = {{ $domainDaysLeft ?? 0 }};
+            const percentageLeft = Math.min(Math.max((daysLeft / 365) * 100, 0), 100);
+            
+            domainChart = new Chart(ctxGauge, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [percentageLeft, 100 - percentageLeft],
+                        backgroundColor: [daysLeft < 30 ? '#ef4444' : '#4f46e5', '#f1f5f9'],
+                        borderWidth: 0,
+                        circumference: 180,
+                        rotation: 270,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    cutout: '80%',
+                    plugins: { tooltip: { enabled: false } },
+                    events: [],
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
 
         // 2. Line Chart for AI Trend
-        const ctxTrend = aiTrendCanvas.getContext('2d');
-        const dailyData = @json($aiDailySpend->pluck('total_cost'));
-        const dailyLabels = @json($aiDailySpend->pluck('date'));
+        if (aiTrendCanvas) {
+            const ctxTrend = aiTrendCanvas.getContext('2d');
+            let dailyData = @json($aiDailySpend->pluck('total_cost'));
+            let dailyLabels = @json($aiDailySpend->pluck('date'));
 
-        aiTrendChart = new Chart(ctxTrend, {
-            type: 'line',
-            data: {
-                labels: dailyLabels,
-                datasets: [{
-                    label: 'Gasto Diario',
-                    data: dailyData,
-                    borderColor: '#6366f1',
-                    backgroundColor: (context) => {
-                        const chart = context.chart;
-                        const {ctx, chartArea} = chart;
-                        if (!chartArea) return null;
-                        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-                        gradient.addColorStop(0, 'rgba(99, 102, 241, 0)');
-                        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.1)');
-                        return gradient;
-                    },
-                    fill: true,
-                    tension: 0.5,
-                    pointRadius: 0,
-                    borderWidth: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-                scales: {
-                    x: { display: false },
-                    y: { display: false }
-                }
+            // Fallback for empty data to keep the UI beautiful
+            if (dailyData.length === 0) {
+                dailyData = [0, 0, 0, 0, 0];
+                dailyLabels = ['', '', '', '', ''];
             }
-        });
+
+            aiTrendChart = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: dailyLabels,
+                    datasets: [{
+                        data: dailyData,
+                        borderColor: '#6366f1',
+                        backgroundColor: (context) => {
+                            const chart = context.chart;
+                            const {ctx, chartArea} = chart;
+                            if (!chartArea) return null;
+                            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                            gradient.addColorStop(0, 'rgba(99, 102, 241, 0)');
+                            gradient.addColorStop(1, 'rgba(99, 102, 241, 0.15)');
+                            return gradient;
+                        },
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 2,
+                        pointBackgroundColor: '#6366f1',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                    scales: {
+                        x: { display: false },
+                        y: { 
+                            display: false,
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // 3. Distribution by Tenant (Doughnut)
+        if (tenantCanvas) {
+            const ctxTenant = tenantCanvas.getContext('2d');
+            const tenantNames = @json($aiTenantUsage->map(fn($u) => $u->tenant->name ?? 'Sistema'));
+            const tenantCosts = @json($aiTenantUsage->pluck('total_cost'));
+
+            if (tenantCosts.length > 0) {
+                tenantChart = new Chart(ctxTenant, {
+                    type: 'doughnut',
+                    data: {
+                        labels: tenantNames,
+                        datasets: [{
+                            data: tenantCosts,
+                            backgroundColor: ['#4f46e5', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        cutout: '70%',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: { enabled: true }
+                        }
+                    }
+                });
+            }
+        }
     }
 
     document.addEventListener('livewire:initialized', initDashboardCharts);
