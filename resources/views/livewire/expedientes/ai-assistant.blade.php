@@ -154,39 +154,75 @@
                                         </div>
 
                                         @if($msg['role'] === 'assistant')
-                                            <!-- Action Buttons -->
-                                            <div class="flex justify-end mt-1 mr-1 gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
-                                                
-                                                <!-- Select Text -->
-                                                <button type="button" 
-                                                        @click="
-                                                            let content = $el.closest('.flex-col').querySelector('.text-message-content');
-                                                            let range = document.createRange();
-                                                            range.selectNodeContents(content);
-                                                            let selection = window.getSelection();
-                                                            selection.removeAllRanges();
-                                                            selection.addRange(range);
-                                                        "
-                                                        title="Seleccionar para leer"
-                                                        class="text-[10px] text-gray-400 hover:text-indigo-600 flex items-center bg-gray-50 px-2 py-1 rounded border border-gray-100 shadow-sm transition-all focus:ring-1 focus:ring-indigo-300">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 16h10M12 8v8M5 3a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2H5z"></path></svg>
-                                                </button>
+                                            <!-- Metadata Footer -->
+                                            <div class="flex justify-between items-center mt-1 px-1">
+                                                <!-- Execution Time -->
+                                                <div class="text-[10px] text-gray-300 font-mono">
+                                                    @if(isset($msg['execution_time']))
+                                                        ⏱ {{ $msg['execution_time'] }}s
+                                                    @endif
+                                                </div>
 
-                                                <!-- Export to Word -->
-                                                <button type="button" wire:click="exportToWord(@js($msg['content']))"
-                                                        title="Descargar DOCX"
-                                                        class="text-[10px] text-gray-400 hover:text-blue-600 flex items-center bg-gray-50 px-2 py-1 rounded border border-gray-100 shadow-sm transition-all">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                                </button>
+                                                <!-- Action Buttons Container -->
+                                                <div class="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200" 
+                                                     x-data="{ copied: false, speaking: false }">
+                                                    
+                                                    <!-- Copy Text Button -->
+                                                    <button type="button" 
+                                                            @click="
+                                                                navigator.clipboard.writeText($el.closest('.flex-col').querySelector('.text-message-content').innerText)
+                                                                .then(() => {
+                                                                    copied = true;
+                                                                    setTimeout(() => copied = false, 2000);
+                                                                });
+                                                            "
+                                                            title="Copiar texto"
+                                                            class="text-[10px] flex items-center bg-gray-50 px-2 py-1 rounded border border-gray-100 shadow-sm transition-all hover:bg-white"
+                                                            :class="copied ? 'text-green-600 border-green-200' : 'text-gray-400 hover:text-indigo-600'">
+                                                        <svg x-show="!copied" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m2 4v6m0 0l-2-2m2 2l2-2"></path></svg>
+                                                        <svg x-show="copied" style="display:none;" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                        <span x-show="copied" style="display:none;" class="ml-1 font-semibold">¡Copiado!</span>
+                                                    </button>
 
-                                                <!-- Save to AI Notes -->
-                                                <button type="button" wire:click="saveAsAiNote(@js($msg['content']))"
-                                                        wire:confirm="¿Guardar respuesta en Notas de IA?"
-                                                        title="Guardar Nota IA"
-                                                        class="text-[10px] text-gray-400 hover:text-green-600 flex items-center bg-gray-50 px-2 py-1 rounded border border-gray-100 shadow-sm transition-all">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                                </button>
-                                                
+                                                    <!-- Read / Speak Button -->
+                                                    <button type="button" 
+                                                            @click="
+                                                                if (speaking) {
+                                                                    window.speechSynthesis.cancel();
+                                                                    speaking = false;
+                                                                } else {
+                                                                    let text = $el.closest('.flex-col').querySelector('.text-message-content').innerText;
+                                                                    let utterance = new SpeechSynthesisUtterance(text);
+                                                                    utterance.lang = 'es-ES';
+                                                                    utterance.rate = 1.1;
+                                                                    utterance.onend = () => speaking = false;
+                                                                    window.speechSynthesis.speak(utterance);
+                                                                    speaking = true;
+                                                                }
+                                                            "
+                                                            :title="speaking ? 'Detener lectura' : 'Escuchar respuesta'"
+                                                            class="text-[10px] flex items-center bg-gray-50 px-2 py-1 rounded border border-gray-100 shadow-sm transition-all hover:bg-white text-gray-400 hover:text-pink-600"
+                                                            :class="speaking ? 'text-pink-600 ring-1 ring-pink-100 animate-pulse' : ''">
+                                                        <svg x-show="!speaking" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                                                        <svg x-show="speaking" style="display:none;" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path></svg>
+                                                    </button>
+
+                                                    <!-- Export to Word -->
+                                                    <button type="button" wire:click="exportToWord(@js($msg['content']))"
+                                                            title="Descargar DOCX"
+                                                            class="text-[10px] text-gray-400 hover:text-blue-600 flex items-center bg-gray-50 px-2 py-1 rounded border border-gray-100 shadow-sm transition-all hover:bg-white">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                    </button>
+
+                                                    <!-- Save to AI Notes -->
+                                                    <button type="button" wire:click="saveAsAiNote(@js($msg['content']))"
+                                                            wire:confirm="¿Guardar respuesta en Notas de IA?"
+                                                            title="Guardar Nota IA"
+                                                            class="text-[10px] text-gray-400 hover:text-green-600 flex items-center bg-gray-50 px-2 py-1 rounded border border-gray-100 shadow-sm transition-all hover:bg-white">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                    </button>
+                                                    
+                                                </div>
                                             </div>
                                         @endif
                                     </div>

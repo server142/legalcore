@@ -143,12 +143,18 @@ class AiAssistant extends Component
         }
 
         // Call AI
+        $startTime = microtime(true);
         $response = $this->aiService->ask($apiMessages, 0.2);
+        $duration = round(microtime(true) - $startTime, 2);
 
         $this->isLoading = false;
 
         if (isset($response['success']) && $response['success']) {
-            $this->messages[] = ['role' => 'assistant', 'content' => $response['content']];
+            $this->messages[] = [
+                'role' => 'assistant', 
+                'content' => $response['content'],
+                'execution_time' => $duration
+            ];
         } else {
             $this->messages[] = ['role' => 'system', 'content' => 'Error: ' . ($response['error'] ?? 'No se pudo conectar con la IA.')];
         }
