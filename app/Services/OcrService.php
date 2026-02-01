@@ -57,9 +57,13 @@ class OcrService
 
     protected function extractWithTesseract($filePath)
     {
-        // Aumentar tiempo límite a 5 minutos para PDFs largos
-        set_time_limit(300);
-        ini_set('memory_limit', '512M'); // También aumentar memoria por si acaso
+        // AJUSTES DE ESTABILIDAD (CRÍTICO PARA EVITAR ERROR 502)
+        set_time_limit(300); // 5 minutos
+        ini_set('memory_limit', '1024M'); // 1GB de RAM para este proceso
+        
+        // Evitar que Imagick use multithreading (causa común de crashes en PHP-FPM)
+        putenv('MAGICK_THREAD_LIMIT=1');
+        putenv('OMP_NUM_THREADS=1');
 
         try {
             $ocr = new TesseractOCR($filePath);
