@@ -24,9 +24,8 @@ class SecurityHeadersMiddleware
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
         
-        // Content Security Policy (Basic starting point)
-        // Adjust this if you use external CDNs for fonts/scripts
-        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src 'self' https://www.diogenes.com.mx https://accounts.google.com; connect-src 'self' https:;");
+        // Content Security Policy (Optimized for Diogenes)
+        $response->headers->set('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.bunny.net; font-src 'self' data: https://fonts.gstatic.com https://fonts.bunny.net; img-src 'self' data: https:; frame-src 'self' https://www.diogenes.com.mx https://accounts.google.com; connect-src 'self' https:;");
 
         return $response;
     }
