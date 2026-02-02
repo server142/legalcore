@@ -145,9 +145,17 @@ class Tenant extends Model
      */
     public function getUserCountByRole(string $role): int
     {
-        return $this->users()->whereHas('roles', function ($query) use ($role) {
+        return $this->users()->withoutGlobalScopes()->whereHas('roles', function ($query) use ($role) {
             $query->where('name', $role);
         })->count();
+    }
+
+    /**
+     * Obtener el conteo total de usuarios (para el SuperAdmin)
+     */
+    public function getUsersCountAttribute()
+    {
+        return \App\Models\User::withoutGlobalScopes()->where('tenant_id', $this->id)->count();
     }
 
     /**

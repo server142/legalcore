@@ -151,7 +151,7 @@
                                                     <div class="w-6 h-6 flex items-center justify-center bg-white rounded-lg border border-slate-200 mr-2 shadow-sm">
                                                         <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                                                     </div>
-                                                    <span class="text-slate-800 font-bold">{{ $tenant->users->count() }}</span>
+                                                    <span class="text-slate-800 font-bold">{{ $tenant->users_count }}</span>
                                                     <span class="text-slate-500 ml-1.5">Usuarios</span>
                                                 </div>
                                                 <div class="flex items-center text-xs" title="Expedientes totales">
@@ -259,7 +259,7 @@
                                     Plan: {{ $tenant->planRelation ? $tenant->planRelation->name : ucfirst($tenant->plan) }}
                                 </span>
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                                    {{ $tenant->users->count() }} Usuarios
+                                    {{ $tenant->users_count }} Usuarios
                                 </span>
                             </div>
 
