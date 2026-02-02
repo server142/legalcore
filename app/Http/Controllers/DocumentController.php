@@ -32,6 +32,17 @@ class DocumentController extends Controller
             'ip_address' => request()->ip(),
         ]);
 
-        return response()->file(Storage::disk('local')->path($documento->path));
+        $safeToInline = in_array(strtolower($documento->extension), ['pdf', 'jpg', 'jpeg', 'png', 'gif']);
+        
+        $headers = [
+            'Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; shadow-root 'none';",
+            'X-Content-Type-Options' => 'nosniff',
+        ];
+
+        if ($safeToInline) {
+            return response()->file(Storage::disk('local')->path($documento->path), $headers);
+        }
+
+        return response()->download(Storage::disk('local')->path($documento->path), $documento->nombre, $headers);
     }
 }

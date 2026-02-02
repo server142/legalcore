@@ -5,10 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Plan;
 use App\Models\Expediente; // Added for the moved route
 
-// RUTA DE PRUEBA AISLADA PARA IA (Pública temporalmente)
-Route::get('/test-ia/{expediente}', function (Expediente $expediente) {
-    return view('test-ia', compact('expediente'));
-});
+// Public Legal Pages (Required by Google API Verification)
 
 Route::get('/', function () {
     $plans = Plan::where('is_active', true)

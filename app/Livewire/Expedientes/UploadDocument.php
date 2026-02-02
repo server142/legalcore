@@ -33,7 +33,12 @@ class UploadDocument extends Component
         $maxSizeInKb = $maxSize * 1024;
 
         return [
-            'files.*' => "required|file|max:{$maxSizeInKb}",
+            'files.*' => [
+                'required',
+                'file',
+                'max:' . $maxSizeInKb,
+                'mimes:pdf,jpg,jpeg,png,gif,doc,docx,xls,xlsx,txt,mp4,mov,avi,mp3,wav', // Lista blanca estricta
+            ],
         ];
     }
 

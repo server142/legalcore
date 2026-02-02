@@ -24,13 +24,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'tenant_id',
         'role',
         'status',
         'google_calendar_id',
-        'google_access_token',
-        'google_refresh_token',
-        'google_token_expires_at',
         'calendar_email',
         'has_seen_welcome',
     ];
@@ -43,6 +39,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'google_access_token',
+        'google_refresh_token',
     ];
 
     /**

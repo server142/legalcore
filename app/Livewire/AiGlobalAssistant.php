@@ -69,6 +69,14 @@ class AiGlobalAssistant extends Component
             ]);
             $this->activeChatId = $chat->id;
             $this->loadChatsList(); // Refresh sidebar
+        } else {
+            // Security Check: Verify chat ownership
+            $chat = AiChat::where('user_id', auth()->id())->find($this->activeChatId);
+            if (!$chat) {
+                // Potential attack or session mismatch
+                $this->newChat();
+                return;
+            }
         }
 
         // 2. Save User Message

@@ -20,20 +20,23 @@ trait BelongsToTenant
         });
 
         static::addGlobalScope('tenant', function (Builder $builder) {
+            // Priority: Session exists (for SuperAdmin/Support impersonation or forced context)
             if (session()->has('tenant_id')) {
-                $builder->where('tenant_id', session()->get('tenant_id'));
+                $builder->where($builder->getQuery()->from . '.tenant_id', session()->get('tenant_id'));
                 return;
             }
 
-            // Prevent infinite recursion: do not apply this scope to the User model
-            // because accessing auth()->user() triggers a User query, which triggers this scope.
-            if ($builder->getModel() instanceof \App\Models\User) {
-                return;
-            }
-
+            // Apply to all models except when we don't have an auth context yet 
+            // and specifically to prevent recursion during the authentication process itself
             if (auth()->check()) {
                 $user = auth()->user();
-                $builder->where('tenant_id', $user->tenant_id);
+                
+                // SuperAdmin can see everything
+                if ($user->hasRole('super_admin') || $user->role === 'super_admin') {
+                    return;
+                }
+
+                $builder->where($builder->getQuery()->from . '.tenant_id', $user->tenant_id);
             }
         });
     }
