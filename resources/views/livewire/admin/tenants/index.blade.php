@@ -14,28 +14,43 @@
                 </div>
             @endif
 
-            <!-- Stats Cards (Top Position - Premium Responsive Row) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-                <div class="bg-green-600 p-5 rounded-2xl shadow-sm text-white flex flex-col justify-between h-32 transform transition hover:scale-[1.02]">
-                    <h3 class="text-[10px] font-bold uppercase opacity-80 tracking-widest truncate">Total Tenants</h3>
-                    <p class="text-3xl font-black">{{ \App\Models\Tenant::count() }}</p>
+            <!-- Stats Cards (Top Position - Minimalist Premium Row) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32 transform transition hover:shadow-md">
+                    <h3 class="text-[10px] font-bold uppercase text-slate-400 tracking-widest truncate">Total Tenants</h3>
+                    <div class="flex items-baseline space-x-2">
+                        <p class="text-4xl font-black text-slate-900">{{ \App\Models\Tenant::count() }}</p>
+                        <span class="text-[10px] text-green-500 font-bold uppercase">Global</span>
+                    </div>
                 </div>
-                <div class="bg-blue-600 p-5 rounded-2xl shadow-sm text-white flex flex-col justify-between h-32 transform transition hover:scale-[1.02]">
-                    <h3 class="text-[10px] font-bold uppercase opacity-80 tracking-widest truncate">En Trial</h3>
-                    <p class="text-3xl font-black">{{ \App\Models\Tenant::where('plan', 'trial')->count() }}</p>
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32 transform transition hover:shadow-md">
+                    <h3 class="text-[10px] font-bold uppercase text-slate-400 tracking-widest truncate">En Trial</h3>
+                    <div class="flex items-baseline space-x-2">
+                        <p class="text-4xl font-black text-blue-600">{{ \App\Models\Tenant::where('plan', 'trial')->count() }}</p>
+                        <span class="text-[10px] text-slate-400 font-medium">Usuarios</span>
+                    </div>
                 </div>
-                <div class="bg-emerald-600 p-5 rounded-2xl shadow-sm text-white flex flex-col justify-between h-32 transform transition hover:scale-[1.02]">
-                    <h3 class="text-[10px] font-bold uppercase opacity-80 tracking-widest truncate">Activos Pagados</h3>
-                    <p class="text-3xl font-black">{{ \App\Models\Tenant::where('plan', '!=', 'trial')->where('is_active', true)->count() }}</p>
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32 transform transition hover:shadow-md">
+                    <h3 class="text-[10px] font-bold uppercase text-slate-400 tracking-widest truncate">Activos Pagados</h3>
+                    <div class="flex items-baseline space-x-2">
+                        <p class="text-4xl font-black text-emerald-600">{{ \App\Models\Tenant::where('plan', '!=', 'trial')->where('is_active', true)->count() }}</p>
+                        <span class="text-[10px] text-emerald-500 font-bold">VIP</span>
+                    </div>
                 </div>
-                <div class="bg-rose-600 p-5 rounded-2xl shadow-sm text-white flex flex-col justify-between h-32 transform transition hover:scale-[1.02]">
-                    <h3 class="text-[10px] font-bold uppercase opacity-80 tracking-widest truncate">Trials Expirados</h3>
-                    <p class="text-3xl font-black">{{ \App\Models\Tenant::where('plan', 'trial')->where('trial_ends_at', '<', now())->count() }}</p>
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32 transform transition hover:shadow-md">
+                    <h3 class="text-[10px] font-bold uppercase text-slate-400 tracking-widest truncate">Trials Expirados</h3>
+                    <div class="flex items-baseline space-x-2">
+                        <p class="text-4xl font-black text-rose-500">{{ \App\Models\Tenant::where('plan', 'trial')->where('trial_ends_at', '<', now())->count() }}</p>
+                        <span class="text-[10px] text-rose-400 font-medium italic">Pending</span>
+                    </div>
                 </div>
-                <div class="bg-indigo-600 p-5 rounded-2xl shadow-sm text-white flex flex-col justify-between h-32 transform transition hover:scale-[1.02] relative overflow-hidden">
-                    <h3 class="text-[10px] font-bold uppercase opacity-80 tracking-widest truncate">Activos Hoy</h3>
-                    <p class="text-3xl font-black">{{ \App\Models\AuditLog::withoutGlobalScopes()->where('created_at', '>=', now()->startOfDay())->distinct('tenant_id')->count('tenant_id') }}</p>
-                    <svg class="absolute right-0 bottom-0 w-12 h-12 text-white opacity-10 -mb-3 -mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32 transform transition hover:shadow-md relative overflow-hidden">
+                    <h3 class="text-[10px] font-bold uppercase text-slate-400 tracking-widest truncate">Activos Hoy</h3>
+                    <div class="flex items-baseline space-x-2">
+                        <p class="text-4xl font-black text-indigo-600">{{ \App\Models\AuditLog::withoutGlobalScopes()->where('created_at', '>=', now()->startOfDay())->distinct('tenant_id')->count('tenant_id') }}</p>
+                        <span class="text-[10px] text-indigo-400 font-bold">Realtime</span>
+                    </div>
+                    <div class="absolute right-0 bottom-0 w-1 bg-indigo-500 h-full opacity-20"></div>
                 </div>
             </div>
 
