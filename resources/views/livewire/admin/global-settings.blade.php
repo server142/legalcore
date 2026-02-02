@@ -134,6 +134,17 @@
                                     <x-input-label for="mail_password" value="Password" />
                                     <x-text-input wire:model="mail_password" id="mail_password" class="mt-1 block w-full" type="password" />
                                 </div>
+
+                                <!-- SMTP Help Note: Only visible when SMTP is selected -->
+                                <div class="col-span-full mt-4 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                                    <p class="text-[10px] text-blue-700 leading-relaxed">
+                                        <span class="font-bold flex items-center mb-0.5">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            Ayuda: ¿Error "Connection Timed Out"?
+                                        </span>
+                                        En producción, si falla el puerto 587 (TLS), intenta usar el puerto <span class="font-black">465</span> con encriptación <span class="font-black">SSL</span>.
+                                    </p>
+                                </div>
                             </div>
                             
                             <div>
@@ -143,21 +154,10 @@
                             <div>
                                 <x-input-label for="mail_from_name" value="From Name" />
                                 <x-text-input wire:model="mail_from_name" id="mail_from_name" class="mt-1 block w-full" type="text" />
+                            </div>
                         </div>
 
-
-                        <!-- SMTP Help Note -->
-                        <div class="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-2xl">
-                            <p class="text-[11px] text-blue-700 leading-relaxed">
-                                <span class="font-bold flex items-center mb-1">
-                                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    ¿Error "Connection Timed Out"?
-                                </span>
-                                Si estás en producción y falla el puerto 587 (TLS), intenta usar el puerto <span class="font-black">465</span> con encriptación <span class="font-black">SSL</span>. Muchos proveedores de hosting bloquean el puerto 587 por defecto.
-                            </p>
-                        </div>
-
-                        <!-- Invitation Template Section -->
+                        <!-- Template Sections - Outside the settings grid to gain full width and order -->
                         <div class="mt-8 pt-6 border-t border-gray-100 italic">
                             <h4 class="text-sm font-bold text-gray-700 mb-4 flex items-center">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
