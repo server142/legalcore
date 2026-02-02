@@ -14,43 +14,47 @@
                 </div>
             @endif
 
-            <!-- Stats Cards (Top Position - Minimalist Premium Row) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32 transform transition hover:shadow-md">
-                    <h3 class="text-[10px] font-bold uppercase text-slate-400 tracking-widest truncate">Total Tenants</h3>
-                    <div class="flex items-baseline space-x-2">
-                        <p class="text-4xl font-black text-slate-900">{{ \App\Models\Tenant::count() }}</p>
-                        <span class="text-[10px] text-green-500 font-bold uppercase">Global</span>
+            <!-- Stats Cards (Minimalist Premium Row - Forced Layout) -->
+            <div class="flex flex-col md:flex-row gap-4 mb-8 w-full">
+                <!-- Card Item -->
+                <div class="flex-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
+                    <h3 class="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-3">Total Tenants</h3>
+                    <div class="flex items-end justify-between">
+                        <span class="text-4xl font-light text-slate-900 leading-none">{{ \App\Models\Tenant::count() }}</span>
+                        <div class="h-1.5 w-8 bg-slate-100 rounded-full"></div>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32 transform transition hover:shadow-md">
-                    <h3 class="text-[10px] font-bold uppercase text-slate-400 tracking-widest truncate">En Trial</h3>
-                    <div class="flex items-baseline space-x-2">
-                        <p class="text-4xl font-black text-blue-600">{{ \App\Models\Tenant::where('plan', 'trial')->count() }}</p>
-                        <span class="text-[10px] text-slate-400 font-medium">Usuarios</span>
+                <!-- Card Item -->
+                <div class="flex-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
+                    <h3 class="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-3">En Trial</h3>
+                    <div class="flex items-end justify-between">
+                        <span class="text-4xl font-light text-blue-600 leading-none">{{ \App\Models\Tenant::where('plan', 'trial')->count() }}</span>
+                        <div class="h-1.5 w-8 bg-blue-100 rounded-full"></div>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32 transform transition hover:shadow-md">
-                    <h3 class="text-[10px] font-bold uppercase text-slate-400 tracking-widest truncate">Activos Pagados</h3>
-                    <div class="flex items-baseline space-x-2">
-                        <p class="text-4xl font-black text-emerald-600">{{ \App\Models\Tenant::where('plan', '!=', 'trial')->where('is_active', true)->count() }}</p>
-                        <span class="text-[10px] text-emerald-500 font-bold">VIP</span>
+                <!-- Card Item -->
+                <div class="flex-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
+                    <h3 class="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-3">Activos Pagados</h3>
+                    <div class="flex items-end justify-between">
+                        <span class="text-4xl font-light text-emerald-600 leading-none">{{ \App\Models\Tenant::where('plan', '!=', 'trial')->where('is_active', true)->count() }}</span>
+                        <div class="h-1.5 w-8 bg-emerald-100 rounded-full"></div>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32 transform transition hover:shadow-md">
-                    <h3 class="text-[10px] font-bold uppercase text-slate-400 tracking-widest truncate">Trials Expirados</h3>
-                    <div class="flex items-baseline space-x-2">
-                        <p class="text-4xl font-black text-rose-500">{{ \App\Models\Tenant::where('plan', 'trial')->where('trial_ends_at', '<', now())->count() }}</p>
-                        <span class="text-[10px] text-rose-400 font-medium italic">Pending</span>
+                <!-- Card Item -->
+                <div class="flex-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
+                    <h3 class="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-3">Trials Expirados</h3>
+                    <div class="flex items-end justify-between">
+                        <span class="text-4xl font-light text-rose-500 leading-none">{{ \App\Models\Tenant::where('plan', 'trial')->where('trial_ends_at', '<', now())->count() }}</span>
+                        <div class="h-1.5 w-8 bg-rose-100 rounded-full"></div>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-32 transform transition hover:shadow-md relative overflow-hidden">
-                    <h3 class="text-[10px] font-bold uppercase text-slate-400 tracking-widest truncate">Activos Hoy</h3>
-                    <div class="flex items-baseline space-x-2">
-                        <p class="text-4xl font-black text-indigo-600">{{ \App\Models\AuditLog::withoutGlobalScopes()->where('created_at', '>=', now()->startOfDay())->distinct('tenant_id')->count('tenant_id') }}</p>
-                        <span class="text-[10px] text-indigo-400 font-bold">Realtime</span>
+                <!-- Card Item -->
+                <div class="flex-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 relative">
+                    <h3 class="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-3">Activos Hoy</h3>
+                    <div class="flex items-end justify-between">
+                        <span class="text-4xl font-light text-indigo-600 leading-none">{{ \App\Models\AuditLog::withoutGlobalScopes()->where('created_at', '>=', now()->startOfDay())->distinct('tenant_id')->count('tenant_id') }}</span>
+                        <div class="h-1.5 w-8 bg-indigo-100 rounded-full"></div>
                     </div>
-                    <div class="absolute right-0 bottom-0 w-1 bg-indigo-500 h-full opacity-20"></div>
                 </div>
             </div>
 
