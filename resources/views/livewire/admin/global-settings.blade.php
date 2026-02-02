@@ -145,10 +145,14 @@
                                 <x-text-input wire:model="mail_from_name" id="mail_from_name" class="mt-1 block w-full" type="text" />
                         </div>
 
+
                         <!-- SMTP Help Note -->
-                        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <p class="text-[10px] text-blue-700">
-                                <span class="font-bold">¿Error "Connection Timed Out"?</span><br>
+                        <div class="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-2xl">
+                            <p class="text-[11px] text-blue-700 leading-relaxed">
+                                <span class="font-bold flex items-center mb-1">
+                                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    ¿Error "Connection Timed Out"?
+                                </span>
                                 Si estás en producción y falla el puerto 587 (TLS), intenta usar el puerto <span class="font-black">465</span> con encriptación <span class="font-black">SSL</span>. Muchos proveedores de hosting bloquean el puerto 587 por defecto.
                             </p>
                         </div>
