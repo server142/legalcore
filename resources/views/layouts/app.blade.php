@@ -86,7 +86,7 @@
                     $warningMessage = '';
                     $warningType = 'warning'; // warning, danger
 
-                    if ($tenant && !auth()->user()->hasRole('super-admin')) {
+                    if ($tenant && !auth()->user()->hasRole('super_admin')) {
                         if ($tenant->isOnTrial()) {
                             $daysLeft = ceil($tenant->daysLeftInTrial());
                             if ($daysLeft <= 3) {
