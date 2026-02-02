@@ -20,14 +20,18 @@ trait BelongsToTenant
         });
 
         static::addGlobalScope('tenant', function (Builder $builder) {
+            // Prevent infinite recursion during authentication
+            // Do not apply this scope to the User model when we are trying to get the auth user
+            if ($builder->getModel() instanceof \App\Models\User) {
+                return;
+            }
+
             // Priority: Session exists (for SuperAdmin/Support impersonation or forced context)
             if (session()->has('tenant_id')) {
                 $builder->where($builder->getQuery()->from . '.tenant_id', session()->get('tenant_id'));
                 return;
             }
 
-            // Apply to all models except when we don't have an auth context yet 
-            // and specifically to prevent recursion during the authentication process itself
             if (auth()->check()) {
                 $user = auth()->user();
                 
