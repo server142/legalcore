@@ -28,6 +28,7 @@ class GlobalSettings extends Component
     public $mail_encryption;
     public $mail_from_address;
     public $mail_from_name;
+    public $resend_api_key;
     public $mail_lawyer_invitation_subject;
     public $mail_lawyer_invitation_body;
     public $mail_user_welcome_subject;
@@ -80,6 +81,7 @@ class GlobalSettings extends Component
         $this->mail_encryption = $settings['mail_encryption'] ?? 'tls';
         $this->mail_from_address = $settings['mail_from_address'] ?? '';
         $this->mail_from_name = $settings['mail_from_name'] ?? '';
+        $this->resend_api_key = $settings['resend_api_key'] ?? '';
         $this->mail_lawyer_invitation_subject = $settings['mail_lawyer_invitation_subject'] ?? 'Invitación al Despacho {despacho} - Diogenes';
         $this->mail_lawyer_invitation_body = $settings['mail_lawyer_invitation_body'] ?? "¡Hola {nombre}!\n\nHas sido invitado a colaborar en el despacho **{despacho}**. A partir de ahora podrás gestionar tus expedientes y agenda de forma segura en nuestra plataforma.\n\nTu acceso ha sido configurado correctamente.";
         $this->mail_user_welcome_subject = $settings['mail_user_welcome_subject'] ?? 'Bienvenido a Diogenes - Tu despacho en la nube';
@@ -129,6 +131,7 @@ class GlobalSettings extends Component
             'mail_encryption' => $this->mail_encryption,
             'mail_from_address' => $this->mail_from_address,
             'mail_from_name' => $this->mail_from_name,
+            'resend_api_key' => $this->resend_api_key,
             'mail_lawyer_invitation_subject' => $this->mail_lawyer_invitation_subject,
             'mail_lawyer_invitation_body' => $this->mail_lawyer_invitation_body,
             'mail_user_welcome_subject' => $this->mail_user_welcome_subject,
@@ -281,39 +284,58 @@ class GlobalSettings extends Component
             return;
         }
 
-        if (empty($this->mail_host) || empty($this->mail_username) || empty($this->mail_password)) {
-            session()->flash('error', 'Debe configurar los datos del servidor SMTP primero.');
-            return;
+        if ($this->mail_mailer === 'smtp') {
+            if (empty($this->mail_host) || empty($this->mail_username) || empty($this->mail_password)) {
+                session()->flash('error', 'Debe configurar los datos del servidor SMTP primero.');
+                return;
+            }
+        } elseif ($this->mail_mailer === 'resend') {
+            if (empty($this->resend_api_key)) {
+                session()->flash('error', 'Debe configurar la API Key de Resend primero.');
+                return;
+            }
         }
 
         try {
             // Forzar la limpieza del mailer para que tome la nueva configuración
-            \Illuminate\Support\Facades\Mail::purge('smtp');
-
-            // Configurar temporalmente el mailer para la prueba
-            config([
-                'mail.default' => 'smtp',
-                'mail.mailers.smtp.transport' => 'smtp',
-                'mail.mailers.smtp.host' => $this->mail_host,
-                'mail.mailers.smtp.port' => $this->mail_port,
-                'mail.mailers.smtp.encryption' => $this->mail_encryption === 'none' ? null : $this->mail_encryption,
-                'mail.mailers.smtp.username' => $this->mail_username,
-                'mail.mailers.smtp.password' => $this->mail_password,
-                'mail.mailers.smtp.timeout' => 5, // Timeout corto para la prueba
-                'mail.from.address' => $this->mail_from_address,
-                'mail.from.name' => $this->mail_from_name,
-            ]);
+            if ($this->mail_mailer === 'smtp') {
+                \Illuminate\Support\Facades\Mail::purge('smtp');
+                config([
+                    'mail.default' => 'smtp',
+                    'mail.mailers.smtp.transport' => 'smtp',
+                    'mail.mailers.smtp.host' => $this->mail_host,
+                    'mail.mailers.smtp.port' => $this->mail_port,
+                    'mail.mailers.smtp.encryption' => $this->mail_encryption === 'none' ? null : $this->mail_encryption,
+                    'mail.mailers.smtp.username' => $this->mail_username,
+                    'mail.mailers.smtp.password' => $this->mail_password,
+                    'mail.mailers.smtp.timeout' => 5,
+                    'mail.from.address' => $this->mail_from_address,
+                    'mail.from.name' => $this->mail_from_name,
+                ]);
+            } else {
+                \Illuminate\Support\Facades\Mail::purge('resend');
+                config([
+                    'mail.default' => 'resend',
+                    'mail.mailers.resend.transport' => 'resend',
+                    'resend.api_key' => $this->resend_api_key,
+                    'services.resend.key' => $this->resend_api_key,
+                    'mail.from.address' => $this->mail_from_address,
+                    'mail.from.name' => $this->mail_from_name,
+                ]);
+            }
 
             $fromAddress = $this->mail_from_address;
             $fromName = $this->mail_from_name;
 
-            \Illuminate\Support\Facades\Mail::mailer('smtp')->raw('Esta es una prueba de configuración de correo desde Diogenes. Si recibes esto, tu configuración SMTP es correcta.', function ($message) use ($testEmail, $fromAddress, $fromName) {
+            $mailer = $this->mail_mailer === 'resend' ? 'resend' : 'smtp';
+
+            \Illuminate\Support\Facades\Mail::mailer($mailer)->raw('Esta es una prueba de configuración de correo desde Diogenes. Si recibes esto, tu configuración de ' . strtoupper($mailer) . ' es correcta.', function ($message) use ($testEmail, $fromAddress, $fromName) {
                 $message->to($testEmail)
                     ->from($fromAddress, $fromName)
                     ->subject('Prueba de Configuración de Correo - Diogenes');
             });
 
-            session()->flash('message', '¡Éxito! El servidor SMTP aceptó el correo y lo envió a ' . $testEmail);
+            session()->flash('message', '¡Éxito! El sistema aceptó el correo y lo envió a ' . $testEmail);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Mail Test Error: ' . $e->getMessage());
             session()->flash('error', 'Fallo en el envío: ' . $e->getMessage());

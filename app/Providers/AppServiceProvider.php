@@ -47,10 +47,16 @@ class AppServiceProvider extends ServiceProvider
                     if (!empty($mailSettings['mail_password'])) config(['mail.mailers.smtp.password' => $mailSettings['mail_password']]);
                     if (!empty($mailSettings['mail_from_address'])) config(['mail.from.address' => $mailSettings['mail_from_address']]);
                     if (!empty($mailSettings['mail_from_name'])) config(['mail.from.name' => $mailSettings['mail_from_name']]);
+                    if (!empty($mailSettings['resend_api_key'])) {
+                        config(['resend.api_key' => $mailSettings['resend_api_key']]);
+                        config(['services.resend.key' => $mailSettings['resend_api_key']]);
+                    }
                     
-                    // Asegurar que si mailer es smtp, el transport sea smtp
+                    // Asegurar que si mailer es smtp o resend, se configure correctamente
                     if (config('mail.default') === 'smtp') {
                         config(['mail.mailers.smtp.transport' => 'smtp']);
+                    } elseif (config('mail.default') === 'resend') {
+                        config(['mail.mailers.resend.transport' => 'resend']);
                     }
                 }
 

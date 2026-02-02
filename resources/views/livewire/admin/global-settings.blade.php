@@ -86,7 +86,7 @@
                     <!-- Mail Settings -->
                     <div x-show="tab === 'mail'" class="bg-white rounded-lg shadow p-6 space-y-4" style="display: none;">
                         <div class="flex justify-between items-center border-b pb-2">
-                            <h3 class="text-lg font-bold text-gray-800">Configuración de Correo (SMTP)</h3>
+                            <h3 class="text-lg font-bold text-gray-800">Configuración de Correo</h3>
                             <button type="button" 
                                     @click="let email = prompt('Ingrese el correo electrónico para la prueba:', '{{ auth()->user()->email }}'); if(email) $wire.testMail(email)" 
                                     wire:loading.attr="disabled" 
@@ -96,38 +96,61 @@
                             </button>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="md:col-span-2">
-                                <x-input-label for="mail_host" value="SMTP Host" />
-                                <x-text-input wire:model="mail_host" id="mail_host" class="mt-1 block w-full" type="text" />
-                            </div>
                             <div>
-                                <x-input-label for="mail_port" value="SMTP Port" />
-                                <x-text-input wire:model="mail_port" id="mail_port" class="mt-1 block w-full" type="text" />
-                            </div>
-                            <div>
-                                <x-input-label for="mail_encryption" value="Encryption" />
-                                <select wire:model="mail_encryption" id="mail_encryption" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                                    <option value="tls">TLS</option>
-                                    <option value="ssl">SSL</option>
-                                    <option value="none">None</option>
+                                <x-input-label for="mail_mailer" value="Método de Envío" />
+                                <select wire:model.live="mail_mailer" id="mail_mailer" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <option value="smtp">Servidor SMTP (Gmail, Outlook, etc.)</option>
+                                    <option value="resend">Resend API (Recomendado para Producción)</option>
                                 </select>
                             </div>
-                            <div>
-                                <x-input-label for="mail_username" value="Username" />
-                                <x-text-input wire:model="mail_username" id="mail_username" class="mt-1 block w-full" type="text" />
+                            
+                            <div x-show="$wire.mail_mailer === 'resend'">
+                                <x-input-label for="resend_api_key" value="Resend API Key" />
+                                <x-text-input wire:model="resend_api_key" id="resend_api_key" class="mt-1 block w-full" type="password" placeholder="re_..." />
                             </div>
-                            <div>
-                                <x-input-label for="mail_password" value="Password" />
-                                <x-text-input wire:model="mail_password" id="mail_password" class="mt-1 block w-full" type="password" />
+
+                            <div x-show="$wire.mail_mailer === 'smtp'" class="grid grid-cols-1 md:grid-cols-2 gap-4 col-span-2">
+                                <div>
+                                    <x-input-label for="mail_host" value="SMTP Host" />
+                                    <x-text-input wire:model="mail_host" id="mail_host" class="mt-1 block w-full" type="text" />
+                                </div>
+                                <div>
+                                    <x-input-label for="mail_port" value="SMTP Port" />
+                                    <x-text-input wire:model="mail_port" id="mail_port" class="mt-1 block w-full" type="text" />
+                                </div>
+                                <div>
+                                    <x-input-label for="mail_encryption" value="Encryption" />
+                                    <select wire:model="mail_encryption" id="mail_encryption" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                        <option value="tls">TLS</option>
+                                        <option value="ssl">SSL</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <x-input-label for="mail_username" value="Username" />
+                                    <x-text-input wire:model="mail_username" id="mail_username" class="mt-1 block w-full" type="text" />
+                                </div>
+                                <div>
+                                    <x-input-label for="mail_password" value="Password" />
+                                    <x-text-input wire:model="mail_password" id="mail_password" class="mt-1 block w-full" type="password" />
+                                </div>
                             </div>
+                            
                             <div>
-                                <x-input-label for="mail_from_address" value="From Address" />
+                                <x-input-label for="mail_from_address" value="From Address (Debe estar verificado en Resend)" />
                                 <x-text-input wire:model="mail_from_address" id="mail_from_address" class="mt-1 block w-full" type="email" />
                             </div>
                             <div>
                                 <x-input-label for="mail_from_name" value="From Name" />
                                 <x-text-input wire:model="mail_from_name" id="mail_from_name" class="mt-1 block w-full" type="text" />
-                            </div>
+                        </div>
+
+                        <!-- SMTP Help Note -->
+                        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p class="text-[10px] text-blue-700">
+                                <span class="font-bold">¿Error "Connection Timed Out"?</span><br>
+                                Si estás en producción y falla el puerto 587 (TLS), intenta usar el puerto <span class="font-black">465</span> con encriptación <span class="font-black">SSL</span>. Muchos proveedores de hosting bloquean el puerto 587 por defecto.
+                            </p>
                         </div>
 
                         <!-- Invitation Template Section -->
