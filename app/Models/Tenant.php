@@ -155,7 +155,7 @@ class Tenant extends Model
      */
     public function getExpedientesCountAttribute()
     {
-        return \App\Models\Expediente::where('tenant_id', $this->id)->count();
+        return \App\Models\Expediente::withoutGlobalScopes()->where('tenant_id', $this->id)->count();
     }
 
     /**
@@ -174,7 +174,7 @@ class Tenant extends Model
      */
     public function getStorageUsedBytesAttribute()
     {
-        return \App\Models\Documento::where('tenant_id', $this->id)->sum('size');
+        return \App\Models\Documento::withoutGlobalScopes()->where('tenant_id', $this->id)->sum('size');
     }
 
     /**

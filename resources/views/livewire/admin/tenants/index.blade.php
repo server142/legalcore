@@ -146,10 +146,28 @@
                                                 {{ $tenant->plan === 'trial' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
                                                 {{ $tenant->planRelation ? $tenant->planRelation->name : ucfirst($tenant->plan) }}
                                             </span>
-                                            <div class="flex space-x-2 text-[10px] mt-1">
-                                                <span class="text-gray-600 font-bold" title="Usuarios totales">U: {{ $tenant->users->count() }}</span>
-                                                <span class="text-indigo-600 font-bold" title="Expedientes totales">E: {{ $tenant->expedientes_count }}</span>
-                                                <span class="text-amber-600 font-bold" title="Almacenamiento usado">S: {{ $tenant->storage_usage_formatted }}</span>
+                                            <div class="flex flex-col space-y-1.5 mt-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                                <div class="flex items-center text-[11px]" title="Usuarios totales">
+                                                    <div class="w-5 h-5 flex items-center justify-center bg-white rounded-md border border-slate-200 mr-2 shadow-sm">
+                                                        <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                                    </div>
+                                                    <span class="text-slate-700 font-bold">{{ $tenant->users->count() }}</span>
+                                                    <span class="text-slate-400 ml-1">Usuarios</span>
+                                                </div>
+                                                <div class="flex items-center text-[11px]" title="Expedientes totales">
+                                                    <div class="w-5 h-5 flex items-center justify-center bg-white rounded-md border border-slate-200 mr-2 shadow-sm">
+                                                        <svg class="w-3 h-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                                                    </div>
+                                                    <span class="text-slate-700 font-bold">{{ $tenant->expedientes_count }}</span>
+                                                    <span class="text-slate-400 ml-1">Expedientes</span>
+                                                </div>
+                                                <div class="flex items-center text-[11px]" title="Almacenamiento usado">
+                                                    <div class="w-5 h-5 flex items-center justify-center bg-white rounded-md border border-slate-200 mr-2 shadow-sm">
+                                                        <svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 1.1.9 2 2 2h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2zm0 0h16M12 11h4m-4 4h4"></path></svg>
+                                                    </div>
+                                                    <span class="text-slate-700 font-bold">{{ $tenant->storage_usage_formatted }}</span>
+                                                    <span class="text-slate-400 ml-1">Disco</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
