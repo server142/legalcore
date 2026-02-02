@@ -21,11 +21,20 @@ class EventoObserver
     public function created(Evento $evento): void
     {
         $user = $evento->user;
-        if (!$user || !$user->google_access_token) {
+        $hasServiceAccount = config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'));
+        
+        // Bloqueo original eliminado: Ahora permitimos si hay Cuenta de Servicio o Token de Usuario
+        if (!$hasServiceAccount && (!$user || !$user->google_access_token)) {
+            Log::info("Sincronización de Google Calendar omitida: No hay Cuenta de Servicio ni Token de Usuario.");
             return;
         }
 
         $attendees = $this->getAttendeesEmails($evento);
+
+        // Si usamos Cuenta de Servicio, el creador también debe ser asistente para que le aparezca
+        if ($hasServiceAccount && $user && !in_array($user->calendar_email ?? $user->email, $attendees)) {
+            $attendees[] = $user->calendar_email ?? $user->email;
+        }
 
         $eventData = [
             'title' => $evento->titulo,
@@ -36,15 +45,16 @@ class EventoObserver
         ];
 
         try {
+            // El servicio ya maneja internamente si usa Cuenta de Servicio o Token de Usuario
             $eventId = $this->googleService->createEvent($user, $eventData);
             
             if ($eventId) {
                 $evento->google_event_id = $eventId;
                 $evento->saveQuietly();
-                Log::info("Evento creado en Google Calendar: {$eventId} con " . count($attendees) . " asistentes");
+                Log::info("Evento sincronizado con Google Calendar: {$eventId} para el usuario {$user->email}");
             }
         } catch (\Exception $e) {
-            Log::error("Error creando evento para {$user->email}: " . $e->getMessage());
+            Log::error("Error sincronizando evento Google para {$user->email}: " . $e->getMessage());
         }
     }
 
@@ -59,11 +69,18 @@ class EventoObserver
         }
 
         $user = $evento->user;
-        if (!$user || !$user->google_access_token) {
+        $hasServiceAccount = config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'));
+
+        if (!$hasServiceAccount && (!$user || !$user->google_access_token)) {
             return;
         }
 
         $attendees = $this->getAttendeesEmails($evento);
+
+        // Si usamos Cuenta de Servicio, asegurar que el creador esté invitado
+        if ($hasServiceAccount && $user && !in_array($user->calendar_email ?? $user->email, $attendees)) {
+            $attendees[] = $user->calendar_email ?? $user->email;
+        }
 
         $eventData = [
             'title' => $evento->titulo,
@@ -75,7 +92,7 @@ class EventoObserver
 
         try {
             $this->googleService->updateEvent($user, $evento->google_event_id, $eventData);
-            Log::info("Evento actualizado en Google Calendar: {$evento->id} con " . count($attendees) . " asistentes");
+            Log::info("Evento actualizado en Google Calendar: {$evento->google_event_id}");
         } catch (\Exception $e) {
             Log::error("Error actualizando evento {$evento->id} en Google: " . $e->getMessage());
         }
@@ -103,7 +120,10 @@ class EventoObserver
             ->reject(function ($u) use ($evento) {
                 return $u->id === $evento->user_id;
             })
-            ->pluck('email')
+            ->map(function ($u) {
+                return $u->calendar_email ?? $u->email;
+            })
+            ->filter()
             ->toArray();
     }
 
@@ -113,9 +133,16 @@ class EventoObserver
     public function deleted(Evento $evento): void
     {
         if ($evento->google_event_id) {
+            $user = $evento->user;
+            $hasServiceAccount = config('services.google.service_account_json') && file_exists(config('services.google.service_account_json'));
+
+            if (!$hasServiceAccount && (!$user || !$user->google_access_token)) {
+                return;
+            }
+
             try {
-                $this->googleService->deleteEvent($evento->user, $evento->google_event_id);
-                Log::info("Evento eliminado de Google Calendar: {$evento->id}");
+                $this->googleService->deleteEvent($user, $evento->google_event_id);
+                Log::info("Evento eliminado de Google Calendar: {$evento->google_event_id}");
             } catch (\Exception $e) {
                 Log::error("Error eliminando evento {$evento->id} de Google: " . $e->getMessage());
             }
