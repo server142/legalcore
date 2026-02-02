@@ -163,6 +163,23 @@ class Index extends Component
         $this->dispatch('notify', 'Usuario eliminado exitosamente');
         $this->reset(['userToDeleteId']);
     }
+
+    public function resendInvitation($id)
+    {
+        $user = User::findOrFail($id);
+        
+        // Generamos una contraseña temporal nueva para el reenvío
+        $newPassword = \Illuminate\Support\Str::random(10);
+        $user->update(['password' => Hash::make($newPassword)]);
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\LawyerInvitationMail($user, $newPassword));
+            $this->dispatch('notify', 'Invitación reenviada correctamente con nueva contraseña temporal.');
+        } catch (\Exception $e) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Error al reenviar: ' . $e->getMessage()]);
+        }
+    }
+
     public function render()
     {
         $users = User::where('name', 'like', '%'.$this->search.'%')

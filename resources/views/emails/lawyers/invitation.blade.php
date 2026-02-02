@@ -8,22 +8,17 @@
 {!! nl2br(e($bodyStr)) !!}
 
 <x-mail::button :url="config('app.url') . '/login'">
-Comenzar ahora
+Acceder a mi Cuenta
 </x-mail::button>
 
-**Tus datos de acceso:**
-* **Usuario:** {{ $user->email }}
-@if($password)
+**Detalles de tu cuenta:**
+* **Email:** {{ $user->email }}
 * **Contraseña Temporal:** {{ $password }}
-@endif
 
-<x-mail::panel>
-**¿Necesitas ayuda?**
-Recuerda que tienes a tu disposición nuestro Asistente de IA y el Manual de Usuario dentro de la plataforma para resolver cualquier duda.
-</x-mail::panel>
+*Por favor, cambia tu contraseña una vez que hayas ingresado por primera vez.*
 
-¡Gracias por confiar en nosotros!
+Si no esperabas esta invitación, puedes ignorar este correo.
 
 Atentamente,<br>
-El equipo de {{ config('app.name') }}
+El equipo de {{ config('app.name') }} & {{ $despachoName }}
 </x-mail::message>

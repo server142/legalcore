@@ -14,6 +14,31 @@
                 </div>
             @endif
 
+            <!-- Stats Cards (Top Position - Premium Responsive Row) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+                <div class="bg-green-600 p-5 rounded-2xl shadow-sm text-white flex flex-col justify-between h-32 transform transition hover:scale-[1.02]">
+                    <h3 class="text-[10px] font-bold uppercase opacity-80 tracking-widest truncate">Total Tenants</h3>
+                    <p class="text-3xl font-black">{{ \App\Models\Tenant::count() }}</p>
+                </div>
+                <div class="bg-blue-600 p-5 rounded-2xl shadow-sm text-white flex flex-col justify-between h-32 transform transition hover:scale-[1.02]">
+                    <h3 class="text-[10px] font-bold uppercase opacity-80 tracking-widest truncate">En Trial</h3>
+                    <p class="text-3xl font-black">{{ \App\Models\Tenant::where('plan', 'trial')->count() }}</p>
+                </div>
+                <div class="bg-emerald-600 p-5 rounded-2xl shadow-sm text-white flex flex-col justify-between h-32 transform transition hover:scale-[1.02]">
+                    <h3 class="text-[10px] font-bold uppercase opacity-80 tracking-widest truncate">Activos Pagados</h3>
+                    <p class="text-3xl font-black">{{ \App\Models\Tenant::where('plan', '!=', 'trial')->where('is_active', true)->count() }}</p>
+                </div>
+                <div class="bg-rose-600 p-5 rounded-2xl shadow-sm text-white flex flex-col justify-between h-32 transform transition hover:scale-[1.02]">
+                    <h3 class="text-[10px] font-bold uppercase opacity-80 tracking-widest truncate">Trials Expirados</h3>
+                    <p class="text-3xl font-black">{{ \App\Models\Tenant::where('plan', 'trial')->where('trial_ends_at', '<', now())->count() }}</p>
+                </div>
+                <div class="bg-indigo-600 p-5 rounded-2xl shadow-sm text-white flex flex-col justify-between h-32 transform transition hover:scale-[1.02] relative overflow-hidden">
+                    <h3 class="text-[10px] font-bold uppercase opacity-80 tracking-widest truncate">Activos Hoy</h3>
+                    <p class="text-3xl font-black">{{ \App\Models\AuditLog::withoutGlobalScopes()->where('created_at', '>=', now()->startOfDay())->distinct('tenant_id')->count('tenant_id') }}</p>
+                    <svg class="absolute right-0 bottom-0 w-12 h-12 text-white opacity-10 -mb-3 -mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
+                </div>
+            </div>
+
             <!-- Filters -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -39,31 +64,6 @@
                 </div>
             </div>
 
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <div class="text-sm text-gray-500 mb-1">Total Tenants</div>
-                    <div class="text-3xl font-bold text-gray-900">{{ \App\Models\Tenant::count() }}</div>
-                </div>
-                <div class="bg-blue-50 p-6 rounded-xl shadow-sm border border-blue-100">
-                    <div class="text-sm text-blue-600 mb-1">En Trial</div>
-                    <div class="text-3xl font-bold text-blue-900">{{ \App\Models\Tenant::where('plan', 'trial')->count() }}</div>
-                </div>
-                <div class="bg-green-50 p-6 rounded-xl shadow-sm border border-green-100">
-                    <div class="text-sm text-green-600 mb-1">Activos Pagados</div>
-                    <div class="text-3xl font-bold text-green-900">{{ \App\Models\Tenant::where('plan', '!=', 'trial')->where('is_active', true)->count() }}</div>
-                </div>
-                <div class="bg-red-50 p-6 rounded-xl shadow-sm border border-red-100">
-                    <div class="text-sm text-red-600 mb-1">Trials Expirados</div>
-                    <div class="text-3xl font-bold text-red-900">{{ \App\Models\Tenant::where('plan', 'trial')->where('trial_ends_at', '<', now())->count() }}</div>
-                </div>
-                <div class="bg-indigo-50 p-6 rounded-xl shadow-sm border border-indigo-100">
-                    <div class="text-sm text-indigo-600 mb-1">Activos Hoy (Logs)</div>
-                    <div class="text-3xl font-bold text-indigo-900">
-                        {{ \App\Models\AuditLog::withoutGlobalScopes()->where('created_at', '>=', now()->startOfDay())->distinct('tenant_id')->count('tenant_id') }}
-                    </div>
-                </div>
-            </div>
 
             <!-- Tenants Table -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">

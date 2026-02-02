@@ -45,6 +45,11 @@
                                             <div class="text-sm text-gray-500">{{ $abogado->email }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button wire:click="resendInvitation({{ $abogado->id }})" 
+                                                    wire:confirm="¿Estás seguro de que deseas reenviar la invitación? Se generará una nueva contraseña temporal."
+                                                    class="text-green-600 hover:text-green-900 mr-3" title="Reenviar Invitación">
+                                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                                            </button>
                                             <button wire:click="edit({{ $abogado->id }})" class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
                                             <button wire:click="confirmDelete({{ $abogado->id }})" class="text-red-600 hover:text-red-900">Eliminar</button>
                                         </td>

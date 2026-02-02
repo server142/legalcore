@@ -129,6 +129,55 @@
                                 <x-text-input wire:model="mail_from_name" id="mail_from_name" class="mt-1 block w-full" type="text" />
                             </div>
                         </div>
+
+                        <!-- Invitation Template Section -->
+                        <div class="mt-8 pt-6 border-t border-gray-100 italic">
+                            <h4 class="text-sm font-bold text-gray-700 mb-4 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                Plantilla de Invitación (Abogados)
+                            </h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <x-input-label for="mail_lawyer_invitation_subject" value="Asunto del Correo" />
+                                    <x-text-input wire:model="mail_lawyer_invitation_subject" id="mail_lawyer_invitation_subject" class="mt-1 block w-full" type="text" />
+                                </div>
+                                <div>
+                                    <x-input-label for="mail_lawyer_invitation_body" value="Cuerpo del Mensaje (Markdown soportado)" />
+                                    <textarea wire:model="mail_lawyer_invitation_body" id="mail_lawyer_invitation_body" rows="6" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></textarea>
+                                    <div class="mt-2 flex space-x-4">
+                                        <p class="text-[10px] text-gray-500"><strong>Placeholders:</strong></p>
+                                        <code class="text-[9px] bg-gray-100 px-1 rounded">{nombre}</code>
+                                        <code class="text-[9px] bg-gray-100 px-1 rounded">{email}</code>
+                                        <code class="text-[9px] bg-gray-100 px-1 rounded">{password}</code>
+                                        <code class="text-[9px] bg-gray-100 px-1 rounded">{despacho}</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- User Welcome Template Section -->
+                        <div class="mt-8 pt-6 border-t border-gray-100 italic">
+                            <h4 class="text-sm font-bold text-gray-700 mb-4 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z"></path></svg>
+                                Plantilla de Bienvenida (Nuevos Usuarios)
+                            </h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <x-input-label for="mail_user_welcome_subject" value="Asunto del Correo" />
+                                    <x-text-input wire:model="mail_user_welcome_subject" id="mail_user_welcome_subject" class="mt-1 block w-full" type="text" />
+                                </div>
+                                <div>
+                                    <x-input-label for="mail_user_welcome_body" value="Cuerpo del Mensaje (Markdown soportado)" />
+                                    <textarea wire:model="mail_user_welcome_body" id="mail_user_welcome_body" rows="6" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></textarea>
+                                    <div class="mt-2 flex space-x-4">
+                                        <p class="text-[10px] text-gray-500"><strong>Placeholders:</strong></p>
+                                        <code class="text-[9px] bg-gray-100 px-1 rounded">{nombre}</code>
+                                        <code class="text-[9px] bg-gray-100 px-1 rounded">{email}</code>
+                                        <code class="text-[9px] bg-gray-100 px-1 rounded">{password}</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- AI Settings -->

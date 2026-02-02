@@ -78,10 +78,9 @@ class Index extends Component
         $abogado->assignRole('abogado');
 
         try {
-            $abogado->notify(new \App\Notifications\WelcomeLawyer($this->password));
+            \Illuminate\Support\Facades\Mail::to($abogado->email)->send(new \App\Mail\LawyerInvitationMail($abogado, $this->password));
         } catch (\Exception $e) {
-            // Log error but don't fail the request
-            \Illuminate\Support\Facades\Log::error('Error sending welcome email: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Error sending welcome email to lawyer: ' . $e->getMessage());
         }
 
         $this->showModal = false;
@@ -129,5 +128,21 @@ class Index extends Component
         $this->confirmingDeletion = false;
         $this->dispatch('notify', 'Abogado eliminado exitosamente');
         $this->reset(['itemToDeleteId']);
+    }
+
+    public function resendInvitation($id)
+    {
+        $abogado = User::findOrFail($id);
+        
+        // Generamos una contraseña temporal nueva para el reenvío
+        $newPassword = \Illuminate\Support\Str::random(10);
+        $abogado->update(['password' => Hash::make($newPassword)]);
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($abogado->email)->send(new \App\Mail\LawyerInvitationMail($abogado, $newPassword));
+            $this->dispatch('notify', 'Invitación reenviada correctamente con nueva contraseña temporal.');
+        } catch (\Exception $e) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Error al reenviar: ' . $e->getMessage()]);
+        }
     }
 }

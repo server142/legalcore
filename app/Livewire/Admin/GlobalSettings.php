@@ -28,6 +28,10 @@ class GlobalSettings extends Component
     public $mail_encryption;
     public $mail_from_address;
     public $mail_from_name;
+    public $mail_lawyer_invitation_subject;
+    public $mail_lawyer_invitation_body;
+    public $mail_user_welcome_subject;
+    public $mail_user_welcome_body;
 
     // File Upload & Processing Settings
     public $max_file_size_mb = 100;
@@ -76,6 +80,10 @@ class GlobalSettings extends Component
         $this->mail_encryption = $settings['mail_encryption'] ?? 'tls';
         $this->mail_from_address = $settings['mail_from_address'] ?? '';
         $this->mail_from_name = $settings['mail_from_name'] ?? '';
+        $this->mail_lawyer_invitation_subject = $settings['mail_lawyer_invitation_subject'] ?? 'Invitación al Despacho {despacho} - Diogenes';
+        $this->mail_lawyer_invitation_body = $settings['mail_lawyer_invitation_body'] ?? "¡Hola {nombre}!\n\nHas sido invitado a colaborar en el despacho **{despacho}**. A partir de ahora podrás gestionar tus expedientes y agenda de forma segura en nuestra plataforma.\n\nTu acceso ha sido configurado correctamente.";
+        $this->mail_user_welcome_subject = $settings['mail_user_welcome_subject'] ?? 'Bienvenido a Diogenes - Tu despacho en la nube';
+        $this->mail_user_welcome_body = $settings['mail_user_welcome_body'] ?? "¡Bienvenido a bordo {nombre}!\n\nEstamos emocionados de tenerte con nosotros. Diogenes es tu nuevo aliado para la gestión legal.\n\n**Primeros pasos:**\n1. Explora el Dashboard para ver tus próximas citas.\n2. Crea tu primer Expediente en la sección correspondiente.\n3. Prueba nuestra Inteligencia Artificial para analizar documentos.";
 
         $this->max_file_size_mb = $settings['max_file_size_mb'] ?? 100;
         
@@ -121,6 +129,10 @@ class GlobalSettings extends Component
             'mail_encryption' => $this->mail_encryption,
             'mail_from_address' => $this->mail_from_address,
             'mail_from_name' => $this->mail_from_name,
+            'mail_lawyer_invitation_subject' => $this->mail_lawyer_invitation_subject,
+            'mail_lawyer_invitation_body' => $this->mail_lawyer_invitation_body,
+            'mail_user_welcome_subject' => $this->mail_user_welcome_subject,
+            'mail_user_welcome_body' => $this->mail_user_welcome_body,
             'max_file_size_mb' => $this->max_file_size_mb,
             'ocr_mode' => $this->ocr_mode,
             'ai_provider' => $this->ai_provider,

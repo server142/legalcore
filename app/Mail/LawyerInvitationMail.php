@@ -10,7 +10,7 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 
-class UserCreatedMail extends Mailable
+class LawyerInvitationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -18,28 +18,31 @@ class UserCreatedMail extends Mailable
     public $password;
     public $subjectStr;
     public $bodyStr;
+    public $despachoName;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(User $user, $password = null)
+    public function __construct(User $user, $password)
     {
         $this->user = $user;
         $this->password = $password;
+        $this->despachoName = $user->tenant ? $user->tenant->name : 'Nuestra Firma';
 
         // Load settings from DB
         $settings = DB::table('global_settings')
-            ->whereIn('key', ['mail_user_welcome_subject', 'mail_user_welcome_body'])
+            ->whereIn('key', ['mail_lawyer_invitation_subject', 'mail_lawyer_invitation_body'])
             ->pluck('value', 'key');
 
-        $this->subjectStr = $settings['mail_user_welcome_subject'] ?? 'Bienvenido a Diogenes - Tu despacho en la nube';
-        $this->bodyStr = $settings['mail_user_welcome_body'] ?? "¡Bienvenido a bordo {nombre}!\n\nEstamos emocionados de tenerte con nosotros.";
+        $this->subjectStr = $settings['mail_lawyer_invitation_subject'] ?? 'Invitación al Despacho {despacho} - Diogenes';
+        $this->bodyStr = $settings['mail_lawyer_invitation_body'] ?? "¡Hola {nombre}!\n\nHas sido invitado a colaborar en el despacho **{despacho}**.";
 
         // Replace placeholders
         $replacements = [
             '{nombre}' => $user->name,
             '{email}' => $user->email,
-            '{password}' => $password ?? '****** (la que elegiste al registrarte)',
+            '{password}' => $password,
+            '{despacho}' => $this->despachoName,
         ];
 
         $this->subjectStr = str_replace(array_keys($replacements), array_values($replacements), $this->subjectStr);
@@ -62,7 +65,7 @@ class UserCreatedMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.users.created',
+            markdown: 'emails.lawyers.invitation',
         );
     }
 

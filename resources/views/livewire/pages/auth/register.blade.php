@@ -83,6 +83,13 @@ new #[Layout('layouts.guest')] class extends Component
             // 5. Disparar evento de registro
             event(new Registered($user));
 
+            // Enviar correo de bienvenida profesional
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\UserCreatedMail($user));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Error enviando correo de bienvenida (auto-registro): ' . $e->getMessage());
+            }
+
             // 6. Autenticar el usuario
             Auth::login($user);
 
