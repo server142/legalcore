@@ -248,7 +248,7 @@
                         </div>
 
                         <!-- Footer Input -->
-                        <div class="border-t border-gray-200 px-4 py-3 sm:px-6 sm:py-6 bg-white pb-safe"
+                        <div class="border-t border-gray-200 px-4 py-3 sm:px-6 sm:py-6 bg-white pb-safe flex-shrink-0"
                              x-data="{ 
                                 recording: false,
                                 recognition: null,

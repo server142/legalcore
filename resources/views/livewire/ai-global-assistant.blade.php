@@ -3,15 +3,35 @@
 </x-slot>
 
 <div 
+    id="global-ai-container"
     x-data="{ 
         mobileSidebarOpen: false, 
         isMaximized: false 
     }"
-    class="bg-white border border-gray-200 overflow-hidden transition-all duration-300 ease-in-out flex shadow-sm rounded-xl"
+    class="bg-white border-x border-b border-gray-200 overflow-hidden transition-all duration-300 ease-in-out flex shadow-sm"
     :class="isMaximized 
         ? 'fixed inset-0 z-50 rounded-none h-screen w-screen m-0' 
-        : 'relative h-[80vh] w-full'"
+        : 'relative w-full'"
+    style="height: calc(100vh - 64px);"
 >
+    @push('styles')
+    <style>
+        /* Bloqueamos el scroll del contenedor principal de la app */
+        main { 
+            overflow: hidden !important; 
+            padding: 0 !important; 
+            height: calc(100vh - 64px) !important;
+        }
+        /* Ajuste para que el scroll del main no interfiera */
+        body { overflow: hidden; }
+        
+        /* Personalización para que el área de mensajes ocupe todo el espacio sobrante */
+        #chat-messages {
+            flex: 1 1 0%;
+            overflow-y: auto;
+        }
+    </style>
+    @endpush
     
     <!-- 1. SIDEBAR HISTORIAL (Diseño Restaurado w-48) -->
     <div class="hidden md:flex md:w-48 md:flex-col bg-gray-50 border-r border-gray-200 flex-shrink-0">
@@ -105,8 +125,7 @@
         </div>
 
         <!-- Messages Scroller -->
-        <!-- FIX APLICADO: 'min-h-0' permite al flex-item encogerse y activar el scroll -->
-        <div id="chat-messages" class="flex-1 overflow-y-auto min-h-0 p-4 lg:p-8 space-y-6 scroll-smooth bg-gradient-to-b from-white to-gray-50/30">
+        <div id="chat-messages" class="flex-1 overflow-y-auto min-h-0 p-4 lg:p-6 space-y-6 scroll-smooth bg-gray-50/50">
             @if(empty($messages))
                 <div class="h-full flex flex-col items-center justify-center select-none pb-20">
                     <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mb-6 shadow-sm border border-gray-100">
@@ -131,7 +150,7 @@
 
              <div wire:loading wire:target="sendMessage" class="flex justify-start">
                  <div class="bg-white border border-gray-100 rounded-2xl px-4 py-2 flex items-center gap-2 shadow-sm">
-                    <span class="text-xs text-indigo-500 font-medium">Diogenes está pensando</span>
+                    <span class="text-xs text-indigo-500 font-medium italic">Diogenes está procesando...</span>
                     <span class="flex gap-1">
                         <span class="w-1 h-1 bg-indigo-400 rounded-full animate-bounce"></span>
                         <span class="w-1 h-1 bg-indigo-400 rounded-full animate-bounce delay-75"></span>
@@ -142,7 +161,7 @@
         </div>
 
         <!-- Input Area (Fixed Bottom) -->
-        <div class="p-4 lg:p-5 bg-white border-t border-gray-100 z-10 w-full">
+        <div class="px-4 py-4 lg:px-8 bg-white border-t border-gray-100 flex-shrink-0 z-10 w-full shadow-[0_-4px_12px_-2px_rgba(0,0,0,0.05)]">
             <div class="max-w-3xl mx-auto w-full">
                 
                 <!-- Input Container -->
