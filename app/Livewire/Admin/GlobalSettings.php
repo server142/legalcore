@@ -317,7 +317,6 @@ class GlobalSettings extends Component
                 config([
                     'mail.default' => 'resend',
                     'mail.mailers.resend.transport' => 'resend',
-                    'resend.api_key' => $this->resend_api_key,
                     'services.resend.key' => $this->resend_api_key,
                     'mail.from.address' => $this->mail_from_address,
                     'mail.from.name' => $this->mail_from_name,

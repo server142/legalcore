@@ -48,7 +48,6 @@ class AppServiceProvider extends ServiceProvider
                     if (!empty($mailSettings['mail_from_address'])) config(['mail.from.address' => $mailSettings['mail_from_address']]);
                     if (!empty($mailSettings['mail_from_name'])) config(['mail.from.name' => $mailSettings['mail_from_name']]);
                     if (!empty($mailSettings['resend_api_key'])) {
-                        config(['resend.api_key' => $mailSettings['resend_api_key']]);
                         config(['services.resend.key' => $mailSettings['resend_api_key']]);
                     }
                     
