@@ -14,47 +14,81 @@
                 </div>
             @endif
 
-            <!-- Stats Cards (Minimalist Premium Row - Forced Layout) -->
-            <div class="flex flex-col md:flex-row gap-4 mb-8 w-full">
-                <!-- Card Item -->
-                <div class="flex-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
-                    <h3 class="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-3">Total Tenants</h3>
-                    <div class="flex items-end justify-between">
-                        <span class="text-4xl font-light text-slate-900 leading-none">{{ \App\Models\Tenant::count() }}</span>
-                        <div class="h-1.5 w-8 bg-slate-100 rounded-full"></div>
+            <!-- Stats Cards (Modern Premium Layout) -->
+            <div class="flex flex-col lg:flex-row gap-6 mb-10 w-full overflow-x-auto pb-2">
+                <!-- Total Tenants -->
+                <div class="flex-1 bg-white min-h-[130px] p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-500 group">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Total Tenants</span>
+                        <div class="p-2 bg-slate-50 rounded-xl group-hover:bg-slate-100 transition-colors">
+                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-bold text-slate-900 tracking-tight">{{ \App\Models\Tenant::count() }}</span>
+                        <span class="text-xs font-medium text-slate-400">registrados</span>
                     </div>
                 </div>
-                <!-- Card Item -->
-                <div class="flex-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
-                    <h3 class="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-3">En Trial</h3>
-                    <div class="flex items-end justify-between">
-                        <span class="text-4xl font-light text-blue-600 leading-none">{{ \App\Models\Tenant::where('plan', 'trial')->count() }}</span>
-                        <div class="h-1.5 w-8 bg-blue-100 rounded-full"></div>
+
+                <!-- En Trial -->
+                <div class="flex-1 bg-white min-h-[130px] p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-500 group">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[11px] font-bold text-blue-500 uppercase tracking-[0.2em]">En Trial</span>
+                        <div class="p-2 bg-blue-50 rounded-xl group-hover:bg-blue-100 transition-colors">
+                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-bold text-slate-900 tracking-tight">{{ \App\Models\Tenant::where('plan', 'trial')->count() }}</span>
+                        <span class="text-xs font-medium text-blue-400">en prueba</span>
+                    </div>
+                    <div class="mt-4 w-full bg-slate-100 h-1 rounded-full overflow-hidden">
+                        <div class="bg-blue-500 h-full w-1/3 opacity-30"></div>
                     </div>
                 </div>
-                <!-- Card Item -->
-                <div class="flex-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
-                    <h3 class="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-3">Activos Pagados</h3>
-                    <div class="flex items-end justify-between">
-                        <span class="text-4xl font-light text-emerald-600 leading-none">{{ \App\Models\Tenant::where('plan', '!=', 'trial')->where('is_active', true)->count() }}</span>
-                        <div class="h-1.5 w-8 bg-emerald-100 rounded-full"></div>
+
+                <!-- Activos Pagados -->
+                <div class="flex-1 bg-white min-h-[130px] p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-500 group">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[11px] font-bold text-emerald-500 uppercase tracking-[0.2em]">Activos Pagados</span>
+                        <div class="p-2 bg-emerald-50 rounded-xl group-hover:bg-emerald-100 transition-colors">
+                            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-bold text-slate-900 tracking-tight">{{ \App\Models\Tenant::where('plan', '!=', 'trial')->where('is_active', true)->count() }}</span>
+                        <span class="text-xs font-medium text-emerald-400">premium</span>
                     </div>
                 </div>
-                <!-- Card Item -->
-                <div class="flex-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
-                    <h3 class="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-3">Trials Expirados</h3>
-                    <div class="flex items-end justify-between">
-                        <span class="text-4xl font-light text-rose-500 leading-none">{{ \App\Models\Tenant::where('plan', 'trial')->where('trial_ends_at', '<', now())->count() }}</span>
-                        <div class="h-1.5 w-8 bg-rose-100 rounded-full"></div>
+
+                <!-- Trials Expirados -->
+                <div class="flex-1 bg-white min-h-[130px] p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-500 group">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[11px] font-bold text-rose-500 uppercase tracking-[0.2em]">Trials Expirados</span>
+                        <div class="p-2 bg-rose-50 rounded-xl group-hover:bg-rose-100 transition-colors">
+                            <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-bold text-slate-900 tracking-tight">{{ \App\Models\Tenant::where('plan', 'trial')->where('trial_ends_at', '<', now())->count() }}</span>
+                        <span class="text-xs font-medium text-rose-400">por vencer</span>
                     </div>
                 </div>
-                <!-- Card Item -->
-                <div class="flex-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 relative">
-                    <h3 class="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-3">Activos Hoy</h3>
-                    <div class="flex items-end justify-between">
-                        <span class="text-4xl font-light text-indigo-600 leading-none">{{ \App\Models\AuditLog::withoutGlobalScopes()->where('created_at', '>=', now()->startOfDay())->distinct('tenant_id')->count('tenant_id') }}</span>
-                        <div class="h-1.5 w-8 bg-indigo-100 rounded-full"></div>
+
+                <!-- Activos Hoy -->
+                <div class="flex-1 bg-white min-h-[130px] p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-500 group relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[11px] font-bold text-indigo-500 uppercase tracking-[0.2em]">Activos Hoy</span>
+                        <div class="p-2 bg-indigo-50 rounded-xl group-hover:bg-indigo-100 transition-colors">
+                            <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
                     </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-bold text-slate-900 tracking-tight">{{ \App\Models\AuditLog::withoutGlobalScopes()->where('created_at', '>=', now()->startOfDay())->distinct('tenant_id')->count('tenant_id') }}</span>
+                        <span class="text-xs font-medium text-indigo-400">actividad</span>
+                    </div>
+                    <!-- Subtle background pulse -->
+                    <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-indigo-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
                 </div>
             </div>
 
