@@ -4,6 +4,10 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Services\MailSettingsService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,43 +28,15 @@ class AppServiceProvider extends ServiceProvider
 
         \App\Models\Evento::observe(\App\Observers\EventoObserver::class);
 
-        \Illuminate\Support\Facades\Schema::defaultStringLength(191);
+        Schema::defaultStringLength(191);
 
-        // Override Mail Config from DB
         try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('global_settings')) {
-                // Mail Settings
-                $mailSettings = \Illuminate\Support\Facades\DB::table('global_settings')
-                    ->where('key', 'like', 'mail_%')
-                    ->pluck('value', 'key')
-                    ->toArray();
-
-                if (!empty($mailSettings)) {
-                    if (!empty($mailSettings['mail_mailer'])) config(['mail.default' => $mailSettings['mail_mailer']]);
-                    if (!empty($mailSettings['mail_host'])) config(['mail.mailers.smtp.host' => $mailSettings['mail_host']]);
-                    if (!empty($mailSettings['mail_port'])) config(['mail.mailers.smtp.port' => (int) $mailSettings['mail_port']]);
-                    if (!empty($mailSettings['mail_encryption'])) {
-                        $enc = $mailSettings['mail_encryption'] === 'none' ? null : $mailSettings['mail_encryption'];
-                        config(['mail.mailers.smtp.encryption' => $enc]);
-                    }
-                    if (!empty($mailSettings['mail_username'])) config(['mail.mailers.smtp.username' => $mailSettings['mail_username']]);
-                    if (!empty($mailSettings['mail_password'])) config(['mail.mailers.smtp.password' => $mailSettings['mail_password']]);
-                    if (!empty($mailSettings['mail_from_address'])) config(['mail.from.address' => $mailSettings['mail_from_address']]);
-                    if (!empty($mailSettings['mail_from_name'])) config(['mail.from.name' => $mailSettings['mail_from_name']]);
-                    if (!empty($mailSettings['resend_api_key'])) {
-                        config(['services.resend.key' => $mailSettings['resend_api_key']]);
-                    }
-                    
-                    // Asegurar que si mailer es smtp o resend, se configure correctamente
-                    if (config('mail.default') === 'smtp') {
-                        config(['mail.mailers.smtp.transport' => 'smtp']);
-                    } elseif (config('mail.default') === 'resend') {
-                        config(['mail.mailers.resend.transport' => 'resend']);
-                    }
-                }
+            if (Schema::hasTable('global_settings')) {
+                // Dynamic Mail Settings
+                MailSettingsService::applySettings();
 
                 // Stripe Settings
-                $stripeSettings = \Illuminate\Support\Facades\DB::table('global_settings')
+                $stripeSettings = DB::table('global_settings')
                     ->whereIn('key', ['stripe_key', 'stripe_secret', 'stripe_webhook_secret'])
                     ->pluck('value', 'key')
                     ->toArray();
@@ -78,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
                 }
 
                 // File Upload Settings
-                $maxFileSizeSetting = \Illuminate\Support\Facades\DB::table('global_settings')
+                $maxFileSizeSetting = DB::table('global_settings')
                     ->where('key', 'max_file_size_mb')
                     ->value('value');
 
@@ -91,8 +67,7 @@ class AppServiceProvider extends ServiceProvider
                 ]);
             }
         } catch (\Throwable $e) {
-            // Fail silently if DB not ready or any error occurs
-            \Illuminate\Support\Facades\Log::warning('AppServiceProvider boot error: ' . $e->getMessage());
+            Log::warning('AppServiceProvider boot error: ' . $e->getMessage());
         }
     }
 }
