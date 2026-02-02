@@ -86,9 +86,9 @@
                     $warningMessage = '';
                     $warningType = 'warning'; // warning, danger
 
-                    if ($tenant) {
+                    if ($tenant && !auth()->user()->hasRole('super-admin')) {
                         if ($tenant->isOnTrial()) {
-                            $daysLeft = $tenant->daysLeftInTrial();
+                            $daysLeft = ceil($tenant->daysLeftInTrial());
                             if ($daysLeft <= 3) {
                                 $showWarning = true;
                                 $warningMessage = "Tu periodo de prueba termina en {$daysLeft} días. ¡Suscríbete ahora para no perder acceso!";
@@ -97,6 +97,7 @@
                             $daysLeft = now()->diffInDays($tenant->subscription_ends_at, false);
                             if ($daysLeft <= 3 && $daysLeft >= 0) {
                                 $showWarning = true;
+                                $daysLeft = ceil($daysLeft);
                                 $warningMessage = "Tu suscripción vence en {$daysLeft} días. Renueva pronto.";
                             }
                         } elseif (session()->has('warning')) {
