@@ -32,7 +32,7 @@ class SecurityHeadersMiddleware
             $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, X-Auth-Token, Origin, Authorization, X-Requested-With, X-CSRF-TOKEN');
         }
 
-        // Content Security Policy (Optimized for Diogenes - Robust but flexible)
+        // Content Security Policy (Flexibilidad total para activos locales en HTTPS)
         $response->headers->set('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; img-src 'self' data: https:; frame-src 'self' https:; connect-src 'self' https:;");
 
         return $response;
