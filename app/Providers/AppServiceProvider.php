@@ -30,6 +30,12 @@ class AppServiceProvider extends ServiceProvider
 
         Schema::defaultStringLength(191);
 
+        // Forzar HTTPS y URL correcta en producción
+        if (config('app.env') === 'production') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+            \Illuminate\Support\Facades\URL::forceRootUrl(config('app.url'));
+        }
+
         try {
             if (Schema::hasTable('global_settings')) {
                 // Dynamic Mail Settings

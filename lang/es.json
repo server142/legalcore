@@ -103,5 +103,20 @@
     "Connect your account to sync events automatically with Google Calendar.": "Conecta tu cuenta para sincronizar eventos automáticamente con Google Calendar.",
     "Connected": "Conectado",
     "Disconnect": "Desconectar",
-    "Connect with Google Calendar": "Conectar con Google Calendar"
+    "Connect with Google Calendar": "Conectar con Google Calendar",
+    "Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.": "¿Olvidaste tu contraseña? No hay problema. Solo dinos tu dirección de correo electrónico y te enviaremos un enlace para restablecerla.",
+    "Email Password Reset Link": "Enviar Enlace de Restablecimiento",
+    "Reset Password": "Restablecer Contraseña",
+    "Confirm Password": "Confirmar Contraseña",
+    "Password": "Contraseña",
+    "Reset Password Notification": "Notificación de Restablecimiento de Contraseña",
+    "You are receiving this email because we received a password reset request for your account.": "Estás recibiendo este correo porque se solicitó un restablecimiento de contraseña para tu cuenta.",
+    "This password reset link will expire in :count minutes.": "Este enlace de restablecimiento de contraseña expirará en :count minutos.",
+    "If you did not request a password reset, no further action is required.": "Si no solicitaste un restablecimiento de contraseña, no es necesario realizar ninguna otra acción.",
+    "Regards": "Saludos",
+    "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below into your web browser:": "Si tienes problemas al hacer clic en el botón \":actionText\", copia y pega la siguiente URL en tu navegador:",
+    "Hello!": "¡Hola!",
+    "Whoops!": "¡Ups!",
+    "Email": "Correo Electrónico",
+    "Login": "Iniciar Sesión"
 }
