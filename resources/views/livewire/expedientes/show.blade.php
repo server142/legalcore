@@ -1,15 +1,14 @@
 <x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        {{ $expediente->numero }}
-    </h2>
+    @if($showAddActuacion)
+        <x-header title="Nueva Actuación" subtitle="Adjuntando registro al expediente {{ $expediente->numero }}" backAction="toggleAddActuacion" />
+    @else
+        <x-header title="Expediente: {{ $expediente->numero }}" subtitle="{{ $expediente->materia }} | {{ $expediente->juzgado }}" />
+    @endif
 </x-slot>
 
 <div class="p-6" wire:key="show-root-{{ $expediente->id }}">
     <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4" wire:key="show-header">
         <div class="flex items-center space-x-4 w-full md:w-auto">
-            <a href="{{ route('expedientes.index') }}" class="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition text-gray-500 flex-shrink-0">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            </a>
             <div class="min-w-0">
                 <h2 class="text-2xl font-bold text-gray-800 truncate">{{ $expediente->numero }}</h2>
                 <p class="text-gray-500 text-sm truncate">{{ $expediente->materia }} | {{ $expediente->juzgado }}</p>

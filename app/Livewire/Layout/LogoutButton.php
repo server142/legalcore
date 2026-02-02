@@ -16,11 +16,9 @@ class LogoutButton extends Component
     public function render()
     {
         return <<<'HTML'
-            <button wire:click="logout" class="w-full text-start">
-                <x-dropdown-link>
-                    {{ __('Cerrar Sesión') }}
-                </x-dropdown-link>
-            </button>
+            <x-dropdown-link wire:click="logout" class="cursor-pointer">
+                {{ __('Cerrar Sesión') }}
+            </x-dropdown-link>
         HTML;
     }
 }

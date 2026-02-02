@@ -14,16 +14,16 @@ class AuthEventsSubscriber
 
     public function handleUserLogin(Login $event)
     {
-        $this->logAudit('login', 'Seguridad', "Inició sesión: {$event->user->name}", [
-            'email' => $event->user->email,
-            'role' => $event->user->getRoleNames() 
-        ]);
+        $this->logAudit('login', 'Seguridad', "Inició sesión: {$event->user->email}", [
+            'name' => $event->user->name,
+            'roles' => $event->user->getRoleNames() 
+        ], $event->user->hasRole('super_admin') ? 'medium' : 'low');
     }
 
     public function handleUserLogout(Logout $event)
     {
         if ($event->user) {
-            $this->logAudit('logout', 'Seguridad', "Cerró sesión: {$event->user->name}");
+            $this->logAudit('logout', 'Seguridad', "Cerró sesión: {$event->user->email}");
         }
     }
 
@@ -31,10 +31,9 @@ class AuthEventsSubscriber
     {
         $email = $event->credentials['email'] ?? 'Desconocido';
         
-        $this->logAudit('login_fallido', 'Seguridad', "Intento de acceso fallido para: {$email}", [
-            'ip' => request()->ip(),
-            'user_agent' => request()->userAgent()
-        ]);
+        $this->logAudit('login_fallido', 'Seguridad', "Intento de acceso fallido: {$email}", [
+            'credentials_sent' => $event->credentials,
+        ], 'critical');
     }
 
     public function subscribe(Dispatcher $events)

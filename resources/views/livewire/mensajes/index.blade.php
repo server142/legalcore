@@ -1,8 +1,6 @@
 <div>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Mensajes') }}
-        </h2>
+        <x-header title="{{ __('Mensajes Inter-Abogados') }}" subtitle="Comunicación interna y chat de equipo" />
     </x-slot>
 
     <div class="py-6">

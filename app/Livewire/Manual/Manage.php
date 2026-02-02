@@ -21,12 +21,14 @@ class Manage extends Component
     public $order = 0;
     public $image;
     public $existingImage;
+    public $required_role = 'user';
 
     protected $rules = [
         'title' => 'required|string|max:255',
         'content' => 'required|string',
         'order' => 'required|integer',
         'image' => 'nullable|image|max:2048',
+        'required_role' => 'required|string|in:user,admin,super_admin',
     ];
 
     public function mount()
@@ -44,7 +46,8 @@ class Manage extends Component
 
     public function create()
     {
-        $this->reset(['title', 'content', 'order', 'image', 'existingImage', 'pageId', 'editMode']);
+        $this->reset(['title', 'content', 'order', 'image', 'existingImage', 'pageId', 'editMode', 'required_role']);
+        $this->required_role = 'user';
         $this->showModal = true;
     }
 
@@ -56,6 +59,7 @@ class Manage extends Component
         $this->content = $page->content;
         $this->order = $page->order;
         $this->existingImage = $page->image_path;
+        $this->required_role = $page->required_role ?? 'user';
         $this->editMode = true;
         $this->showModal = true;
     }
@@ -69,6 +73,7 @@ class Manage extends Component
             'slug' => Str::slug($this->title),
             'content' => $this->content,
             'order' => $this->order,
+            'required_role' => $this->required_role,
         ];
 
         if ($this->image) {

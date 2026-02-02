@@ -1,3 +1,7 @@
+<x-slot name="header">
+    <x-header title="{{ __('Asistente Jurídico IA') }}" subtitle="Inteligencia artificial aplicada a su despacho" />
+</x-slot>
+
 <div 
     x-data="{ 
         mobileSidebarOpen: false, 

@@ -8,9 +8,7 @@
         }
     </style>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Reporte de Ingresos') }}
-        </h2>
+        <x-header title="{{ __('Reporte de Ingresos') }}" subtitle="Análisis de cobranza y flujo de caja" />
     </x-slot>
 
     <div class="max-w-7xl mx-auto">

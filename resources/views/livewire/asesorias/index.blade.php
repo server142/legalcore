@@ -1,7 +1,5 @@
 <x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        {{ __('Asesorías') }}
-    </h2>
+    <x-header title="{{ __('Control de Asesorías') }}" subtitle="Prospectos y primeras atenciones" />
 </x-slot>
 
 <div class="p-4 md:p-6 space-y-6">

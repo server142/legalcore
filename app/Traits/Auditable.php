@@ -17,36 +17,51 @@ trait Auditable
      * @param array|null $metadatos Additional data to store as JSON.
      * @return void
      */
-    public function logAudit($accion, $modulo, $descripcion, $metadatos = [])
+    public function logAudit($accion, $modulo, $descripcion, $metadatos = [], $severity = 'low')
     {
         try {
             $user = Auth::user();
+            $request = request();
             
-            // If strictly checking tenant_id from user, make sure user exists. 
-            // For failed logins, user might be null, so handle that case carefully if reused outside authenticated context.
-            // Assuming this trait is mostly used in authenticated Livewire components.
-            
-            // However, for Auth events or unauthenticated contexts, we might need flexibility.
-            $tenantId = $user ? $user->tenant_id : null;
+            $tenantId = $user ? $user->tenant_id : (session('tenant_id') ?? null);
             $userId = $user ? $user->id : null;
 
-            // If running in a context where we can get tenant from metadata or other source if user is null?
-            // For now, let's strictly log what we have.
+            // Detección de navegador y sistema con fallback
+            $browser = 'Desconocido';
+            $os = 'Desconocido';
+            $device = 'Desktop';
+
+            if (class_exists('\Jenssegers\Agent\Agent')) {
+                $agent = new \Jenssegers\Agent\Agent();
+                $browser = $agent->browser() ?: 'Desconocido';
+                $os = $agent->platform() ?: 'Desconocido';
+                $device = $agent->device() ?: 'Desktop';
+            }
+
+            // Detección automática de severidad
+            if ($severity === 'low') {
+                $criticalActions = ['delete', 'destroy', 'login_fallido', 'unauthorized', 'eliminar'];
+                if (in_array(strtolower($accion), $criticalActions)) $severity = 'critical';
+            }
 
             AuditLog::create([
-                'tenant_id'   => $tenantId, // Nullable in DB? Hopefully. If not, this might fail for system events.
+                'tenant_id'   => $tenantId,
                 'user_id'     => $userId,
                 'accion'      => $accion,
                 'modulo'      => $modulo,
                 'descripcion' => $descripcion,
                 'metadatos'   => $metadatos,
-                'ip_address'  => Request::ip(),
+                'ip_address'  => $request->ip(),
+                'user_agent'  => $request->userAgent(),
+                'severity'    => $severity,
+                'browser'     => $browser,
+                'os'          => $os,
+                'device'      => $device,
+                'session_id'  => session()->getId(),
             ]);
 
-        } catch (\Exception $e) {
-            // Silently fail to avoid breaking the main app flow if logging fails?
-            // Or log to system log.
-            \Illuminate\Support\Facades\Log::error('Failed to write to AuditLog: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Security Audit Failure: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
         }
     }
 }

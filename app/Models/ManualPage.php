@@ -13,6 +13,7 @@ class ManualPage extends Model
         'content',
         'image_path',
         'order',
+        'required_role',
     ];
 
     protected static function boot()

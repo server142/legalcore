@@ -1,8 +1,6 @@
 <div>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Gestión de Materias') }}
-        </h2>
+        <x-header title="{{ __('Materias Legales') }}" subtitle="Ramas del derecho para clasificación de casos" />
     </x-slot>
 
     <div class="py-12">

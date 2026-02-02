@@ -1,3 +1,7 @@
+<x-slot name="header">
+    <x-header title="Asignaciones: {{ $expediente->numero }}" subtitle="Control de accesos y responsable del caso" />
+</x-slot>
+
 <div class="space-y-6">
     <div class="bg-white p-6 rounded-lg shadow">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Abogado Responsable</h3>

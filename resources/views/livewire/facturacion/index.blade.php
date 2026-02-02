@@ -1,7 +1,5 @@
 <x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        {{ __('Facturación y Finanzas') }}
-    </h2>
+    <x-header title="{{ __('Facturación y Finanzas') }}" subtitle="Control de ingresos y recibos" />
 </x-slot>
 
 <div class="p-6">

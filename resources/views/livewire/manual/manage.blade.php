@@ -1,12 +1,5 @@
 <x-slot name="header">
-    <div class="flex items-center space-x-4">
-        <a href="{{ route('admin.global-settings') }}" class="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition text-gray-500 flex-shrink-0 shadow-sm">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-        </a>
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Gestionar Manual de Usuario') }}
-        </h2>
-    </div>
+    <x-header title="{{ __('Editor del Manual') }}" subtitle="Configuración de guías y documentación" />
 </x-slot>
 
 <div class="py-12">
@@ -28,6 +21,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Orden</th>
                                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Título</th>
                                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Imagen</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Visibilidad</th>
                                 <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
@@ -40,8 +34,12 @@
                                         @if($page->image_path)
                                             <img src="{{ asset('storage/' . $page->image_path) }}" class="h-10 w-20 object-cover rounded border">
                                         @else
-                                            <span class="text-xs text-gray-400 italic">Sin imagen</span>
                                         @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase {{ $page->required_role === 'super_admin' ? 'bg-purple-100 text-purple-700' : ($page->required_role === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700') }}">
+                                            {{ $page->required_role ?? 'user' }}
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button wire:click="edit({{ $page->id }})" class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
@@ -109,6 +107,15 @@
                         <x-input-label for="image" :value="__('Imagen de Pantalla')" />
                         <input type="file" wire:model="image" id="image" class="block mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
                         <x-input-error :messages="$errors->get('image')" class="mt-2" />
+                    </div>
+                    <div>
+                        <x-input-label for="required_role" :value="__('Visibilidad (Rol Requerido)')" />
+                        <select wire:model="required_role" id="required_role" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <option value="user">Usuario (Todos)</option>
+                            <option value="admin">Administrador del Despacho</option>
+                            <option value="super_admin">Super Admin (Plataforma)</option>
+                        </select>
+                        <x-input-error :messages="$errors->get('required_role')" class="mt-2" />
                     </div>
                 </div>
 

@@ -1,5 +1,5 @@
 <x-slot name="header">
-    <x-header title="{{ __('Clientes') }}" />
+    <x-header title="{{ __('Cartera de Clientes') }}" subtitle="Gestión de personas físicas y morales" />
 </x-slot>
 
 <div class="p-6">

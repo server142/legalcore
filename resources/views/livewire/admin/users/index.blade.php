@@ -1,8 +1,6 @@
 <div>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Gestión de Usuarios') }}
-        </h2>
+        <x-header title="{{ __('Gestión de Usuarios') }}" subtitle="Asignación de roles y accesos" />
     </x-slot>
 
     <div class="py-12">

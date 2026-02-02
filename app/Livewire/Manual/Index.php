@@ -25,12 +25,14 @@ class Index extends Component
         $query = ManualPage::query();
 
         // Filter by Role Sensitivity
-        if ($user && !$user->hasRole('super_admin')) { // Check if user exists before calling hasRole
+        if ($user && !$user->hasRole('super_admin')) {
             $query->where(function($q) use ($user) {
-                // Show pages with NO restriction
                 $q->whereNull('required_role')
-                  // OR pages restricted to their specific role (e.g. 'admin')
-                  ->orWhere('required_role', $user->role ?? 'user');
+                  ->orWhere('required_role', 'user');
+                
+                if ($user->hasRole('admin')) {
+                    $q->orWhere('required_role', 'admin');
+                }
             });
         }
             

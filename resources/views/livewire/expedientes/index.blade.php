@@ -1,5 +1,5 @@
 <x-slot name="header">
-    <x-header title="{{ __('Expedientes') }}" />
+    <x-header title="{{ __('Explorador de Expedientes') }}" subtitle="Historial y gestión de casos jurídicos" />
 </x-slot>
 
 <div class="p-4 md:p-6">

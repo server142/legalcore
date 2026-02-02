@@ -1,6 +1,6 @@
 <div class="p-6">
     <x-slot name="header">
-        <x-header title="{{ __('Configuración Global del Sistema') }}" />
+        <x-header title="{{ __('Configuración Global del Sistema') }}" backUrl="{{ route('dashboard') }}" />
     </x-slot>
 
     <div class="max-w-7xl mx-auto">

@@ -1,12 +1,7 @@
 <div id="manual-top">
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <div>
-                <h2 class="font-bold text-2xl text-gray-900 leading-tight">
-                    {{ __('Centro de Ayuda Diogenes') }}
-                </h2>
-                <p class="text-sm text-gray-500 mt-1">Guía completa para el uso eficiente de su despacho jurídico.</p>
-            </div>
+            <x-header title="{{ __('Centro de Ayuda Diogenes') }}" subtitle="Documentación y guías de uso" />
             @if(auth()->user()->hasRole('super_admin'))
                 <a href="{{ route('manual.manage') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-xl font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 shadow-sm">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -21,18 +16,19 @@
             <div class="flex flex-col lg:flex-row gap-8">
                 <!-- Sidebar Navigation -->
                 <div class="lg:w-1/4">
-                    <!-- Adjusted height and position for reliable scrolling -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 p-6">
-                        <h3 class="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-6">Índice de Temas</h3>
-                        <nav class="space-y-2 pr-2">
-                            @foreach($pages as $page)
-                                <a href="#{{ $page->slug }}" 
-                                   class="group flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-xl transition-all duration-200 border border-transparent hover:border-indigo-100">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-indigo-500 mr-3 transition-colors"></span>
-                                    {{ $page->title }}
-                                </a>
-                            @endforeach
-                        </nav>
+                    <div class="sticky top-24">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 p-6">
+                            <h3 class="text-[10px] font-extrabold text-indigo-600 uppercase tracking-[0.2em] mb-6">Contenido del Manual</h3>
+                            <nav class="space-y-1.5 max-h-[calc(100vh-200px)] overflow-y-auto pr-2 custom-scrollbar">
+                                @foreach($pages as $page)
+                                    <a href="#{{ $page->slug }}" 
+                                       class="group flex items-start gap-3 px-3 py-2.5 text-sm font-bold text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-xl transition-all duration-200 border border-transparent hover:border-indigo-100/50">
+                                        <div class="mt-1.5 w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-indigo-500 shadow-sm shrink-0 transition-colors"></div>
+                                        <span class="leading-tight">{{ $page->title }}</span>
+                                    </a>
+                                @endforeach
+                            </nav>
+                        </div>
                     </div>
                 </div>
 
@@ -117,6 +113,9 @@
         .prose strong {
             color: #4f46e5;
             font-weight: 700;
+            background: linear-gradient(120deg, rgba(79, 70, 229, 0.1) 0%, rgba(79, 70, 229, 0.1) 100%);
+            padding: 0 4px;
+            border-radius: 4px;
         }
         .prose ul {
             list-style-type: none;
@@ -124,15 +123,71 @@
         }
         .prose li {
             position: relative;
-            padding-left: 1.5rem;
-            margin-bottom: 0.5rem;
+            padding-left: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: #4b5563;
         }
         .prose li::before {
             content: "→";
             position: absolute;
             left: 0;
             color: #6366f1;
-            font-weight: bold;
+            font-weight: 900;
+        }
+        .prose h3 {
+            color: #111827;
+            font-weight: 800;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #4f46e5;
+            padding-left: 1rem;
+        }
+        .prose table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 1.5rem 0;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .prose th {
+            background-color: #f9fafb;
+            color: #374151;
+            font-weight: 700;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .prose td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f3f4f6;
+            color: #4b5563;
+            font-size: 0.95rem;
+        }
+        .prose tr:last-child td {
+            border-bottom: none;
+        }
+        .prose blockquote {
+            border-left: 4px solid #e5e7eb;
+            background: #f9fafb;
+            padding: 1rem 1.5rem;
+            font-style: italic;
+            border-radius: 0 12px 12px 0;
+            margin: 1.5rem 0;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
         }
         html {
             scroll-behavior: smooth;

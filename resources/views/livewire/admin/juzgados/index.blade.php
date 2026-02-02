@@ -1,8 +1,6 @@
 <div>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Gestión de Juzgados') }}
-        </h2>
+        <x-header title="{{ __('Sedes Judiciales') }}" subtitle="Directorio de juzgados y tribunales" />
     </x-slot>
 
     <div class="py-12">

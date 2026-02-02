@@ -17,6 +17,12 @@ class AuditLog extends Model
         'descripcion',
         'metadatos',
         'ip_address',
+        'user_agent',
+        'severity',
+        'browser',
+        'os',
+        'device',
+        'session_id',
     ];
 
     protected $casts = [

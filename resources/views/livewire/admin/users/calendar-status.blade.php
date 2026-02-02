@@ -1,8 +1,6 @@
 <div>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Estado de Correos de Calendario') }}
-        </h2>
+        <x-header title="{{ __('Estado de Calendarios') }}" subtitle="Vinculación de cuentas Google por usuario" />
     </x-slot>
 
     <div class="py-12">
