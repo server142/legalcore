@@ -24,8 +24,16 @@ class SecurityHeadersMiddleware
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
         
-        // Content Security Policy (Optimized for Diogenes - allowing https assets)
-        $response->headers->set('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; img-src 'self' data: https:; frame-src 'self' https://www.diogenes.com.mx https://accounts.google.com; connect-src 'self' https:;");
+        // CORS: Permitir comunicación entre diogenes.com.mx y www.diogenes.com.mx
+        $origin = $request->headers->get('Origin');
+        if ($origin && (str_contains($origin, 'diogenes.com.mx'))) {
+            $response->headers->set('Access-Control-Allow-Origin', $origin);
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, X-Auth-Token, Origin, Authorization, X-Requested-With, X-CSRF-TOKEN');
+        }
+
+        // Content Security Policy (Optimized for Diogenes - Robust but flexible)
+        $response->headers->set('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; img-src 'self' data: https:; frame-src 'self' https:; connect-src 'self' https:;");
 
         return $response;
     }
