@@ -12,7 +12,7 @@ class Index extends Component
     use WithPagination;
 
     public $search = '';
-    public $filterStatus = 'all'; // all, trial, active, expired, cancelled
+    public $filterStatus = 'all'; // all, trial, active, expired, cancelled, churn
     
     // Modal handling
     public $selectedTenantId;
@@ -178,6 +178,17 @@ class Index extends Component
             $query->where('trial_ends_at', '<', now())->where('plan', 'trial');
         } elseif ($this->filterStatus === 'cancelled') {
             $query->where('is_active', false);
+        } elseif ($this->filterStatus === 'churn') {
+            // Usuarios sin actividad en los últimos 15 días
+            // Usamos un subquery o simplemente filtramos los que tengan last_activity antigua
+            $query->where(function($q) {
+                $q->whereNotExists(function($sub) {
+                    $sub->select(\Illuminate\Support\Facades\DB::raw(1))
+                        ->from('audit_logs')
+                        ->whereRaw('audit_logs.tenant_id = tenants.id')
+                        ->where('created_at', '>=', now()->subDays(15));
+                });
+            });
         }
 
         $tenants = $query->latest()->paginate(20);
@@ -187,5 +198,46 @@ class Index extends Component
             'tenants' => $tenants,
             'plans' => $plans
         ])->layout('layouts.app');
+    }
+
+    public function exportCSV()
+    {
+        $tenants = Tenant::with(['planRelation'])->get();
+        $filename = "tenants_report_" . now()->format('Y-m-d') . ".csv";
+        
+        $headers = [
+            "Content-type"        => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use($tenants) {
+            $file = fopen('php://output', 'w');
+            // Bom para Excel en español
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            fputcsv($file, ['ID', 'Nombre', 'Slug', 'Plan', 'Estado', 'Usuarios', 'Expedientes', 'Almacenamiento', 'Alta', 'Ult. Actividad']);
+
+            foreach ($tenants as $t) {
+                fputcsv($file, [
+                    $t->id,
+                    $t->name,
+                    $t->slug,
+                    $t->planRelation->name ?? $t->plan,
+                    $t->is_active ? 'Activo' : 'Inactivo',
+                    $t->users->count(),
+                    $t->expedientes_count,
+                    $t->storage_usage_formatted,
+                    $t->created_at->format('Y-m-d'),
+                    $t->last_activity ? $t->last_activity->format('Y-m-d H:i') : 'Sin actividad'
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

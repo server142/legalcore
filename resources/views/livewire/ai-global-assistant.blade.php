@@ -47,7 +47,7 @@
 
         <!-- Footer -->
         <div class="p-3 border-t border-gray-200 bg-gray-50 text-[10px] text-gray-400 text-center uppercase tracking-wider">
-            Diogenes AI v1.0
+            &nbsp;
         </div>
     </div>
 
@@ -176,7 +176,7 @@
 
                 </div>
                 <div class="text-center mt-2">
-                    <p class="text-[10px] text-gray-400">Diogenes puede cometer errores. Verifica la información importante.</p>
+                    <p class="text-[10px] text-gray-400">Diogenes AI v1.0 - puede cometer errores. Verifica la información importante.</p>
                 </div>
             </div>
         </div>

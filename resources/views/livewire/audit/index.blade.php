@@ -122,12 +122,14 @@
                                         {{ strtoupper($log->accion) }}
                                     </div>
                                 </td>
-
                                 <td class="px-6 py-4">
                                     <p class="text-xs text-gray-700 leading-tight mb-1">{{ $log->descripcion }}</p>
-                                    @if($log->metadatos)
-                                        <button @click="alert(JSON.stringify(@js($log->metadatos), null, 2))" class="text-[9px] text-indigo-500 hover:underline font-bold">Ver JSON de Auditoría</button>
-                                    @endif
+                                    <div class="flex space-x-2">
+                                        @if($log->metadatos)
+                                            <button @click="alert(JSON.stringify(@js($log->metadatos), null, 2))" class="text-[9px] text-indigo-500 hover:underline font-bold">Ver JSON</button>
+                                        @endif
+                                        <button wire:click="showDetails({{ $log->id }})" class="text-[9px] text-emerald-600 hover:underline font-bold">Detalles Avanzados</button>
+                                    </div>
                                 </td>
 
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -201,10 +203,17 @@
                                 </div>
                             </div>
                             
-                            @if($log->metadatos)
-                                <button @click="alert(JSON.stringify(@js($log->metadatos), null, 2))" class="mt-2 w-full py-1 text-[10px] text-indigo-600 font-bold border border-indigo-100 rounded bg-indigo-50/50">
-                                    VER JSON DE AUDITORÍA
-                                </button>
+                            @if($log->metadatos || true)
+                                <div class="flex space-x-2 mt-2">
+                                    <button wire:click="showDetails({{ $log->id }})" class="flex-1 py-1.5 text-[10px] text-white font-bold rounded bg-emerald-600 shadow-sm">
+                                        DETALLES COMPLETOS
+                                    </button>
+                                    @if($log->metadatos)
+                                        <button @click="alert(JSON.stringify(@js($log->metadatos), null, 2))" class="flex-1 py-1.5 text-[10px] text-indigo-600 font-bold border border-indigo-100 rounded bg-indigo-50/50">
+                                            JSON
+                                        </button>
+                                    @endif
+                                </div>
                             @endif
                         </div>
                     @empty
@@ -220,4 +229,105 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal de Detalles -->
+    @if($selectedLog)
+    <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="closeDetails"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border-l-8 {{ $selectedLog->severity == 'critical' ? 'border-red-600' : ($selectedLog->severity == 'medium' ? 'border-orange-500' : 'border-emerald-500') }}">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-left w-full">
+                            <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                                <h3 class="text-lg leading-6 font-bold text-gray-900 flex items-center" id="modal-title">
+                                    Detalle de Auditoría #{{ $selectedLog->id }}
+                                    <span class="ml-3 px-2 py-0.5 rounded-full text-[10px] uppercase font-black {{ $selectedLog->severity == 'critical' ? 'bg-red-100 text-red-800' : ($selectedLog->severity == 'medium' ? 'bg-orange-100 text-orange-800' : 'bg-emerald-100 text-emerald-800') }}">
+                                        {{ $selectedLog->severity }}
+                                    </span>
+                                </h3>
+                                <button wire:click="closeDetails" class="text-gray-400 hover:text-gray-500">
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Módulo / Acción</label>
+                                        <div class="text-sm font-semibold text-gray-800">{{ ucfirst($selectedLog->modulo) }} » {{ strtoupper($selectedLog->accion) }}</div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Fecha y Hora</label>
+                                        <div class="text-sm text-gray-800">{{ $selectedLog->created_at->format('d/m/Y H:i:s') }} ({{ $selectedLog->created_at->diffForHumans() }})</div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ejecutado por</label>
+                                        <div class="flex items-center mt-1">
+                                            <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-black text-xs mr-2">
+                                                {{ substr($selectedLog->user->name ?? 'S', 0, 1) }}
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-bold text-gray-900">{{ $selectedLog->user->name ?? 'Sistema (Automático)' }}</div>
+                                                <div class="text-[10px] text-gray-500">{{ $selectedLog->user->email ?? '' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if($isSuperAdmin)
+                                    <div>
+                                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Despacho / Tenant</label>
+                                        <div class="text-sm font-bold text-indigo-600">{{ $selectedLog->tenant->name ?? 'N/A' }}</div>
+                                    </div>
+                                    @endif
+                                </div>
+
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Dirección IP</label>
+                                        <div class="text-sm font-mono text-gray-800">{{ $selectedLog->ip_address }}</div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Identificador de Sesión</label>
+                                        <div class="text-sm font-mono text-gray-500 truncate" title="{{ $selectedLog->session_id }}">{{ $selectedLog->session_id }}</div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Navegador y Sistema</label>
+                                        <div class="text-sm text-gray-800 flex items-center">
+                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                            {{ $selectedLog->browser }} / {{ $selectedLog->os }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">User Agent Original</label>
+                                        <div class="text-[9px] text-gray-500 leading-tight border p-1 rounded bg-gray-50 font-mono break-all">
+                                            {{ $selectedLog->user_agent }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 p-3 bg-gray-50 rounded-lg border">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Descripción de la Actividad</label>
+                                <div class="text-sm text-gray-800 leading-relaxed italic">"{{ $selectedLog->descripcion }}"</div>
+                            </div>
+
+                            @if($selectedLog->metadatos)
+                            <div class="mt-4">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Metadatos de Seguimiento (JSON)</label>
+                                <pre class="text-[10px] bg-slate-900 text-emerald-400 p-4 rounded-lg overflow-x-auto font-mono max-h-48">{{ json_encode($selectedLog->metadatos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button wire:click="closeDetails" type="button" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        Cerrar Detalle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>

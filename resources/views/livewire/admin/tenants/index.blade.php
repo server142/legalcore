@@ -27,13 +27,20 @@
                             <option value="active">Suscripciones Activas</option>
                             <option value="expired">Trials Expirados</option>
                             <option value="cancelled">Cancelados/Inactivos</option>
+                            <option value="churn">Churn (15 días sin actividad)</option>
                         </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button wire:click="exportCSV" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-md shadow-sm transition flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Exportar Excel (CSV)
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                     <div class="text-sm text-gray-500 mb-1">Total Tenants</div>
                     <div class="text-3xl font-bold text-gray-900">{{ \App\Models\Tenant::count() }}</div>
@@ -50,6 +57,12 @@
                     <div class="text-sm text-red-600 mb-1">Trials Expirados</div>
                     <div class="text-3xl font-bold text-red-900">{{ \App\Models\Tenant::where('plan', 'trial')->where('trial_ends_at', '<', now())->count() }}</div>
                 </div>
+                <div class="bg-indigo-50 p-6 rounded-xl shadow-sm border border-indigo-100">
+                    <div class="text-sm text-indigo-600 mb-1">Activos Hoy (Logs)</div>
+                    <div class="text-3xl font-bold text-indigo-900">
+                        {{ \App\Models\AuditLog::withoutGlobalScopes()->where('created_at', '>=', now()->startOfDay())->distinct('tenant_id')->count('tenant_id') }}
+                    </div>
+                </div>
             </div>
 
             <!-- Tenants Table -->
@@ -59,10 +72,9 @@
                     <table class="min-w-full divide-y divide-gray-200 hidden md:table">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tenant</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan Actual</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vencimiento</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuarios</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tenant / Alta</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan / Uso</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vencimiento / Actividad</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                             </tr>
@@ -71,31 +83,47 @@
                             @forelse($tenants as $tenant)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ $tenant->name }}</div>
-                                        <div class="text-xs text-gray-500">{{ $tenant->slug }}</div>
+                                        <div class="text-sm font-bold text-gray-900">{{ $tenant->name }}</div>
+                                        <div class="text-[10px] text-gray-500 uppercase tracking-tighter">{{ $tenant->slug }}</div>
+                                        <div class="text-[9px] text-indigo-500 mt-1 uppercase font-semibold italic">Alta: {{ $tenant->created_at->format('d/m/Y') }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                            {{ $tenant->plan === 'trial' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
-                                            {{ $tenant->planRelation ? $tenant->planRelation->name : ucfirst($tenant->plan) }}
-                                        </span>
+                                        <div class="flex flex-col">
+                                            <span class="px-2 py-0.5 inline-flex text-[10px] items-center justify-center font-bold rounded-full w-fit mb-1
+                                                {{ $tenant->plan === 'trial' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
+                                                {{ $tenant->planRelation ? $tenant->planRelation->name : ucfirst($tenant->plan) }}
+                                            </span>
+                                            <div class="flex space-x-2 text-[10px] mt-1">
+                                                <span class="text-gray-600 font-bold" title="Usuarios totales">U: {{ $tenant->users->count() }}</span>
+                                                <span class="text-indigo-600 font-bold" title="Expedientes totales">E: {{ $tenant->expedientes_count }}</span>
+                                                <span class="text-amber-600 font-bold" title="Almacenamiento usado">S: {{ $tenant->storage_usage_formatted }}</span>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <td class="px-6 py-4 whitespace-nowrap text-xs">
                                         @if($tenant->expiration_date)
-                                            <div class="{{ $tenant->is_expired ? 'text-red-600 font-bold' : 'text-gray-900' }}">
+                                            <div class="flex items-center {{ $tenant->is_expired ? 'text-red-600 font-bold' : 'text-gray-900 font-semibold' }}">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                                 {{ $tenant->expiration_date->format('d/m/Y') }}
                                             </div>
                                             @if(!$tenant->is_expired)
-                                                <div class="text-xs text-green-600">{{ now()->diffInDays($tenant->expiration_date) }} días restantes</div>
-                                            @else
-                                                <div class="text-xs text-red-500">Expirado</div>
+                                                <div class="text-[9px] text-green-600 font-bold ml-4">{{ now()->diffInDays($tenant->expiration_date) }}d restantes</div>
                                             @endif
-                                        @else
-                                            <span class="text-gray-400">Sin fecha</span>
                                         @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $tenant->users->count() }}
+                                        
+                                        <div class="mt-2 pt-2 border-t border-gray-100">
+                                            @if($tenant->last_activity)
+                                                <div class="text-[9px] text-gray-500 uppercase font-black">Última Actividad:</div>
+                                                <div class="flex items-center">
+                                                    <span class="h-1.5 w-1.5 rounded-full mr-1.5 {{ $tenant->last_activity->diffInDays() < 3 ? 'bg-green-500' : ($tenant->last_activity->diffInDays() < 7 ? 'bg-orange-400' : 'bg-red-500') }}"></span>
+                                                    <div class="text-[10px] font-mono {{ $tenant->last_activity->diffInDays() < 7 ? 'text-indigo-600' : 'text-red-600 font-bold' }}">
+                                                        {{ $tenant->last_activity->diffForHumans() }}
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div class="text-[9px] text-gray-400 italic">Sin actividad registrada</div>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <button wire:click="toggleStatus({{ $tenant->id }})" class="px-2 py-1 text-xs font-semibold rounded-full {{ $tenant->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
@@ -162,18 +190,39 @@
                                 </span>
                             </div>
 
-                            <div class="mb-4 text-sm">
+                            <div class="mb-4 text-xs">
+                                <div class="grid grid-cols-2 gap-2 mb-3 bg-gray-50 p-2 rounded border">
+                                    <div>
+                                        <span class="text-[9px] font-black text-gray-400 uppercase block">Alta</span>
+                                        <span class="text-gray-700 font-bold">{{ $tenant->created_at->format('d/m/Y') }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[9px] font-black text-gray-400 uppercase block">Expedientes</span>
+                                        <span class="text-indigo-600 font-bold">{{ $tenant->expedientes_count }}</span>
+                                    </div>
+                                    <div class="col-span-2 mt-1 pt-1 border-t grid grid-cols-2 gap-2">
+                                        <div>
+                                            <span class="text-[9px] font-black text-gray-400 uppercase block">Última Actividad</span>
+                                            <span class="text-emerald-600 font-bold">
+                                                {{ $tenant->last_activity ? $tenant->last_activity->diffForHumans() : 'Sin actividad' }}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span class="text-[9px] font-black text-gray-400 uppercase block">Almacenamiento</span>
+                                            <span class="text-amber-600 font-bold">{{ $tenant->storage_usage_formatted }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 @if($tenant->expiration_date)
                                     <div class="flex items-center">
-                                        <span class="text-gray-500 mr-2">Vencimiento:</span>
-                                        <span class="{{ $tenant->is_expired ? 'text-red-600 font-bold' : 'text-gray-900' }}">
+                                        <span class="text-[9px] font-black text-gray-400 uppercase mr-2">Vencimiento:</span>
+                                        <span class="{{ $tenant->is_expired ? 'text-red-600 font-bold' : 'text-gray-900 font-bold' }}">
                                             {{ $tenant->expiration_date->format('d/m/Y') }}
                                         </span>
                                     </div>
                                     @if(!$tenant->is_expired)
-                                        <div class="text-xs text-green-600 mt-1">{{ now()->diffInDays($tenant->expiration_date) }} días restantes</div>
-                                    @else
-                                        <div class="text-xs text-red-500 mt-1">Expirado</div>
+                                        <div class="text-[10px] text-green-600 font-bold mt-0.5">{{ now()->diffInDays($tenant->expiration_date) }} días restantes</div>
                                     @endif
                                 @endif
                             </div>

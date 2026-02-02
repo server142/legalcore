@@ -149,4 +149,42 @@ class Tenant extends Model
             $query->where('name', $role);
         })->count();
     }
+
+    /**
+     * Obtener el conteo de expedientes
+     */
+    public function getExpedientesCountAttribute()
+    {
+        return \App\Models\Expediente::where('tenant_id', $this->id)->count();
+    }
+
+    /**
+     * Obtener la fecha de última actividad (desde logs)
+     */
+    public function getLastActivityAttribute()
+    {
+        return \App\Models\AuditLog::withoutGlobalScopes()
+            ->where('tenant_id', $this->id)
+            ->latest()
+            ->value('created_at');
+    }
+
+    /**
+     * Obtener el almacenamiento usado en bytes
+     */
+    public function getStorageUsedBytesAttribute()
+    {
+        return \App\Models\Documento::where('tenant_id', $this->id)->sum('size');
+    }
+
+    /**
+     * Obtener el almacenamiento formateado (MB/GB)
+     */
+    public function getStorageUsageFormattedAttribute()
+    {
+        $bytes = $this->storage_used_bytes;
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) $bytes /= 1024;
+        return round($bytes, 2) . ' ' . $units[$i];
+    }
 }

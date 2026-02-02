@@ -15,6 +15,9 @@ class Index extends Component
     public $filterModule = '';
     public $filterAction = '';
     public $filterSeverity = '';
+    public $selectedLogId = null;
+
+    protected $listeners = ['closeModal' => 'closeDetails'];
 
     public function render()
     {
@@ -71,7 +74,18 @@ class Index extends Component
             'logs' => $logs,
             'tenants' => $tenants,
             'modules' => $modules,
-            'isSuperAdmin' => $isSuperAdmin
+            'isSuperAdmin' => $isSuperAdmin,
+            'selectedLog' => $this->selectedLogId ? AuditLog::withoutGlobalScopes()->with(['user', 'tenant'])->find($this->selectedLogId) : null
         ]);
+    }
+
+    public function showDetails($logId)
+    {
+        $this->selectedLogId = $logId;
+    }
+
+    public function closeDetails()
+    {
+        $this->selectedLogId = null;
     }
 }

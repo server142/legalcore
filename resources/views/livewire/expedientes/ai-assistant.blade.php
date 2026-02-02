@@ -316,8 +316,8 @@
                                     </div>
                                 </div>
                             </form>
-                            <p class="mt-2 text-center text-xs text-gray-400 hidden sm:block">
-                                Diogenes AI puede cometer errores. Verifica la información importante.
+                            <p class="mt-2 text-center text-[10px] text-gray-400 font-medium">
+                                Diogenes AI v1.0 - puede cometer errores. Verifica la información importante.
                             </p>
                         </div>
                     </div>
