@@ -167,8 +167,8 @@
                                 <div>
                                     <x-input-label for="mail_lawyer_invitation_body" value="Cuerpo del Mensaje (Markdown soportado)" />
                                     <textarea wire:model="mail_lawyer_invitation_body" id="mail_lawyer_invitation_body" rows="6" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></textarea>
-                                    <div class="mt-2 flex space-x-4">
-                                        <p class="text-[10px] text-gray-500"><strong>Placeholders:</strong></p>
+                                    <div class="mt-2 flex flex-wrap gap-2">
+                                        <p class="text-[10px] text-gray-500 w-full mb-1"><strong>Placeholders:</strong></p>
                                         <code class="text-[9px] bg-gray-100 px-1 rounded">{nombre}</code>
                                         <code class="text-[9px] bg-gray-100 px-1 rounded">{email}</code>
                                         <code class="text-[9px] bg-gray-100 px-1 rounded">{password}</code>
@@ -192,8 +192,8 @@
                                 <div>
                                     <x-input-label for="mail_user_welcome_body" value="Cuerpo del Mensaje (Markdown soportado)" />
                                     <textarea wire:model="mail_user_welcome_body" id="mail_user_welcome_body" rows="6" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></textarea>
-                                    <div class="mt-2 flex space-x-4">
-                                        <p class="text-[10px] text-gray-500"><strong>Placeholders:</strong></p>
+                                    <div class="mt-2 flex flex-wrap gap-2">
+                                        <p class="text-[10px] text-gray-500 w-full mb-1"><strong>Placeholders:</strong></p>
                                         <code class="text-[9px] bg-gray-100 px-1 rounded">{nombre}</code>
                                         <code class="text-[9px] bg-gray-100 px-1 rounded">{email}</code>
                                         <code class="text-[9px] bg-gray-100 px-1 rounded">{password}</code>
