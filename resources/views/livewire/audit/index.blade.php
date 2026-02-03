@@ -119,19 +119,19 @@
                                 @php
                                     $action = strtolower($log->accion);
                                     $style = match($action) {
-                                        'create' => ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-700', 'border' => 'border-emerald-200', 'dot' => 'bg-emerald-500'],
-                                        'update' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-200', 'dot' => 'bg-blue-500'],
-                                        'delete' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-700', 'border' => 'border-rose-200', 'dot' => 'bg-rose-500'],
-                                        'login' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200', 'dot' => 'bg-indigo-500'],
-                                        'logout' => ['bg' => 'bg-slate-50', 'text' => 'text-slate-700', 'border' => 'border-slate-200', 'dot' => 'bg-slate-500'],
-                                        'login_fallido', 'failed_login' => ['bg' => 'bg-amber-50', 'text' => 'text-amber-700', 'border' => 'border-amber-200', 'dot' => 'bg-amber-500'],
-                                        default => ['bg' => 'bg-gray-50', 'text' => 'text-gray-700', 'border' => 'border-gray-200', 'dot' => 'bg-gray-400'],
+                                        'create' => ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-800', 'border' => 'border-emerald-300', 'dot' => 'bg-emerald-600'],
+                                        'update' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'border' => 'border-blue-300', 'dot' => 'bg-blue-600'],
+                                        'delete' => ['bg' => 'bg-rose-100', 'text' => 'text-rose-800', 'border' => 'border-rose-300', 'dot' => 'bg-rose-600'],
+                                        'login' => ['bg' => 'bg-indigo-100', 'text' => 'text-indigo-800', 'border' => 'border-indigo-300', 'dot' => 'bg-indigo-600'],
+                                        'logout' => ['bg' => 'bg-slate-100', 'text' => 'text-slate-800', 'border' => 'border-slate-300', 'dot' => 'bg-slate-600'],
+                                        'login_fallido', 'failed_login' => ['bg' => 'bg-amber-100', 'text' => 'text-amber-800', 'border' => 'border-amber-300', 'dot' => 'bg-amber-600'],
+                                        default => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'border' => 'border-gray-300', 'dot' => 'bg-gray-600'],
                                     };
                                 @endphp
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 opacity-60">{{ $log->modulo }}</div>
-                                    <div class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider border {{ $style['bg'] }} {{ $style['text'] }} {{ $style['border'] }} shadow-sm transition-all hover:shadow-md">
-                                        <span class="w-1.5 h-1.5 rounded-full {{ $style['dot'] }} mr-2 shadow-sm animate-pulse"></span>
+                                    <div class="text-[9px] font-black text-indigo-400 uppercase tracking-[2px] mb-2">{{ $log->modulo }}</div>
+                                    <div class="inline-flex items-center px-4 py-1.5 rounded-lg text-[11px] font-black tracking-widest border {{ $style['bg'] }} {{ $style['text'] }} {{ $style['border'] }} shadow-[0_2px_10px_-3px_rgba(0,0,0,0.1)] transition-all transform hover:scale-105">
+                                        <span class="w-2 h-2 rounded-full {{ $style['dot'] }} mr-2.5 shadow-[0_0_8px_rgba(0,0,0,0.2)] animate-pulse"></span>
                                         {{ strtoupper($log->accion) }}
                                     </div>
                                 </td>
@@ -193,18 +193,18 @@
                                 @php
                                     $action = strtolower($log->accion);
                                     $style = match($action) {
-                                        'create' => ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-700', 'border' => 'border-emerald-100', 'dot' => 'bg-emerald-500'],
-                                        'update' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-100', 'dot' => 'bg-blue-500'],
-                                        'delete' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-700', 'border' => 'border-rose-100', 'dot' => 'bg-rose-500'],
-                                        'login' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-100', 'dot' => 'bg-indigo-500'],
-                                        'logout' => ['bg' => 'bg-slate-50', 'text' => 'text-slate-700', 'border' => 'border-slate-100', 'dot' => 'bg-slate-500'],
-                                        'failed_login', 'login_fallido' => ['bg' => 'bg-amber-50', 'text' => 'text-amber-700', 'border' => 'border-amber-100', 'dot' => 'bg-amber-500'],
-                                        default => ['bg' => 'bg-slate-50', 'text' => 'text-slate-700', 'border' => 'border-slate-100', 'dot' => 'bg-slate-400'],
+                                        'create' => ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-800', 'border' => 'border-emerald-200', 'dot' => 'bg-emerald-600'],
+                                        'update' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'border' => 'border-blue-200', 'dot' => 'bg-blue-600'],
+                                        'delete' => ['bg' => 'bg-rose-100', 'text' => 'text-rose-800', 'border' => 'border-rose-200', 'dot' => 'bg-rose-600'],
+                                        'login' => ['bg' => 'bg-indigo-100', 'text' => 'text-indigo-800', 'border' => 'border-indigo-200', 'dot' => 'bg-indigo-600'],
+                                        'logout' => ['bg' => 'bg-slate-100', 'text' => 'text-slate-800', 'border' => 'border-slate-200', 'dot' => 'bg-slate-600'],
+                                        'failed_login', 'login_fallido' => ['bg' => 'bg-amber-100', 'text' => 'text-amber-800', 'border' => 'border-amber-200', 'dot' => 'bg-amber-600'],
+                                        default => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'border' => 'border-gray-200', 'dot' => 'bg-gray-600'],
                                     };
                                 @endphp
                                 <div class="flex flex-col items-end">
-                                    <div class="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black tracking-widest border mb-1.5 {{ $style['bg'] }} {{ $style['text'] }} {{ $style['border'] }} shadow-sm">
-                                        <span class="w-1.5 h-1.5 rounded-full {{ $style['dot'] }} mr-2"></span>
+                                    <div class="inline-flex items-center px-4 py-1.5 rounded-lg text-[10px] font-black tracking-widest border mb-2 {{ $style['bg'] }} {{ $style['text'] }} {{ $style['border'] }} shadow-sm">
+                                        <span class="w-2 h-2 rounded-full {{ $style['dot'] }} mr-2.5"></span>
                                         {{ strtoupper($log->accion) }}
                                     </div>
                                     <span class="text-[9px] font-extrabold uppercase {{ $log->severity == 'critical' ? 'text-red-600 animate-pulse' : ($log->severity == 'medium' ? 'text-orange-600' : 'text-emerald-600') }}">
