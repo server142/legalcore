@@ -11,6 +11,58 @@ class Index extends Component
     use WithPagination;
 
     public $search = '';
+    
+    // Modal state
+    public $showFeaturesModal = false;
+    public $editingPlanId = null;
+    public $features = [];
+    public $newFeature = '';
+
+    public function openFeaturesModal(Plan $plan)
+    {
+        $this->editingPlanId = $plan->id;
+        
+        if (is_string($plan->features)) {
+            $this->features = json_decode($plan->features, true) ?? [];
+        } else {
+            $this->features = $plan->features ?? [];
+        }
+        
+        $this->showFeaturesModal = true;
+    }
+
+    public function addFeature()
+    {
+        if (trim($this->newFeature) !== '') {
+            $this->features[] = $this->newFeature;
+            $this->newFeature = '';
+        }
+    }
+
+    public function removeFeature($index)
+    {
+        unset($this->features[$index]);
+        $this->features = array_values($this->features);
+    }
+
+    public function saveFeatures()
+    {
+        $plan = Plan::find($this->editingPlanId);
+        if ($plan) {
+            $plan->update(['features' => $this->features]);
+            session()->flash('message', 'Características actualizadas correctamente.');
+        }
+        
+        $this->closeModal();
+    }
+
+    public function closeModal()
+    {
+        $this->showFeaturesModal = false;
+        $this->editingPlanId = null;
+        $this->features = [];
+        $this->newFeature = '';
+    }
 
     public function delete(Plan $plan)
     {
