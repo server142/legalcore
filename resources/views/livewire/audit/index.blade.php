@@ -119,19 +119,19 @@
                                 @php
                                     $action = strtolower($log->accion);
                                     $style = match($action) {
-                                        'create' => ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-700', 'border' => 'border-emerald-200', 'dot' => 'bg-emerald-500'],
-                                        'update' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-200', 'dot' => 'bg-blue-500'],
-                                        'delete' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-700', 'border' => 'border-rose-200', 'dot' => 'bg-rose-500'],
-                                        'login' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200', 'dot' => 'bg-indigo-500'],
-                                        'logout' => ['bg' => 'bg-slate-50', 'text' => 'text-slate-700', 'border' => 'border-slate-200', 'dot' => 'bg-slate-500'],
-                                        'login_fallido', 'failed_login' => ['bg' => 'bg-amber-50', 'text' => 'text-amber-700', 'border' => 'border-amber-200', 'dot' => 'bg-amber-500'],
-                                        default => ['bg' => 'bg-gray-50', 'text' => 'text-gray-600', 'border' => 'border-gray-200', 'dot' => 'bg-gray-400'],
+                                        'create' => ['bg' => 'bg-emerald-50/80', 'text' => 'text-emerald-700', 'ring' => 'ring-emerald-600/20', 'dot' => 'bg-emerald-500'],
+                                        'update' => ['bg' => 'bg-blue-50/80', 'text' => 'text-blue-700', 'ring' => 'ring-blue-600/20', 'dot' => 'bg-blue-500'],
+                                        'delete' => ['bg' => 'bg-rose-50/80', 'text' => 'text-rose-700', 'ring' => 'ring-rose-600/20', 'dot' => 'bg-rose-500'],
+                                        'login' => ['bg' => 'bg-indigo-50/80', 'text' => 'text-indigo-700', 'ring' => 'ring-indigo-600/20', 'dot' => 'bg-indigo-500'],
+                                        'logout' => ['bg' => 'bg-slate-50/80', 'text' => 'text-slate-700', 'ring' => 'ring-slate-600/20', 'dot' => 'bg-slate-500'],
+                                        'login_fallido', 'failed_login' => ['bg' => 'bg-amber-50/80', 'text' => 'text-amber-700', 'ring' => 'ring-amber-600/20', 'dot' => 'bg-amber-500'],
+                                        default => ['bg' => 'bg-gray-50/80', 'text' => 'text-gray-600', 'ring' => 'ring-gray-600/20', 'dot' => 'bg-gray-400'],
                                     };
                                 @endphp
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">{{ $log->modulo }}</div>
-                                    <div class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold border {{ $style['bg'] }} {{ $style['text'] }} {{ $style['border'] }}">
-                                        <span class="w-1.5 h-1.5 rounded-full {{ $style['dot'] }} mr-1.5"></span>
+                                    <div class="text-[9px] font-medium text-gray-400 uppercase tracking-widest mb-1.5">{{ $log->modulo }}</div>
+                                    <div class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ring-1 ring-inset {{ $style['bg'] }} {{ $style['text'] }} {{ $style['ring'] }}">
+                                        <span class="w-1 h-1 rounded-full {{ $style['dot'] }} mr-1.5"></span>
                                         {{ strtoupper($log->accion) }}
                                     </div>
                                 </td>
@@ -193,18 +193,18 @@
                                 @php
                                     $action = strtolower($log->accion);
                                     $style = match($action) {
-                                        'create' => ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-700', 'border' => 'border-emerald-200', 'dot' => 'bg-emerald-500'],
-                                        'update' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-200', 'dot' => 'bg-blue-500'],
-                                        'delete' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-700', 'border' => 'border-rose-200', 'dot' => 'bg-rose-500'],
-                                        'login' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200', 'dot' => 'bg-indigo-500'],
-                                        'logout' => ['bg' => 'bg-slate-50', 'text' => 'text-slate-700', 'border' => 'border-slate-200', 'dot' => 'bg-slate-500'],
-                                        'failed_login', 'login_fallido' => ['bg' => 'bg-amber-50', 'text' => 'text-amber-700', 'border' => 'border-amber-200', 'dot' => 'bg-amber-500'],
-                                        default => ['bg' => 'bg-gray-50', 'text' => 'text-gray-600', 'border' => 'border-gray-200', 'dot' => 'bg-gray-400'],
+                                        'create' => ['bg' => 'bg-emerald-50/80', 'text' => 'text-emerald-700', 'ring' => 'ring-emerald-600/20', 'dot' => 'bg-emerald-500'],
+                                        'update' => ['bg' => 'bg-blue-50/80', 'text' => 'text-blue-700', 'ring' => 'ring-blue-600/20', 'dot' => 'bg-blue-500'],
+                                        'delete' => ['bg' => 'bg-rose-50/80', 'text' => 'text-rose-700', 'ring' => 'ring-rose-600/20', 'dot' => 'bg-rose-500'],
+                                        'login' => ['bg' => 'bg-indigo-50/80', 'text' => 'text-indigo-700', 'ring' => 'ring-indigo-600/20', 'dot' => 'bg-indigo-500'],
+                                        'logout' => ['bg' => 'bg-slate-50/80', 'text' => 'text-slate-700', 'ring' => 'ring-slate-600/20', 'dot' => 'bg-slate-500'],
+                                        'failed_login', 'login_fallido' => ['bg' => 'bg-amber-50/80', 'text' => 'text-amber-700', 'ring' => 'ring-amber-600/20', 'dot' => 'bg-amber-500'],
+                                        default => ['bg' => 'bg-gray-50/80', 'text' => 'text-gray-600', 'ring' => 'ring-gray-600/20', 'dot' => 'bg-gray-400'],
                                     };
                                 @endphp
                                 <div class="flex flex-col items-end">
-                                    <div class="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-semibold border mb-1 {{ $style['bg'] }} {{ $style['text'] }} {{ $style['border'] }}">
-                                        <span class="w-1.5 h-1.5 rounded-full {{ $style['dot'] }} mr-1.5"></span>
+                                    <div class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-medium ring-1 ring-inset {{ $style['bg'] }} {{ $style['text'] }} {{ $style['ring'] }} mb-1">
+                                        <span class="w-1 h-1 rounded-full {{ $style['dot'] }} mr-1.5"></span>
                                         {{ strtoupper($log->accion) }}
                                     </div>
                                     <span class="text-[9px] font-extrabold uppercase {{ $log->severity == 'critical' ? 'text-red-600 animate-pulse' : ($log->severity == 'medium' ? 'text-orange-600' : 'text-emerald-600') }}">
