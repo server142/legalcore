@@ -148,12 +148,12 @@
                                      </button>
                                  </div>
  
-                                 <div class="max-h-[300px] overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                                 <div class="max-h-[300px] overflow-y-auto space-y-3 pr-2 custom-scrollbar">
                                      @foreach($features as $index => $feature)
-                                         <div class="flex items-center justify-between bg-gray-50 p-4 rounded-2xl border border-gray-100 group">
-                                             <span class="text-sm font-bold text-gray-700">{{ $feature }}</span>
-                                             <button type="button" wire:click="removeFeature({{ $index }})" class="text-gray-400 hover:text-red-500 transition-colors">
-                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                         <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-2xl border border-gray-100 group transition-all focus-within:ring-2 focus-within:ring-indigo-100 focus-within:border-indigo-200">
+                                             <input type="text" wire:model.defer="features.{{ $index }}" class="flex-1 bg-transparent border-none focus:ring-0 text-sm font-bold text-gray-700 py-1">
+                                             <button type="button" wire:click="removeFeature({{ $index }})" class="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                              </button>
                                          </div>
                                      @endforeach
