@@ -20,11 +20,13 @@
             <div class="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
             <div class="relative bg-white border border-gray-100 rounded-3xl p-6 shadow-sm overflow-hidden min-h-[140px] flex flex-col justify-between">
                 <div>
-                    <span class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Total Clientes</span>
-                    <h3 class="text-4xl font-black text-gray-900 mt-1">{{ $totalTenants }}</h3>
-                </div>
-                <div class="absolute top-4 right-4 bg-blue-50 p-2.5 rounded-2xl text-blue-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-blue-50 p-2 rounded-xl text-blue-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        </div>
+                        <span class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Total Clientes</span>
+                    </div>
+                    <h3 class="text-4xl font-black text-gray-900">{{ $totalTenants }}</h3>
                 </div>
                 <div class="text-[10px] font-bold text-gray-400 mt-4 flex items-center gap-1">
                     <svg class="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"></path></svg>
@@ -38,11 +40,13 @@
             <div class="absolute inset-0 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
             <div class="relative bg-white border border-gray-100 rounded-3xl p-6 shadow-sm overflow-hidden min-h-[140px] flex flex-col justify-between">
                 <div>
-                    <span class="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">Suscripciones Activas</span>
-                    <h3 class="text-4xl font-black text-gray-900 mt-1">{{ $activeTenants }}</h3>
-                </div>
-                <div class="absolute top-4 right-4 bg-emerald-50 p-2.5 rounded-2xl text-emerald-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-emerald-50 p-2 rounded-xl text-emerald-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <span class="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">Suscripciones Activas</span>
+                    </div>
+                    <h3 class="text-4xl font-black text-gray-900">{{ $activeTenants }}</h3>
                 </div>
                 <div class="text-[10px] font-bold text-gray-400 mt-4">
                     Tasa de retención: <span class="text-emerald-500">98%</span>
@@ -55,11 +59,13 @@
             <div class="absolute inset-0 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
             <div class="relative bg-white border border-gray-100 rounded-3xl p-6 shadow-sm overflow-hidden min-h-[140px] flex flex-col justify-between">
                 <div>
-                    <span class="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em]">Usuarios Legales</span>
-                    <h3 class="text-4xl font-black text-gray-900 mt-1">{{ $totalUsers }}</h3>
-                </div>
-                <div class="absolute top-4 right-4 bg-purple-50 p-2.5 rounded-2xl text-purple-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-purple-50 p-2 rounded-xl text-purple-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        </div>
+                        <span class="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em]">Usuarios Legales</span>
+                    </div>
+                    <h3 class="text-4xl font-black text-gray-900">{{ $totalUsers }}</h3>
                 </div>
                 <div class="text-[10px] font-bold text-gray-400 mt-4">
                     En red Diogenes
@@ -72,11 +78,13 @@
             <div class="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-600 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
             <div class="relative bg-white border border-gray-100 rounded-3xl p-6 shadow-sm overflow-hidden min-h-[140px] flex flex-col justify-between">
                 <div>
-                    <span class="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em]">Facturación MRR</span>
-                    <h3 class="text-3xl font-black text-gray-900 mt-1">${{ number_format($monthlyIncome, 0) }}</h3>
-                </div>
-                <div class="absolute top-4 right-4 bg-amber-50 p-2.5 rounded-2xl text-amber-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-amber-50 p-2 rounded-xl text-amber-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <span class="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em]">Facturación MRR</span>
+                    </div>
+                    <h3 class="text-3xl font-black text-gray-900">${{ number_format($monthlyIncome, 0) }}</h3>
                 </div>
                 <a href="{{ route('admin.reports.income') }}" class="text-[10px] font-black text-white bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-full mt-4 self-start transition-colors">
                     DETALLES →
@@ -89,7 +97,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10 items-stretch">
         
         <!-- Widget 1: Health & Expiry -->
-        <div class="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm flex flex-col relative overflow-hidden group min-h-[460px]">
+        <div class="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm flex flex-col relative overflow-hidden group min-h-[480px]">
             <div class="relative z-10 flex flex-col h-full">
                 <div class="flex items-center gap-3 mb-8">
                     <div class="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
@@ -141,25 +149,24 @@
             </div>
         </div>
 
-        <!-- Widget 2: AI Budget Premium (Fixed Dark Card) -->
-        <div class="bg-gray-900 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden group min-h-[460px] flex flex-col">
-            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-transparent opacity-50"></div>
+        <!-- Widget 2: AI Budget Premium (White Style Now) -->
+        <div class="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm flex flex-col group min-h-[480px]">
             <div class="relative z-10 flex flex-col h-full">
                 <div class="flex justify-between items-start mb-8">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center text-indigo-400 backdrop-blur-xl border border-white/10 transform group-hover:rotate-12 transition-transform">
+                        <div class="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         </div>
-                        <h3 class="text-sm font-black text-white uppercase tracking-widest">Inversión en IA</h3>
+                        <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest">Inversión en IA</h3>
                     </div>
-                    <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] font-black text-indigo-300 uppercase">Límite: ${{ number_format($aiBudget, 0) }}</span>
+                    <span class="px-3 py-1 bg-indigo-50 rounded-full text-[9px] font-black text-indigo-600 uppercase border border-indigo-100">Límite: ${{ number_format($aiBudget, 0) }}</span>
                 </div>
 
                 <div class="mb-4">
-                    <span class="text-[10px] font-black text-indigo-300/50 uppercase tracking-[0.2em] block mb-1">Uso Mensual vs Presupuesto</span>
+                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-1">Uso Mensual Acumulado</span>
                     <div class="flex items-baseline gap-2">
-                        <h2 class="text-5xl font-black text-white tabular-nums">${{ number_format($aiCurrentSpend, 4) }}</h2>
-                        <span class="text-xs font-bold text-indigo-400 uppercase">USD</span>
+                        <h2 class="text-5xl font-black text-gray-900 tabular-nums">${{ number_format($aiCurrentSpend, 4) }}</h2>
+                        <span class="text-xs font-bold text-gray-400 uppercase">USD</span>
                     </div>
                 </div>
 
@@ -169,23 +176,23 @@
                 </div>
 
                 <div class="mt-auto">
-                    <div class="flex justify-between text-[11px] font-black text-indigo-300 uppercase mb-3">
+                    <div class="flex justify-between text-[11px] font-black text-gray-400 uppercase mb-3">
                         <span class="flex items-center gap-2">
-                             <span class="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
+                             <span class="w-2 h-2 rounded-full bg-indigo-600 shadow-[0_0_8px_rgba(99,102,241,0.4)]"></span>
                              Capacidad Utilizada
                         </span>
                         @php $percentage = $aiBudget > 0 ? ($aiCurrentSpend / $aiBudget) * 100 : 0; @endphp
-                        <span>{{ number_format($percentage, 2) }}%</span>
+                        <span class="text-gray-900">{{ number_format($percentage, 2) }}%</span>
                     </div>
-                    <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 p-[1px]">
-                        <div class="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all duration-1000 ease-out" style="width: {{ $percentage }}%"></div>
+                    <div class="h-2 w-full bg-gray-100 rounded-full overflow-hidden p-[1px]">
+                        <div class="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.3)] transition-all duration-1000 ease-out" style="width: {{ $percentage }}%"></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Widget 3: Data Distribution -->
-        <div class="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm flex flex-col group min-h-[460px]">
+        <div class="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm flex flex-col group min-h-[480px]">
             <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest mb-8 flex items-center gap-2">
                 <span class="w-2 h-5 bg-indigo-600 rounded-full"></span>
                 Uso por Despacho
