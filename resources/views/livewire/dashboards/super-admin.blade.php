@@ -86,120 +86,131 @@
     </div>
 
     <!-- Infrastructure & AI Monitoring: Premium Glass Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10 items-stretch">
         
         <!-- Widget 1: Health & Expiry -->
-        <div class="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm flex flex-col relative overflow-hidden group">
-            <div class="relative z-10">
-                <div class="flex items-center gap-3 mb-6">
+        <div class="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm flex flex-col relative overflow-hidden group min-h-[460px]">
+            <div class="relative z-10 flex flex-col h-full">
+                <div class="flex items-center gap-3 mb-8">
                     <div class="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
                     </div>
                     <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest">Infraestructura</h3>
                 </div>
 
-                <div class="space-y-6">
-                    <div class="flex justify-between items-end">
+                <div class="space-y-8 flex-grow">
+                    <div class="flex justify-between items-center bg-gray-50/50 p-6 rounded-3xl border border-gray-100">
                         <div>
                             <span class="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-1">Dominio / SSL</span>
                             @if($domainDaysLeft !== null)
-                                <span class="text-3xl font-black text-gray-900 tabular-nums">{{ $domainDaysLeft }}</span>
-                                <span class="text-sm font-bold text-gray-400">Días restantes</span>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-4xl font-black text-gray-900 tabular-nums">{{ $domainDaysLeft }}</span>
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase">Días</span>
+                                </div>
                             @else
                                 <span class="text-lg font-bold text-gray-400 uppercase">No definido</span>
                             @endif
                         </div>
-                        <div class="w-24 h-14">
+                        <div class="w-20 h-20">
                             <canvas id="domainGauge"></canvas>
                         </div>
                     </div>
 
-                    <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
+                    <div class="p-6 bg-white rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm">
                         <div>
-                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-wider block">Costo Cloud VPS</span>
-                            <span class="text-xl font-black text-indigo-600">${{ number_format($vpsCost, 2) }} <span class="text-xs text-gray-400">USD/m</span></span>
+                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-1">Costo Cloud VPS</span>
+                            <span class="text-2xl font-black text-indigo-600 tabular-nums">${{ number_format($vpsCost, 2) }}</span>
+                            <span class="text-[10px] text-gray-400 block font-bold mt-1">USD MENSUAL</span>
                         </div>
-                        <div class="px-3 py-1 bg-white border border-gray-200 rounded-lg text-[10px] font-black text-gray-500">DIGITAL OCEAN</div>
+                        <div class="flex flex-col items-end">
+                            <span class="px-3 py-1 bg-indigo-50 rounded-lg text-[9px] font-black text-indigo-600 mb-1">STABLE</span>
+                            <span class="text-[9px] font-bold text-gray-400">DIGITAL OCEAN</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-gray-50 flex justify-between items-center">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Satus de Vigilancia</span>
+                        <span class="text-xs font-bold {{ $domainDaysLeft < 30 ? 'text-red-600' : 'text-green-600' }} flex items-center gap-1.5 mt-0.5">
+                            <span class="w-2 h-2 rounded-full {{ $domainDaysLeft < 30 ? 'bg-red-600 animate-pulse' : 'bg-green-600' }}"></span>
+                            {{ $domainDaysLeft < 30 ? 'Acción Requerida' : 'Infraestructura Saludable' }}
+                        </span>
                     </div>
                 </div>
             </div>
-            
-            <div class="mt-8 pt-6 border-t border-gray-50 flex justify-between items-center z-10">
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-black text-gray-400 uppercase">Satus de Vigilancia</span>
-                    <span class="text-xs font-bold {{ $domainDaysLeft < 30 ? 'text-red-600' : 'text-green-600' }} flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 rounded-full {{ $domainDaysLeft < 30 ? 'bg-red-600 animate-pulse' : 'bg-green-600' }}"></span>
-                        {{ $domainDaysLeft < 30 ? 'Requiere Atención' : 'Sistemas Saludables' }}
-                    </span>
-                </div>
-                <button class="p-2 text-gray-400 hover:text-indigo-600 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
-                </button>
-            </div>
         </div>
 
-        <!-- Widget 2: AI Budget Premium -->
-        <div class="bg-gray-900 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/10 to-transparent opacity-50"></div>
+        <!-- Widget 2: AI Budget Premium (Fixed Dark Card) -->
+        <div class="bg-gray-900 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden group min-h-[460px] flex flex-col">
+            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-transparent opacity-50"></div>
             <div class="relative z-10 flex flex-col h-full">
-                <div class="flex justify-between items-start mb-10">
+                <div class="flex justify-between items-start mb-8">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center text-indigo-400 backdrop-blur-xl border border-white/10">
+                        <div class="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center text-indigo-400 backdrop-blur-xl border border-white/10 transform group-hover:rotate-12 transition-transform">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         </div>
                         <h3 class="text-sm font-black text-white uppercase tracking-widest">Inversión en IA</h3>
                     </div>
-                    <div class="text-right">
-                        <span class="px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] font-black text-indigo-300 uppercase">Límite: ${{ number_format($aiBudget, 0) }}</span>
-                    </div>
+                    <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[9px] font-black text-indigo-300 uppercase">Límite: ${{ number_format($aiBudget, 0) }}</span>
                 </div>
 
                 <div class="mb-4">
-                    <span class="text-[10px] font-black text-indigo-300/50 uppercase tracking-widest block">Consumo Mensual Acumulado</span>
-                    <h2 class="text-5xl font-black text-white group-hover:scale-105 transition-transform origin-left tabular-nums">
-                        ${{ number_format($aiCurrentSpend, 4) }}
-                    </h2>
+                    <span class="text-[10px] font-black text-indigo-300/50 uppercase tracking-[0.2em] block mb-1">Uso Mensual vs Presupuesto</span>
+                    <div class="flex items-baseline gap-2">
+                        <h2 class="text-5xl font-black text-white tabular-nums">${{ number_format($aiCurrentSpend, 4) }}</h2>
+                        <span class="text-xs font-bold text-indigo-400 uppercase">USD</span>
+                    </div>
                 </div>
 
-                <div class="flex-grow min-h-[100px] -mx-4">
+                <!-- Fixed Trend Container -->
+                <div class="relative flex-grow min-h-[140px] mt-4 mb-4">
                     <canvas id="aiSpendTrend"></canvas>
                 </div>
 
-                <div class="mt-6">
-                    <div class="flex justify-between text-[10px] font-black text-indigo-300 uppercase mb-2">
-                        <span>Eficiencia de Costo</span>
+                <div class="mt-auto">
+                    <div class="flex justify-between text-[11px] font-black text-indigo-300 uppercase mb-3">
+                        <span class="flex items-center gap-2">
+                             <span class="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
+                             Capacidad Utilizada
+                        </span>
                         @php $percentage = $aiBudget > 0 ? ($aiCurrentSpend / $aiBudget) * 100 : 0; @endphp
                         <span>{{ number_format($percentage, 2) }}%</span>
                     </div>
-                    <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)] transition-all duration-1000" style="width: {{ $percentage }}%"></div>
+                    <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 p-[1px]">
+                        <div class="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all duration-1000 ease-out" style="width: {{ $percentage }}%"></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Widget 3: Data Distribution -->
-        <div class="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm flex flex-col group">
-            <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest mb-8">Uso por Despacho</h3>
+        <div class="bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm flex flex-col group min-h-[460px]">
+            <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest mb-8 flex items-center gap-2">
+                <span class="w-2 h-5 bg-indigo-600 rounded-full"></span>
+                Uso por Despacho
+            </h3>
             
             <div class="flex flex-col h-full">
                 @if($aiTenantUsage->count() > 0)
-                    <div class="relative h-48 mb-8">
-                        <canvas id="tenantDistribution"></canvas>
+                    <div class="relative h-44 mb-8 bg-gray-50/30 rounded-[2rem] flex items-center justify-center border border-gray-50">
+                        <div class="w-40 h-40">
+                            <canvas id="tenantDistribution"></canvas>
+                        </div>
                         <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span class="text-[10px] font-black text-gray-400 uppercase">Volumen</span>
-                            <span class="text-xl font-black text-gray-900 tabular-nums">{{ $aiTenantUsage->count() }}</span>
+                            <span class="text-[10px] font-black text-gray-400 uppercase">Clientes</span>
+                            <span class="text-2xl font-black text-gray-900 tabular-nums">{{ $aiTenantUsage->count() }}</span>
                         </div>
                     </div>
                     
-                    <div class="space-y-4 max-h-[140px] overflow-y-auto custom-scrollbar pr-2">
+                    <div class="space-y-4 max-h-[120px] overflow-y-auto custom-scrollbar pr-2 flex-grow">
                         @foreach($aiTenantUsage as $usage)
                             <div class="flex items-center justify-between group/item">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-2.5 h-2.5 rounded-full ring-2 ring-white shadow-sm" style="background-color: {{ ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'][$loop->index % 5] }}"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full ring-4 ring-gray-50 shadow-sm" style="background-color: {{ ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'][$loop->index % 5] }}"></div>
                                     <span class="text-xs font-bold text-gray-700 truncate max-w-[140px] group-hover/item:text-indigo-600 transition-colors">{{ $usage->tenant->name ?? 'Sistema' }}</span>
                                 </div>
-                                <span class="text-xs font-black text-gray-900 tabular-nums italic">${{ number_format($usage->total_cost, 4) }}</span>
+                                <span class="text-xs font-black text-gray-900 tabular-nums font-mono">${{ number_format($usage->total_cost, 4) }}</span>
                             </div>
                         @endforeach
                     </div>
