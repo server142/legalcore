@@ -117,19 +117,20 @@
                                 </td>
 
                                 @php
-                                    $actionClasses = match($log->accion) {
-                                        'create' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
-                                        'update' => 'bg-blue-100 text-blue-700 border-blue-200',
-                                        'delete' => 'bg-rose-100 text-rose-700 border-rose-200',
-                                        'login' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
-                                        'logout' => 'bg-slate-100 text-slate-700 border-slate-200',
-                                        'login_fallido', 'failed_login' => 'bg-amber-100 text-amber-700 border-amber-200',
-                                        default => 'bg-gray-100 text-gray-600 border-gray-200'
+                                    $style = match($log->accion) {
+                                        'create' => ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-700', 'border' => 'border-emerald-200', 'dot' => 'bg-emerald-500'],
+                                        'update' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-200', 'dot' => 'bg-blue-500'],
+                                        'delete' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-700', 'border' => 'border-rose-200', 'dot' => 'bg-rose-500'],
+                                        'login' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-200', 'dot' => 'bg-indigo-500'],
+                                        'logout' => ['bg' => 'bg-slate-50', 'text' => 'text-slate-700', 'border' => 'border-slate-200', 'dot' => 'bg-slate-500'],
+                                        'login_fallido', 'failed_login' => ['bg' => 'bg-amber-50', 'text' => 'text-amber-700', 'border' => 'border-amber-200', 'dot' => 'bg-amber-500'],
+                                        default => ['bg' => 'bg-slate-50', 'text' => 'text-slate-700', 'border' => 'border-slate-200', 'dot' => 'bg-slate-500'],
                                     };
                                 @endphp
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-[10px] font-bold text-gray-500 uppercase">{{ $log->modulo }}</div>
-                                    <div class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold border {{ $actionClasses }}">
+                                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1 opacity-70">{{ $log->modulo }}</div>
+                                    <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-tight border {{ $style['bg'] }} {{ $style['text'] }} {{ $style['border'] }} shadow-sm">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $style['dot'] }} mr-1.5 shadow-sm"></span>
                                         {{ strtoupper($log->accion) }}
                                     </div>
                                 </td>
@@ -189,20 +190,21 @@
                                     </div>
                                 </div>
                                 @php
-                                    $actionClasses = match($log->accion) {
-                                        'create' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
-                                        'update' => 'bg-blue-100 text-blue-700 border-blue-200',
-                                        'delete' => 'bg-rose-100 text-rose-700 border-rose-200',
-                                        'login' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
-                                        'logout' => 'bg-slate-100 text-slate-700 border-slate-200',
-                                        'failed_login', 'login_fallido' => 'bg-amber-100 text-amber-700 border-amber-200',
-                                        default => 'bg-gray-100 text-gray-600 border-gray-200'
+                                    $style = match($log->accion) {
+                                        'create' => ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-700', 'border' => 'border-emerald-100', 'dot' => 'bg-emerald-500'],
+                                        'update' => ['bg' => 'bg-blue-50', 'text' => 'text-blue-700', 'border' => 'border-blue-100', 'dot' => 'bg-blue-500'],
+                                        'delete' => ['bg' => 'bg-rose-50', 'text' => 'text-rose-700', 'border' => 'border-rose-100', 'dot' => 'bg-rose-500'],
+                                        'login' => ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-700', 'border' => 'border-indigo-100', 'dot' => 'bg-indigo-500'],
+                                        'logout' => ['bg' => 'bg-slate-50', 'text' => 'text-slate-700', 'border' => 'border-slate-100', 'dot' => 'bg-slate-500'],
+                                        'failed_login', 'login_fallido' => ['bg' => 'bg-amber-50', 'text' => 'text-amber-700', 'border' => 'border-amber-100', 'dot' => 'bg-amber-500'],
+                                        default => ['bg' => 'bg-slate-50', 'text' => 'text-slate-700', 'border' => 'border-slate-100', 'dot' => 'bg-slate-500'],
                                     };
                                 @endphp
                                 <div class="flex flex-col items-end">
-                                    <span class="px-2 py-0.5 inline-flex text-[9px] font-bold rounded-full border mb-1 {{ $actionClasses }}">
+                                    <div class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black tracking-tighter border mb-1 {{ $style['bg'] }} {{ $style['text'] }} {{ $style['border'] }}">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $style['dot'] }} mr-1.5"></span>
                                         {{ strtoupper($log->accion) }}
-                                    </span>
+                                    </div>
                                     <span class="text-[9px] font-extrabold uppercase {{ $log->severity == 'critical' ? 'text-red-600 animate-pulse' : ($log->severity == 'medium' ? 'text-orange-600' : 'text-emerald-600') }}">
                                         {{ $log->severity }}
                                     </span>
