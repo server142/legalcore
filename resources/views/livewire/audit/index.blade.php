@@ -116,9 +116,20 @@
                                     </div>
                                 </td>
 
+                                @php
+                                    $actionClasses = match($log->accion) {
+                                        'create' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                                        'update' => 'bg-blue-100 text-blue-700 border-blue-200',
+                                        'delete' => 'bg-rose-100 text-rose-700 border-rose-200',
+                                        'login' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
+                                        'logout' => 'bg-slate-100 text-slate-700 border-slate-200',
+                                        'login_fallido', 'failed_login' => 'bg-amber-100 text-amber-700 border-amber-200',
+                                        default => 'bg-gray-100 text-gray-600 border-gray-200'
+                                    };
+                                @endphp
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-[10px] font-bold text-gray-500 uppercase">{{ $log->modulo }}</div>
-                                    <div class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-gray-100 text-gray-600 border border-gray-200">
+                                    <div class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold border {{ $actionClasses }}">
                                         {{ strtoupper($log->accion) }}
                                     </div>
                                 </td>
@@ -177,8 +188,19 @@
                                         <div class="text-[10px] text-gray-500">{{ $log->created_at->format('d/m/Y H:i') }}</div>
                                     </div>
                                 </div>
+                                @php
+                                    $actionClasses = match($log->accion) {
+                                        'create' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                                        'update' => 'bg-blue-100 text-blue-700 border-blue-200',
+                                        'delete' => 'bg-rose-100 text-rose-700 border-rose-200',
+                                        'login' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
+                                        'logout' => 'bg-slate-100 text-slate-700 border-slate-200',
+                                        'failed_login', 'login_fallido' => 'bg-amber-100 text-amber-700 border-amber-200',
+                                        default => 'bg-gray-100 text-gray-600 border-gray-200'
+                                    };
+                                @endphp
                                 <div class="flex flex-col items-end">
-                                    <span class="px-2 py-0.5 inline-flex text-[9px] font-bold rounded-full bg-gray-100 text-gray-600 border border-gray-200 mb-1">
+                                    <span class="px-2 py-0.5 inline-flex text-[9px] font-bold rounded-full border mb-1 {{ $actionClasses }}">
                                         {{ strtoupper($log->accion) }}
                                     </span>
                                     <span class="text-[9px] font-extrabold uppercase {{ $log->severity == 'critical' ? 'text-red-600 animate-pulse' : ($log->severity == 'medium' ? 'text-orange-600' : 'text-emerald-600') }}">
