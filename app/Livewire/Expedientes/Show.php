@@ -27,7 +27,7 @@ class Show extends Component
 
     // Edit fields
     public $numero, $titulo, $materia, $juzgado, $estado_procesal, $estado_procesal_id, $nombre_juez, $fecha_inicio, $cliente_id, $abogado_responsable_id;
-    public $honorarios_totales, $saldo_pendiente;
+    public $honorarios_totales, $saldo_pendiente, $anticipo = 0;
 
     // Payment fields
     public $monto_pago;
@@ -182,6 +182,7 @@ class Show extends Component
         $this->abogado_responsable_id = $this->expediente->abogado_responsable_id;
         $this->honorarios_totales = $this->expediente->honorarios_totales;
         $this->saldo_pendiente = $this->expediente->saldo_pendiente;
+        $this->anticipo = 0; // Reset anticipo on edit
         
         $this->showEditModal = true;
     }
@@ -212,18 +213,88 @@ class Show extends Component
             'cliente_id' => $this->cliente_id,
             'abogado_responsable_id' => $this->abogado_responsable_id,
             'honorarios_totales' => $this->honorarios_totales,
-            // We don't update saldo_pendiente here automatically unless they change honorarios_totales
-            // If they change honorarios, we should recalculate saldo based on paid facturas
         ]);
 
-        if ($this->honorarios_totales != $this->expediente->getOriginal('honorarios_totales')) {
+        $oldHonorarios = $this->expediente->getOriginal('honorarios_totales');
+        $honorariosChanged = $this->honorarios_totales != $oldHonorarios;
+
+        if ($this->anticipo > 0) {
+            // 1. Create paid factura (Receipt)
+            \App\Models\Factura::create([
+                'tenant_id' => auth()->user()->tenant_id,
+                'cliente_id' => $this->cliente_id,
+                'expediente_id' => $this->expediente->id,
+                'subtotal' => $this->anticipo / 1.16,
+                'iva' => $this->anticipo - ($this->anticipo / 1.16),
+                'total' => $this->anticipo,
+                'estado' => 'pagada',
+                'fecha_pago' => now(),
+                'conceptos' => [['descripcion' => "Anticipo/Abono honorarios - Exp: {$this->numero}", 'monto' => $this->anticipo]],
+                'fecha_emision' => now(),
+            ]);
+
+            // 2. Deduct from existing pending invoices if any
+            $this->deductFromPendingFacturas($this->anticipo);
+            
+            // 3. Force saldo recalculation
+            $honorariosChanged = true;
+        }
+
+        if ($honorariosChanged) {
             $pagado = $this->expediente->facturas()->where('estado', 'pagada')->sum('total');
-            $this->expediente->update(['saldo_pendiente' => (float)$this->honorarios_totales - $pagado]);
+            $nuevoSaldo = (float)$this->honorarios_totales - $pagado;
+            $this->expediente->update(['saldo_pendiente' => $nuevoSaldo > 0 ? $nuevoSaldo : 0]);
+
+            // If it's the first time setting honorarios, create a pending invoice for the remainder
+            if ($oldHonorarios == 0 && $nuevoSaldo > 0) {
+                \App\Models\Factura::create([
+                    'tenant_id' => auth()->user()->tenant_id,
+                    'cliente_id' => $this->cliente_id,
+                    'expediente_id' => $this->expediente->id,
+                    'subtotal' => $nuevoSaldo / 1.16,
+                    'iva' => $nuevoSaldo - ($nuevoSaldo / 1.16),
+                    'total' => $nuevoSaldo,
+                    'estado' => 'pendiente',
+                    'fecha_vencimiento' => now()->addDays(30),
+                    'conceptos' => [['descripcion' => "Saldo pendiente honorarios - Exp: {$this->numero}", 'monto' => $nuevoSaldo]],
+                    'fecha_emision' => now(),
+                ]);
+            }
         }
 
         $this->showEditModal = false;
         $this->expediente->refresh();
         $this->dispatch('notify', 'Expediente actualizado exitosamente');
+    }
+
+    protected function deductFromPendingFacturas($amount)
+    {
+        $remainingToDeduct = $amount;
+        $pendingInvoices = \App\Models\Factura::where('expediente_id', $this->expediente->id)
+            ->where('estado', 'pendiente')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        foreach ($pendingInvoices as $invoice) {
+            if ($remainingToDeduct <= 0) break;
+
+            if ($invoice->total <= $remainingToDeduct) {
+                $deducted = $invoice->total;
+                $invoice->delete(); 
+                $remainingToDeduct -= $deducted;
+            } else {
+                $newTotal = $invoice->total - $remainingToDeduct;
+                $newSubtotal = $newTotal / 1.16;
+                $newIva = $newTotal - $newSubtotal;
+
+                $invoice->update([
+                    'total' => $newTotal,
+                    'subtotal' => $newSubtotal,
+                    'iva' => $newIva,
+                ]);
+                $remainingToDeduct = 0;
+            }
+        }
     }
 
     public function recordPayment()

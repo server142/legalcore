@@ -618,10 +618,17 @@
                     </div>
 
                      <!-- Honorarios -->
-                     <div>
-                        <x-input-label for="honorarios_totales" :value="__('Honorarios Totales ($)')" />
-                        <x-text-input id="honorarios_totales" type="number" step="0.01" class="mt-1 block w-full" wire:model="honorarios_totales" />
-                        <p class="text-xs text-gray-500 mt-1">Cambiarlos recalculará el saldo pendiente</p>
+                     <div class="space-y-4">
+                        <div>
+                            <x-input-label for="honorarios_totales" :value="__('Honorarios Totales ($)')" />
+                            <x-text-input id="honorarios_totales" type="number" step="0.01" class="mt-1 block w-full bg-gray-50" wire:model="honorarios_totales" />
+                        </div>
+
+                        <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                            <x-input-label for="anticipo" :value="__('REGISTRAR ANTICIPO / ABONO INICIAL ($)')" class="text-indigo-700 font-black" />
+                            <x-text-input id="anticipo" type="number" step="0.01" class="mt-1 block w-full border-indigo-300 focus:ring-indigo-500 font-bold text-lg" wire:model="anticipo" placeholder="0.00" />
+                            <p class="text-[10px] text-indigo-500 mt-2 uppercase font-bold">Esto generará un recibo de pago automático y reducirá el saldo pendiente.</p>
+                        </div>
                     </div>
                 </div>
 
