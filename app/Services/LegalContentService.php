@@ -139,8 +139,8 @@ class LegalContentService
 <h2>3. Disponibilidad y Responsabilidad</h2>
 <p>Diogenes garantiza un uptime del 99.9%. No obstante, conforme a las disposiciones mercantiles, el sistema se provee "tal cual es" (as is), limitando la responsabilidad a la devolución de la última mensualidad pagada en caso de fallas graves comprobables.</p>
 
-<h2>4. Jurisdicción</h2>
-<p>Para la interpretación de este contrato, las partes se someten a la jurisdicción de los tribunales competentes de la Ciudad de México, renunciando a cualquier otro fuero.</p>';
+    <h2>4. Jurisdicción</h2>
+    <p>Para la interpretación de este contrato, las partes se someten a la jurisdicción de los tribunales competentes de la ciudad de <strong>Xalapa, Veracruz, México</strong>, renunciando a cualquier otro fuero que pudiera corresponderles por razón de sus domicilios presentes o futuros.</p>';
     }
 
     private static function getGlobalSubscriptionTerms()
@@ -198,7 +198,7 @@ class LegalContentService
 <p>Ambas partes se obligan a guardar estricta confidencialidad sobre la información compartida durante la vigencia de este contrato.</p>
 
 <p><br><br></p>
-<p style="text-align: center;">Firmado en {{CIUDAD_FIRMA}} a los {{FECHA_ACTUAL}}.</p>
+<p style="text-align: center;">Firmado en <strong>Xalapa, Veracruz</strong> a los {{FECHA_ACTUAL}}.</p>
 
 <table style="width: 100%; margin-top: 50px;">
 <tr>
