@@ -54,7 +54,8 @@ class WelcomeOverlay extends Component
             preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $this->videoUrl, $matches);
             
             if (isset($matches[1])) {
-                $this->embedUrl = "https://www.youtube.com/embed/" . $matches[1] . "?autoplay=0&rel=0";
+                // Use youtube-nocookie to reduce tracking requests and avoid client-side blocking errors
+                $this->embedUrl = "https://www.youtube-nocookie.com/embed/" . $matches[1] . "?autoplay=0&rel=0";
             }
         } elseif (preg_match('/\.(mp4|webm|ogg)$/i', $this->videoUrl)) {
              $this->videoType = 'mp4';

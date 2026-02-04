@@ -270,7 +270,7 @@
                             </div>
                             <div class="text-right">
                                 <p class="text-sm font-bold text-emerald-600">+${{ number_format($pago->total, 2) }}</p>
-                                <p class="text-[10px] text-gray-400">{{ $pago->fecha_pago->diffForHumans() }}</p>
+                                <p class="text-[10px] text-gray-400">{{ optional($pago->fecha_pago)->diffForHumans() ?? 'Fecha N/A' }}</p>
                             </div>
                         </div>
                     @empty

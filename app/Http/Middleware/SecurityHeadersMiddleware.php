@@ -33,7 +33,8 @@ class SecurityHeadersMiddleware
         }
 
         // Content Security Policy (Flexibilidad total para activos locales en HTTPS)
-        $response->headers->set('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; img-src 'self' data: https:; frame-src 'self' https:; connect-src 'self' https:;");
+        // Content Security Policy (Con soporte para YouTube y Media)
+        $response->headers->set('Content-Security-Policy', "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: www.youtube.com s.ytimg.com www.youtube-nocookie.com; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; img-src 'self' data: https: i.ytimg.com youtube.com; frame-src 'self' https: www.youtube.com youtube.com www.youtube-nocookie.com; connect-src 'self' https: blob:; media-src 'self' https: blob: googlevideo.com *.googlevideo.com; worker-src 'self' blob:;");
 
         return $response;
     }

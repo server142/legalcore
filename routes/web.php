@@ -9,22 +9,25 @@ use App\Models\Expediente; // Added for the moved route
 
 Route::get('/', function () {
     $plans = Plan::where('is_active', true)
-        ->where('slug', '!=', 'trial') // Opcional: Ocultar trial si solo queremos mostrar planes de pago
+        ->where('slug', '!=', 'trial')
         ->orderBy('price', 'asc')
         ->get();
-    return view('welcome', ['plans' => $plans]);
+    
+    $legalDocs = \App\Models\LegalDocument::where('activo', true)
+        ->whereJsonContains('visible_en', 'footer')
+        ->get();
+
+    return view('welcome', [
+        'plans' => $plans,
+        'legalDocs' => $legalDocs
+    ]);
 })->name('welcome');
 
 // Public Legal Pages (Required by Google API Verification)
-Route::get('/privacy', function () {
-    $content = file_get_contents(base_path('POLITICA_PRIVACIDAD.md'));
-    return view('legal.document', ['title' => 'Política de Privacidad', 'content' => $content]);
-})->name('privacy');
-
-Route::get('/terms', function () {
-    $content = file_get_contents(base_path('TERMINOS_SERVICIO.md'));
-    return view('legal.document', ['title' => 'Términos de Servicio', 'content' => $content]);
-})->name('terms');
+Route::get('/legal/acceptance', \App\Livewire\Legal\AcceptanceMandatory::class)->name('legal.acceptance')->middleware('auth');
+Route::get('/privacy', [\App\Http\Controllers\LegalDocumentController::class, 'show'])->defaults('type', 'PRIVACIDAD')->name('privacy');
+Route::get('/terms', [\App\Http\Controllers\LegalDocumentController::class, 'show'])->defaults('type', 'TERMINOS')->name('terms');
+Route::get('/legal/{type}', [\App\Http\Controllers\LegalDocumentController::class, 'show'])->name('legal.view');
 
 Route::get('/cita/{token}', [\App\Http\Controllers\PublicAsesoriaController::class, 'show'])->name('asesorias.public');
 Route::get('/qr/asesoria/{token}', [\App\Http\Controllers\PublicAsesoriaQrController::class, 'show'])->name('asesorias.public.qr');
@@ -34,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('/expedientes', \App\Livewire\Expedientes\Index::class)->name('expedientes.index');
     Route::get('/expedientes/nuevo', \App\Livewire\Expedientes\Create::class)->name('expedientes.create');
+    Route::get('/expedientes/{expediente}/contract', [App\Http\Controllers\ContractController::class, 'generate'])->name('expedientes.contract');
     Route::get('/expedientes/{expediente}', \App\Livewire\Expedientes\Show::class)->name('expedientes.show');
 
     Route::get('/clientes', \App\Livewire\Clientes\Index::class)->name('clientes.index');
@@ -82,6 +86,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/admin/global-settings', \App\Livewire\Admin\GlobalSettings::class)->name('admin.global-settings')->middleware('can:manage tenants');
     Route::get('/admin/announcements', \App\Livewire\Admin\Announcements::class)->name('admin.announcements')->middleware('can:manage tenants');
     
+    // Legal Documents
+    Route::get('/admin/legal-documents', \App\Livewire\Admin\LegalDocuments\Index::class)->name('admin.legal-documents.index')->middleware('can:manage settings');
+    Route::get('/admin/legal-documents/create', \App\Livewire\Admin\LegalDocuments\Form::class)->name('admin.legal-documents.create')->middleware('can:manage settings');
+    Route::get('/admin/legal-documents/{legalDocument}/edit', \App\Livewire\Admin\LegalDocuments\Form::class)->name('admin.legal-documents.edit')->middleware('can:manage settings');
+
     // Plans Management
     Route::get('/admin/plans', \App\Livewire\Admin\Plans\Index::class)->name('admin.plans.index')->middleware('can:manage settings');
     Route::get('/admin/plans/create', \App\Livewire\Admin\Plans\Manage::class)->name('admin.plans.create')->middleware('can:manage settings');

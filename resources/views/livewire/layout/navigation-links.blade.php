@@ -86,6 +86,9 @@
         <x-sidebar-link :href="route('admin.settings')" :active="request()->routeIs('admin.settings')" icon="settings">
             {{ __('Configuración') }}
         </x-sidebar-link>
+        <x-sidebar-link :href="route('admin.legal-documents.index')" :active="request()->routeIs('admin.legal-documents.*')" icon="book">
+            {{ __('Documentos Legales') }}
+        </x-sidebar-link>
         @endcan
 
         @can('manage users')

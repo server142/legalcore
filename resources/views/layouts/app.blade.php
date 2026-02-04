@@ -138,6 +138,28 @@
                 <!-- Page Content -->
                 <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
                     {{ $slot }}
+
+                    <!-- SaaS Footer -->
+                    <footer class="mt-auto pt-10 pb-6 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center text-[10px] text-gray-400 gap-4">
+                        <div>&copy; {{ date('Y') }} Diogenes. Todos los derechos reservados.</div>
+                        <div class="flex space-x-4">
+                            @php
+                                $tenantId = auth()->user()->tenant_id;
+                                $footerDocs = \App\Models\LegalDocument::where('activo', true)
+                                    ->whereJsonContains('visible_en', 'footer')
+                                    ->forTenant($tenantId)
+                                    ->get()
+                                    ->unique('tipo'); // Avoid duplicates if multiple versions exist
+                            @endphp
+                            <div class="flex flex-wrap justify-end gap-x-4 gap-y-2 max-w-2xl">
+                                @foreach($footerDocs as $doc)
+                                    <a href="{{ route('legal.view', $doc->tipo ?? $doc->id) }}" target="_blank" class="hover:text-indigo-600 transition font-bold whitespace-nowrap">
+                                        {{ \Illuminate\Support\Str::limit(strtoupper($doc->nombre), 20) }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    </footer>
                 </main>
             </div>
         </div>

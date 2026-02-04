@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\SecurityHeadersMiddleware::class,
             \App\Http\Middleware\TenantMiddleware::class,
+            \App\Http\Middleware\CheckLegalAcceptance::class,
             // \App\Http\Middleware\CheckSubscription::class,
         ]);
     })

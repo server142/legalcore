@@ -432,6 +432,75 @@ class Show extends Component
         }
     }
 
+    public function generateContract()
+    {
+        try {
+            $template = \App\Models\LegalDocument::where('tipo', 'CONTRATO_SERVICIOS')
+                ->forTenant(auth()->user()->tenant_id)
+                ->first();
+
+            if (!$template) {
+                // Fallback: Try to find a global one if tenant one doesn't exist (though seeder should have created it)
+                $template = \App\Models\LegalDocument::where('tipo', 'CONTRATO_SERVICIOS')
+                    ->whereNull('tenant_id')
+                    ->first();
+            }
+
+            if (!$template) {
+                $this->dispatch('notify', '⚠️ No se encontró la plantilla del contrato. Contacte a soporte.');
+                return;
+            }
+
+            $generator = new \App\Services\ContractGenerationService();
+            $htmlContent = $generator->generate($template, $this->expediente);
+
+            // Basic HTML wrapper for PDF
+            $fullHtml = '
+            <html>
+            <head>
+                <style>
+                    body { font-family: sans-serif; line-height: 1.6; color: #333; }
+                    h1 { text-align: center; color: #1a202c; font-size: 24px; margin-bottom: 30px; }
+                    p { margin-bottom: 15px; text-align: justify; }
+                    table { margin-top: 50px; width: 100%; border-collapse: collapse; }
+                    td { padding: 10px; vertical-align: top; }
+                </style>
+            </head>
+            <body>
+                ' . $htmlContent . '
+            </body>
+            </html>';
+
+            // Generate PDF using Native Dompdf
+            $options = new \Dompdf\Options();
+            $options->set('isRemoteEnabled', true);
+            $options->set('defaultFont', 'sans-serif');
+
+            $dompdf = new \Dompdf\Dompdf($options);
+            $dompdf->loadHtml($fullHtml);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            // Sanitize filename (remove slashes from Expediente Number like '123/2024')
+            $safeNumero = str_replace(['/', '\\'], '-', $this->expediente->numero);
+            $filename = "Contrato-Servicios-Exp-{$safeNumero}.pdf";
+
+            return response()->stream(
+                fn () => print($dompdf->output()),
+                200,
+                [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . $filename . '"',
+                ]
+            );
+
+        } catch (\Exception $e) {
+            \Log::error('Error generando contrato PDF: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            $this->dispatch('notify', 'Error critico al generar PDF: ' . substr($e->getMessage(), 0, 50));
+        }
+    }
+
     public function render()
     {
         $tenantId = $this->expediente->tenant_id;

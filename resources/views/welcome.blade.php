@@ -312,9 +312,12 @@
             <div>
                 <h4 class="text-white font-bold mb-4">Legal</h4>
                 <ul class="space-y-2 text-sm">
-                    <li><a href="#" class="hover:text-white transition">Términos de Servicio</a></li>
-                    <li><a href="#" class="hover:text-white transition">Privacidad</a></li>
-                    <li><a href="#" class="hover:text-white transition">Cookies</a></li>
+                    @forelse($legalDocs as $doc)
+                        <li><a href="{{ route('legal.view', $doc->tipo ?? $doc->id) }}" class="hover:text-white transition">{{ $doc->nombre }}</a></li>
+                    @empty
+                        <li><a href="{{ route('terms') }}" class="hover:text-white transition">Términos de Servicio</a></li>
+                        <li><a href="{{ route('privacy') }}" class="hover:text-white transition">Privacidad</a></li>
+                    @endforelse
                 </ul>
             </div>
         </div>

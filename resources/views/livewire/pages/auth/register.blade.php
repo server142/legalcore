@@ -28,6 +28,8 @@ new #[Layout('layouts.guest')] class extends Component
 
     public string $planSlug = '';
 
+    public bool $accepted_legal = false;
+
     /**
      * Handle an incoming registration request.
      */
@@ -38,21 +40,17 @@ new #[Layout('layouts.guest')] class extends Component
             'company_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,NULL,id,deleted_at,NULL'],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'accepted_legal' => ['accepted'],
+        ], [
+            'accepted_legal.accepted' => 'Debes leer y aceptar el Aviso de Privacidad y los Términos y Condiciones para continuar.',
         ]);
 
         DB::beginTransaction();
 
         try {
-            // 1. Obtener el plan seleccionado
+            // (existing plan selection and tenant creation code...)
             $selectedPlan = Plan::where('slug', $this->planSlug)->first();
-            
-            // Si no existe el plan o es inválido, fallback a trial
-            if (!$selectedPlan) {
-                $selectedPlan = Plan::where('slug', 'trial')->first();
-            }
-
-            // 2. Crear el Tenant
-            // Si es trial, status es trial. Si es de pago, status es 'pending_payment' hasta que pague
+            if (!$selectedPlan) { $selectedPlan = Plan::where('slug', 'trial')->first(); }
             $subscriptionStatus = $selectedPlan->slug === 'trial' ? 'trial' : 'pending_payment';
             
             $tenant = Tenant::create([
@@ -60,12 +58,15 @@ new #[Layout('layouts.guest')] class extends Component
                 'slug' => Str::slug($validated['company_name']) . '-' . Str::random(6),
                 'plan' => $selectedPlan->slug,
                 'plan_id' => $selectedPlan->id,
-                'trial_ends_at' => now()->addDays($selectedPlan->slug === 'trial' ? 15 : 0), // Solo trial tiene trial days gratis sin tarjeta
+                'trial_ends_at' => now()->addDays($selectedPlan->slug === 'trial' ? 15 : 0),
                 'subscription_status' => $subscriptionStatus,
-                'is_active' => true, // Permitimos login, pero middleware restringirá acceso si pending_payment
+                'is_active' => true,
             ]);
 
-            // 3. Crear el usuario y asignarlo al tenant
+            // 2.5 Crear contratos por default para el Despacho
+            \App\Services\LegalContentService::createTenantDefaults($tenant->id);
+
+            // 3. Crear el usuario e asignarlo al tenant
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -74,13 +75,28 @@ new #[Layout('layouts.guest')] class extends Component
                 'status' => 'active',
             ]);
 
-            // 4. Asignar rol de admin al primer usuario
+            // 4. Registrar aceptación legal
+            $legalDocs = \App\Models\LegalDocument::whereIn('tipo', ['PRIVACIDAD', 'TERMINOS'])
+                ->where('activo', true)
+                ->get();
+            
+            foreach ($legalDocs as $doc) {
+                \App\Models\LegalAcceptance::create([
+                    'user_id' => $user->id,
+                    'legal_document_id' => $doc->id,
+                    'version' => $doc->version,
+                    'ip' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ]);
+            }
+
+            // 5. Asignar rol de admin al primer usuario
             $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
             $user->assignRole($adminRole);
 
             DB::commit();
 
-            // 5. Disparar evento de registro
+            // 6. Disparar evento de registro
             event(new Registered($user));
 
             // Enviar correo de bienvenida profesional
@@ -90,21 +106,18 @@ new #[Layout('layouts.guest')] class extends Component
                 \Illuminate\Support\Facades\Log::error('Error enviando correo de bienvenida (auto-registro): ' . $e->getMessage());
             }
 
-            // 6. Autenticar el usuario
+            // 7. Autenticar el usuario
             Auth::login($user);
 
-            // 7. Redirigir según el plan
+            // 8. Redirigir según el plan
             if ($selectedPlan->slug !== 'trial') {
-                // Si eligió un plan de pago, lo mandamos a configurar su suscripción
                 $this->redirect(route('billing.subscribe', ['plan' => $selectedPlan->slug]), navigate: true);
             } else {
-                // Si es trial, al dashboard directo
                 $this->redirect(route('dashboard', absolute: false), navigate: true);
             }
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
             session()->flash('error', 'Error al crear la cuenta: ' . $e->getMessage());
             throw $e;
         }
@@ -168,7 +181,18 @@ new #[Layout('layouts.guest')] class extends Component
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <!-- Legal Documents Acceptance -->
+        <div class="mt-4">
+            <label class="flex items-center">
+                <input type="checkbox" wire:model="accepted_legal" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                <span class="ml-2 text-sm text-gray-600">
+                    He leído y acepto el <a href="{{ route('privacy') }}" target="_blank" class="text-indigo-600 font-bold hover:underline">Aviso de Privacidad</a> y los <a href="{{ route('terms') }}" target="_blank" class="text-indigo-600 font-bold hover:underline">Términos y Condiciones</a>
+                </span>
+            </label>
+            <x-input-error :messages="$errors->get('accepted_legal')" class="mt-2" />
+        </div>
+
+        <div class="flex items-center justify-end mt-6">
             <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}" wire:navigate>
                 {{ __('¿Ya tienes cuenta?') }}
             </a>
