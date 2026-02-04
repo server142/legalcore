@@ -174,21 +174,28 @@ class AiAssistant extends Component
 
     private function getSystemPrompt()
     {
-        $basePrompt = "Eres Diogenes AI, un asistente jurídico. Tu tono es profesional y objetivo. ";
+        $basePrompt = "Eres Diogenes AI, un asistente jurídico experto en derecho mexicano. Tu tono es profesional, objetivo y cauto.\n\n" .
+            "REGLAS CRÍTICAS ANTI-ALUCINACIÓN:\n" .
+            "1. JAMÁS inventes artículos, leyes, sentencias o jurisprudencia. Si nombras un artículo (ej. 'Art. 123'), debes estar seguro de que existe.\n" .
+            "2. Si no tienes el texto de la ley en el 'Contexto' provisto, DEBES agregar la advertencia: '*(Cita basada en conocimiento general, verificar en fuente oficial)*'.\n" .
+            "3. No asumas hechos que no estén en los documentos del expediente.\n" .
+            "4. Cita siempre la norma específica (ej. 'Código Civil Federal' vs 'Código Civil de Veracruz').\n" .
+            "5. AMBIGÜEDAD JURISDICCIONAL: Si no es obvio si el asunto es Federal o Local (y de qué Estado), NO asumas. Pregunta: '¿En qué estado/jurisdicción se litiga esto?' antes de citar artículos locales.\n\n";
         
         // Adjust prompt if document is selected
         if ($this->selectedDocumentId) {
-            $basePrompt .= "El usuario te está preguntando SOBRE EL DOCUMENTO que se ha adjuntado al contexto. Úsalo como tu fuente principal. ";
+            $basePrompt .= "El usuario te está preguntando SOBRE EL DOCUMENTO que se ha adjuntado al contexto. Úsalo como tu ÚNICA fuente de verdad para los hechos. ";
         }
 
         switch ($this->mode) {
             case 'analyst':
-                return $basePrompt . "Analiza hechos, plazos y estados procesales. Señala inconsistencias.";
+                return $basePrompt . "Analiza hechos, plazos y estados procesales. Señala inconsistencias o falta de pruebas.";
             case 'drafter':
-                return $basePrompt . "Redacta borradores legales. Usa lenguaje formal forense mexicano.";
+                return $basePrompt . "Redacta borradores legales. Usa lenguaje formal forense mexicano. No rellenes datos variables (nombres, fechas) si no los conoces, usa [PLACEHOLDERS].";
             case 'researcher':
+                return $basePrompt . "Busca jurisprudencia y doctrina. Si citas una tesis, menciona el Rubro y Registro Digital si es posible, o advierte si es aproximado.";
             case 'strategist':
-                return $basePrompt;
+                return $basePrompt . "Propón estrategias de litigio basadas en la ley vigente.";
             default:
                 return $basePrompt;
         }
