@@ -33,12 +33,15 @@ class Announcements extends Component
         ]);
 
         $recipient = !empty($this->testEmail) ? $this->testEmail : auth()->user()->email;
+        
+        \Log::info("ANNOUNCEMENT: Attempting TEST send to: {$recipient}");
 
         try {
             Mail::to($recipient)->send(new SystemAnnouncement($this->subject, $this->content));
+            \Log::info("ANNOUNCEMENT: TEST send SUCCESS to: {$recipient}");
             session()->flash('success', "¡Correo de prueba enviado a {$recipient}!");
         } catch (\Exception $e) {
-            \Log::error("Failed to send test announcement: " . $e->getMessage());
+            \Log::error("ANNOUNCEMENT: TEST send FAILED to: {$recipient}. Error: " . $e->getMessage());
             session()->flash('error', "Error al enviar la prueba: " . $e->getMessage());
         }
     }
@@ -46,6 +49,8 @@ class Announcements extends Component
     public function send()
     {
         $this->validate();
+        
+        \Log::info("ANNOUNCEMENT: Starting MASS SEND. Target: {$this->target}, Subject: {$this->subject}");
 
         $query = User::query()->where('status', 'active');
 
@@ -57,19 +62,29 @@ class Announcements extends Component
 
         $users = $query->get();
         $count = 0;
+        $failCount = 0;
 
         foreach ($users as $user) {
             try {
+                \Log::info("ANNOUNCEMENT: Queuing email for user: {$user->email}");
                 Mail::to($user->email)->queue(new SystemAnnouncement($this->subject, $this->content));
                 $count++;
             } catch (\Exception $e) {
-                \Log::error("Failed to queue announcement for {$user->email}: " . $e->getMessage());
+                $failCount++;
+                \Log::error("ANNOUNCEMENT: FAILED to queue for {$user->email}: " . $e->getMessage());
             }
         }
 
+        \Log::info("ANNOUNCEMENT: MASS SEND Finished. Success: {$count}, Failed: {$failCount}");
+
         $this->logAudit('notificar', 'Anuncios', "Envío masivo de anuncio: {$this->subject}", ['total_users' => $count, 'target' => $this->target]);
 
-        session()->flash('success', "¡Anuncio enviado correctamente a {$count} destinatarios!");
+        if ($failCount > 0) {
+            session()->flash('warning', "Anuncio procesado. Éxitos: {$count}, Fallidos: {$failCount}. Revisa los logs.");
+        } else {
+            session()->flash('success', "¡Anuncio enviado correctamente a {$count} destinatarios!");
+        }
+        
         $this->reset(['subject', 'content']);
     }
 
