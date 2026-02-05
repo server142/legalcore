@@ -11,15 +11,19 @@ class DofBackfill extends Command
      *
      * @var string
      */
-    protected $signature = 'dof:backfill {year? : The year to backfill, default is 2024 to present}';
+    protected $signature = 'dof:backfill {year? : The year to backfill, default is 2024} {--end-year= : The end year}';
 
-    protected $description = 'Massively download DOF publications from a starting year until today';
+    protected $description = 'Massively download DOF publications from a starting year until an end year';
 
     public function handle(\App\Services\DofService $dofService)
     {
-        $startYear = $this->argument('year') ?: 2024;
+        $startYear = (int)($this->argument('year') ?: 2024);
         $startDate = \Carbon\Carbon::createFromDate($startYear, 1, 1);
-        $endDate = now();
+        
+        $endYear = $this->option('end-year');
+        $endDate = $endYear ? \Carbon\Carbon::createFromDate((int)$endYear, 12, 31) : now();
+        
+        if ($endDate->isFuture()) $endDate = now();
 
         $this->info("Starting massive backfill from {$startDate->toDateString()} to {$endDate->toDateString()}");
         $this->info("This process may take a while. Grab a coffee. ☕");

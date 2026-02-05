@@ -55,7 +55,7 @@ class DofService
                         'cod_nota' => $nota['codNota'],
                         'titulo' => $this->cleanText($nota['titulo'] ?? 'Sin título'),
                         'resumen' => $this->cleanText($nota['resumen'] ?? strip_tags($nota['contenido'] ?? '')),
-                        'link_pdf' => $this->constructPdfLink($nota),
+                        'link_pdf' => $this->constructPdfLink($nota, $date),
                         'seccion' => $nota['codSeccion'] ?? $nota['seccion'] ?? null,
                         'organismo' => $nota['nombreCodOrgaDos'] ?? $nota['organismo'] ?? null,
                         'texto_completo' => null, 
@@ -75,12 +75,13 @@ class DofService
         }
     }
 
-    protected function constructPdfLink($nota)
+    protected function constructPdfLink($nota, $date)
     {
         // Logic to construct PDF link if not directly provided
         // Often: https://dof.gob.mx/nota_detalle.php?codigo={codNota}&fecha={dd/mm/yyyy}
-        if (isset($nota['codNota']) && isset($nota['fechaPublicacion'])) {
-             return "https://dof.gob.mx/nota_detalle.php?codigo={$nota['codNota']}&fecha={$nota['fechaPublicacion']}#gsc.tab=0";
+        if (isset($nota['codNota'])) {
+             $fechaParams = $date->format('d/m/Y');
+             return "https://dof.gob.mx/nota_detalle.php?codigo={$nota['codNota']}&fecha={$fechaParams}#gsc.tab=0";
         }
         return null;
     }
