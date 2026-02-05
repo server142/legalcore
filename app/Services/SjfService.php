@@ -64,8 +64,8 @@ class SjfService
                 $json = $response->json();
                 
                 // Spring Boot Pagination usually returns 'content' array.
-                // Or sometimes 'data', or root array.
-                $items = $json['content'] ?? $json['result'] ?? $json['data'] ?? ($json['lista'] ?? []);
+                // Found 'documents' via debug logs (step 836)
+                $items = $json['documents'] ?? $json['content'] ?? $json['result'] ?? $json['data'] ?? ($json['lista'] ?? []);
                 
                 if (empty($items) && is_array($json) && isset($json[0])) {
                     $items = $json;
