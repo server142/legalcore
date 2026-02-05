@@ -73,6 +73,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Monitor DOF (Diario Oficial)
     Route::get('/dof', \App\Livewire\Dof\Index::class)->name('dof.index');
+    Route::get('/jurisprudencia', \App\Livewire\Sjf\Index::class)->name('sjf.index');
     
     // Admin only - Trial Management
     // Admin - Tenant Management
