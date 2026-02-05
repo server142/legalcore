@@ -32,14 +32,16 @@ class SjfSync extends Command
         
         // Logic to attempt fetch
         try {
-            $count = $sjfService->syncRecent($days);
+            $result = $sjfService->syncRecent($days);
             
-            if ($count === false) {
-                $this->error("Connection failed. The API might be blocked or unreachable from this IP.");
+            if (is_numeric($result)) {
+                $this->info("Success! Imported {$result} items.");
+                return 0;
+            } else {
+                // It returned an error string or false
+                $this->error("Sync Failed: " . ($result ?: 'Unknown Error'));
                 return 1;
             }
-            
-            $this->info("Success! Imported {$count} items.");
         } catch (\Exception $e) {
             $this->error("Error: " . $e->getMessage());
             return 1;

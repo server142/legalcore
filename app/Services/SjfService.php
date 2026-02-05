@@ -33,6 +33,22 @@ class SjfService
                     // 'sort' => 'fechaPublicacion,desc' // Investigar si soporta sort. Por defecto suele ser relevancia o fecha.
                 ]);
 
+            // Retry with POST if GET is not allowed (Error 405)
+            if ($response->status() === 405) {
+                Log::info("SJF: 405 Method Not Allowed via GET. Switching to POST...");
+                $response = Http::timeout(30)
+                    ->withHeaders([
+                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Referer' => 'https://sjf2.scjn.gob.mx/listado-resultado-tesis',
+                        'Origin' => 'https://sjf2.scjn.gob.mx',
+                        'Accept' => 'application/json, text/plain, */*',
+                        'Content-Type' => 'application/json'
+                    ])
+                    // Some APIs expect params in URL even for POST, others in body.
+                    // We try keeping them in URL as captured pattern, and empty body.
+                    ->post($this->apiUrl . '?page=1&size=50', []);
+            }
+
             if ($response->successful()) {
                 $json = $response->json();
                 
