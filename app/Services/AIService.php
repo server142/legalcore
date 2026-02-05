@@ -279,4 +279,24 @@ class AIService
             return null;
         }
     }
+
+    /**
+     * Calculate cosine similarity between two vectors.
+     */
+    public function cosineSimilarity(array $vec1, array $vec2): float
+    {
+        $dotProduct = 0.0;
+        $normA = 0.0;
+        $normB = 0.0;
+
+        foreach ($vec1 as $i => $value) {
+            $dotProduct += $value * ($vec2[$i] ?? 0);
+            $normA += $value * $value;
+            $normB += ($vec2[$i] ?? 0) * ($vec2[$i] ?? 0);
+        }
+
+        if ($normA == 0 || $normB == 0) return 0.0;
+        
+        return $dotProduct / (sqrt($normA) * sqrt($normB));
+    }
 }

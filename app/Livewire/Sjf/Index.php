@@ -12,6 +12,7 @@ class Index extends Component
     use WithPagination;
 
     public $search = '';
+    public $useAI = false;
     public $loading = false;
 
     // Filters
@@ -23,25 +24,71 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function updatedUseAI()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
-        $publications = SjfPublication::query()
-            ->when($this->search, function ($query) {
-                // In future: use Semantic Search if available
-                $query->where('rubro', 'like', '%' . $this->search . '%')
-                      ->orWhere('texto', 'like', '%' . $this->search . '%')
-                      ->orWhere('reg_digital', 'like', '%' . $this->search . '%');
+        $query = SjfPublication::query();
+
+        if ($this->search) {
+            if ($this->useAI && strlen($this->search) > 3) {
+                // Semantic Search Logic
+                $aiService = app(\App\Services\AIService::class);
+                $queryVector = $aiService->getEmbeddings($this->search);
+
+                if ($queryVector) {
+                    // Fetch candidates with embeddings
+                    $candidates = SjfPublication::whereNotNull('embedding_data')->get();
+                    
+                    $rankedIds = $candidates->map(function ($pub) use ($aiService, $queryVector) {
+                        return [
+                            'id' => $pub->id,
+                            'score' => $aiService->cosineSimilarity($queryVector, $pub->embedding_data)
+                        ];
+                    })
+                    ->sortByDesc('score')
+                    ->take(50)
+                    ->pluck('id');
+
+                    if ($rankedIds->isNotEmpty()) {
+                        $query->whereIn('id', $rankedIds)
+                              ->orderByRaw('FIELD(id, ' . $rankedIds->implode(',') . ')');
+                    } else {
+                        $this->applyTraditionalSearch($query);
+                    }
+                } else {
+                    $this->applyTraditionalSearch($query);
+                }
+            } else {
+                $this->applyTraditionalSearch($query);
+            }
+        }
+
+        $publications = $query
+            ->when($this->instancia, function ($q) {
+                $q->where('instancia', 'like', '%' . $this->instancia . '%');
             })
-            ->when($this->instancia, function ($query) {
-                $query->where('instancia', 'like', '%' . $this->instancia . '%');
+            ->when(!$this->useAI || !$this->search, function($q) {
+                $q->orderBy('fecha_publicacion', 'desc')
+                  ->orderBy('reg_digital', 'desc');
             })
-            ->orderBy('fecha_publicacion', 'desc')
-            ->orderBy('reg_digital', 'desc')
             ->paginate(15);
 
         return view('livewire.sjf.index', [
             'publications' => $publications,
         ]);
+    }
+
+    protected function applyTraditionalSearch($query)
+    {
+        $query->where(function ($q) {
+            $q->where('rubro', 'like', '%' . $this->search . '%')
+              ->orWhere('texto', 'like', '%' . $this->search . '%')
+              ->orWhere('reg_digital', 'like', '%' . $this->search . '%');
+        });
     }
 
     /**
