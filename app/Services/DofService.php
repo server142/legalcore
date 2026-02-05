@@ -19,6 +19,8 @@ class DofService
      */
     public function fetchDailyPublications($date)
     {
+        $aiService = app(\App\Services\AIService::class); // Resolve manually or via DI
+        
         $date = Carbon::parse($date);
         $formattedDate = $date->format('d-m-Y');
         
@@ -50,15 +52,23 @@ class DofService
                         continue;
                     }
 
+                    $titulo = $this->cleanText($nota['titulo'] ?? 'Sin título');
+                    $resumen = $this->cleanText($nota['resumen'] ?? strip_tags($nota['contenido'] ?? ''));
+                    
+                    // Generate Embedding (Semantic Search)
+                    $textToEmbed = $titulo . "\n" . $resumen;
+                    $embedding = $aiService->getEmbeddings($textToEmbed);
+
                     DofPublication::create([
                         'fecha_publicacion' => $date->format('Y-m-d'),
                         'cod_nota' => $nota['codNota'],
-                        'titulo' => $this->cleanText($nota['titulo'] ?? 'Sin título'),
-                        'resumen' => $this->cleanText($nota['resumen'] ?? strip_tags($nota['contenido'] ?? '')),
+                        'titulo' => $titulo,
+                        'resumen' => $resumen,
                         'link_pdf' => $this->constructPdfLink($nota, $date),
                         'seccion' => $nota['codSeccion'] ?? $nota['seccion'] ?? null,
                         'organismo' => $nota['nombreCodOrgaDos'] ?? $nota['organismo'] ?? null,
                         'texto_completo' => null, 
+                        'embedding_data' => $embedding ? json_encode($embedding) : null,
                     ]);
                     $count++;
                 }

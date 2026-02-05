@@ -235,4 +235,48 @@ class AIService
             return ['success' => false, 'error' => 'Anthropic Connection Error: ' . $e->getMessage()];
         }
     }
+    /**
+     * Generate embeddings for a given text input.
+     * 
+     * @param string $text
+     * @return array|null The embedding vector or null on failure.
+     */
+    public function getEmbeddings($text)
+    {
+        if (empty($this->apiKey)) {
+            Log::warning('Embedding skipped: No API Key');
+            return null;
+        }
+
+        // Default to OpenAI standard if not specified otherwise
+        $url = 'https://api.openai.com/v1/embeddings';
+        $model = 'text-embedding-3-small';
+
+        // Partial support for other providers could go here
+        if ($this->provider !== 'openai') {
+             // For now, assume keys might be cross-compatible or user is on OpenAI for this feature
+             // Or we could log a warning.
+             // We'll proceed optimistically but log if it's likely to fail.
+        }
+
+        try {
+            $response = Http::withToken($this->apiKey)
+                ->timeout(30)
+                ->post($url, [
+                    'input' => $text,
+                    'model' => $model,
+                ]);
+
+            if ($response->successful()) {
+                return $response->json('data.0.embedding');
+            }
+            
+            Log::error('Embedding API Error: ' . $response->body());
+            return null;
+
+        } catch (\Exception $e) {
+            Log::error('Embedding Connection Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
 }

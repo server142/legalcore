@@ -5,13 +5,13 @@
 # Ejemplo: ./run_dof_backfill.sh 2000 2023
 
 START_YEAR=${1:-2000}
-END_YEAR=${2:-2023}
-LOG_FILE="dof_backfill_${START_YEAR}_${END_YEAR}.log"
+END_YEAR=${2}
+LOG_FILE="dof_backfill_${START_YEAR}_${END_YEAR:-present}.log"
 
 echo "==============================================="
 echo "Iniciando descarga masiva del DOF"
 echo "Desde: $START_YEAR"
-echo "Hasta: $END_YEAR"
+echo "Hasta: ${END_YEAR:-HOY}"
 echo "Log: $LOG_FILE"
 echo "==============================================="
 echo "El proceso continuará ejecutándose aunque cierres esta terminal."
