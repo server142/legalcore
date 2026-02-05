@@ -340,8 +340,55 @@
 
                             @if($selectedLog->metadatos)
                             <div class="mt-4">
-                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Metadatos de Seguimiento (JSON)</label>
-                                <pre class="text-[10px] bg-slate-900 text-emerald-400 p-4 rounded-lg overflow-x-auto font-mono max-h-48">{{ json_encode($selectedLog->metadatos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Metadatos de Seguimiento</label>
+                                
+                                <div class="space-y-4">
+                                    @if(isset($selectedLog->metadatos['destinatarios']) && is_array($selectedLog->metadatos['destinatarios']))
+                                        <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-lg shadow-sm">
+                                            <div class="text-[10px] font-bold text-emerald-700 uppercase mb-2 flex justify-between">
+                                                <span>Destinatarios Notificados ({{ count($selectedLog->metadatos['destinatarios']) }})</span>
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                            </div>
+                                            <div class="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                                <ul class="text-[11px] text-emerald-800 space-y-1 font-mono">
+                                                    @foreach($selectedLog->metadatos['destinatarios'] as $email)
+                                                        <li class="flex items-center gap-1.5 py-0.5 border-b border-emerald-100 last:border-0">
+                                                            <span class="w-1 h-1 rounded-full bg-emerald-400"></span>
+                                                            {{ $email }}
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    @if(isset($selectedLog->metadatos['fallidos']) && is_array($selectedLog->metadatos['fallidos']) && count($selectedLog->metadatos['fallidos']) > 0)
+                                        <div class="bg-rose-50 border border-rose-100 p-3 rounded-lg shadow-sm">
+                                            <div class="text-[10px] font-bold text-rose-700 uppercase mb-2 flex justify-between font-black">
+                                                <span>Envíos Fallidos ({{ count($selectedLog->metadatos['fallidos']) }})</span>
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                                            </div>
+                                            <div class="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                                <ul class="text-[11px] text-rose-800 space-y-1 font-mono">
+                                                    @foreach($selectedLog->metadatos['fallidos'] as $error)
+                                                        <li class="flex items-start gap-1.5 py-1 border-b border-rose-100 last:border-0">
+                                                            <span class="mt-1 w-1 h-1 rounded-full bg-rose-400 flex-shrink-0"></span>
+                                                            <span class="break-words">{{ $error }}</span>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    <div class="pt-2">
+                                        <button x-on:click="$el.nextElementSibling.classList.toggle('hidden')" class="text-[9px] text-gray-400 hover:text-indigo-600 transition font-black uppercase tracking-widest flex items-center gap-1">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                                            Ver JSON Estructurado
+                                        </button>
+                                        <pre class="hidden mt-2 text-[10px] bg-slate-900 text-emerald-400 p-4 rounded-lg overflow-x-auto font-mono max-h-48 shadow-inner">{{ json_encode($selectedLog->metadatos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                                    </div>
+                                </div>
                             </div>
                             @endif
                         </div>

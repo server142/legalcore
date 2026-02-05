@@ -34,7 +34,7 @@ class Announcements extends Component
 
         $recipient = !empty($this->testEmail) ? $this->testEmail : auth()->user()->email;
         
-        \Log::info("ANNOUNCEMENT: Attempting TEST send to: {$recipient}");
+        \Log::info("ANNOUNCEMENT: Attempting TEST send to: {$recipient}. Mail Driver: " . config('mail.default') . ", Queue: " . config('queue.default'));
 
         try {
             Mail::to($recipient)->send(new SystemAnnouncement($this->subject, $this->content));
@@ -63,21 +63,30 @@ class Announcements extends Component
         $users = $query->get();
         $count = 0;
         $failCount = 0;
+        $sentTo = [];
+        $failedTo = [];
 
         foreach ($users as $user) {
             try {
                 \Log::info("ANNOUNCEMENT: Queuing email for user: {$user->email}");
                 Mail::to($user->email)->queue(new SystemAnnouncement($this->subject, $this->content));
                 $count++;
+                $sentTo[] = $user->email;
             } catch (\Exception $e) {
                 $failCount++;
+                $failedTo[] = "{$user->email} (" . $e->getMessage() . ")";
                 \Log::error("ANNOUNCEMENT: FAILED to queue for {$user->email}: " . $e->getMessage());
             }
         }
 
         \Log::info("ANNOUNCEMENT: MASS SEND Finished. Success: {$count}, Failed: {$failCount}");
 
-        $this->logAudit('notificar', 'Anuncios', "Envío masivo de anuncio: {$this->subject}", ['total_users' => $count, 'target' => $this->target]);
+        $this->logAudit('notificar', 'Anuncios', "Envío masivo de anuncio: {$this->subject}", [
+            'total_users' => $count, 
+            'target' => $this->target,
+            'destinatarios' => $sentTo,
+            'fallidos' => $failedTo
+        ]);
 
         if ($failCount > 0) {
             session()->flash('warning', "Anuncio procesado. Éxitos: {$count}, Fallidos: {$failCount}. Revisa los logs.");
