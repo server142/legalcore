@@ -28,27 +28,23 @@
                     </div>
 
                     <div class="flex items-center space-x-3 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100">
-                        <div class="flex items-center">
-                            <label for="useAI" class="inline-flex items-center cursor-pointer">
-                                <span class="mr-3 text-sm font-medium text-indigo-900">Búsqueda Inteligente (IA)</span>
-                                <div class="relative">
-                                    <input type="checkbox" id="useAI" wire:model.live="useAI" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                                </div>
-                            </label>
+                        <div class="flex items-center text-indigo-700 font-semibold text-sm">
+                            <svg class="w-5 h-5 mr-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            Motor de IA Activo
                         </div>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-between text-xs">
                     <div class="text-gray-500">
-                        @if($useAI && $search)
-                            <span class="flex items-center text-indigo-600 font-medium">
-                                <svg class="w-4 h-4 mr-1 animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>
-                                Usando IA para encontrar conceptos similares...
+                        @if($search)
+                            <span class="flex items-center text-indigo-600">
+                                Analizando conceptos legales para "{{ $search }}"...
                             </span>
                         @else
-                            Búsqueda tradicional por palabras exactas.
+                            Busca conceptos, frases o números de registro digital.
                         @endif
                     </div>
                     <div class="text-gray-400 italic">
@@ -78,25 +74,28 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($publications as $pub)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">
                                     {{ $pub->reg_digital }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="text-sm font-medium text-gray-900 mb-1">
-                                        {{ Str::limit($pub->rubro, 100) }}
+                                    <div class="text-sm font-medium text-gray-900 mb-1 leading-snug">
+                                        {{ Str::limit($pub->rubro, 150) }}
                                     </div>
-                                    <div class="text-xs text-cool-gray-500">
-                                        {{ Str::limit($pub->loc, 50) }}
+                                    <div class="text-xs text-gray-500">
+                                        {{ Str::limit($pub->localizacion, 80) }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <div>{{ $pub->instancia }}</div>
+                                    <div class="font-medium text-gray-700">{{ $pub->instancia }}</div>
                                     <div class="text-xs">{{ $pub->fecha_publicacion ? $pub->fecha_publicacion->format('d/m/Y') : '' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="https://sjf2.scjn.gob.mx/sjfsist/paginas/DetalleGeneralV2.aspx?ID={{ $pub->reg_digital }}&Clase=DetalleTesisBL" target="_blank" class="text-indigo-600 hover:text-indigo-900">
-                                        Ver Oficial
+                                    <a href="https://sjf2.scjn.gob.mx/detalle/tesis/{{ $pub->reg_digital }}" target="_blank" class="inline-flex items-center px-3 py-1 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition-colors">
+                                        <span>Ver Oficial</span>
+                                        <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
                                     </a>
                                 </td>
                             </tr>
