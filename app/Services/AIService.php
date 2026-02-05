@@ -261,7 +261,7 @@ class AIService
 
         try {
             $response = Http::withToken($this->apiKey)
-                ->timeout(30)
+                ->timeout(60)
                 ->post($url, [
                     'input' => $text,
                     'model' => $model,
