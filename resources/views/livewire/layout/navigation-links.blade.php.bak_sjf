@@ -37,19 +37,15 @@
             {{ __('Asistente IA') }}
         </x-sidebar-link>
 
-        <x-sidebar-link :href="route('dof.index')" :active="request()->routeIs('dof.index')" icon="dof">
+        <x-sidebar-link :href="route('dof.index')" :active="request()->routeIs('dof.*')" icon="newspaper">
             {{ __('Diario Oficial') }}
         </x-sidebar-link>
 
-        <x-sidebar-link :href="route('sjf.index')" :active="request()->routeIs('sjf.index')" icon="document-text">
-            {{ __('Jurisprudencia') }}
-        </x-sidebar-link>
-
-        @if(auth()->user()->can('view_audit_logs'))
+        @can('manage billing')
         <x-sidebar-link :href="route('facturacion.index')" :active="request()->routeIs('facturacion.*')" icon="billing">
             {{ __('Facturación') }}
         </x-sidebar-link>
-        @endif
+        @endcan
 
         <x-sidebar-link :href="route('manual.index')" :active="request()->routeIs('manual.*')" icon="book">
             {{ __('Manual') }}
