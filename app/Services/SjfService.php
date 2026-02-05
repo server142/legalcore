@@ -73,11 +73,11 @@ class SjfService
 
                 if (empty($items)) {
                     Log::warning("SJF Microservice returned 200 but no items found in known keys.");
-                    Log::info("Sample Raw Response Keys: " . implode(',', array_keys($json)));
+                    Log::info("Full JSON response: " . json_encode($json));
                     return 0;
                 }
 
-                Log::info("SJF: Found " . count($items) . " items.");
+                Log::info("SJF: Found " . count($items) . " items. Sample item structure: " . json_encode($items[0]));
                 return $this->processItems($items, 'microservice');
             }
             
@@ -148,33 +148,21 @@ class SjfService
 
     protected function processItem($item)
     {
-        $regDigital = $item['registroDigital'] ?? $item['reg_digital'] ?? null;
+        // Common key variations in SCJN microservices
+        $regDigital = $item['registroDigital'] ?? $item['reg_digital'] ?? $item['ius'] ?? $item['id'] ?? null;
         if (!$regDigital) return false;
 
-        $aiService = app(\App\Services\AIService::class);
-        $rubro = $item['rubro'] ?? 'Sin rubro';
-        $texto = $item['texto'] ?? '';
+        $rubro = $item['rubro'] ?? $item['Rubro'] ?? 'Sin rubro';
+        $texto = $item['texto'] ?? $item['Texto'] ?? '';
 
-        // Generate embedding if new
-        $embedding = null;
-        if (!SjfPublication::where('reg_digital', $regDigital)->exists()) {
-             $embedding = $aiService->getEmbeddings($rubro . "\n" . $texto);
-        }
-
-        SjfPublication::updateOrCreate(
-            ['reg_digital' => $regDigital],
-            [
-                'rubro' => $rubro,
-                'texto' => $texto,
-                'precedentes' => $item['precedentes'] ?? null,
-                'localizacion' => $item['localizacion'] ?? ($item['epoca'] . ' ' . $item['instancia']),
-                'fecha_publicacion' => isset($item['fechaPublicacion']) ? Carbon::parse($item['fechaPublicacion']) : null,
-                'tipo_tesis' => $item['tipoTesis'] ?? null,
-                'instancia' => $item['instancia'] ?? null,
-                'materia' => $item['materia'] ?? null,
-                'embedding_data' => $embedding ? json_encode($embedding) : null,
-            ]
-        );
+        $this->storeWithEmbedding($regDigital, $this->cleanText($rubro), $this->cleanText($texto), [
+            'precedentes' => $this->cleanText($item['precedentes'] ?? $item['Precedentes'] ?? null),
+            'localizacion' => $item['localizacion'] ?? $item['Localizacion'] ?? (($item['epoca'] ?? '') . ' ' . ($item['instancia'] ?? '')),
+            'fecha_publicacion' => isset($item['fechaPublicacion']) ? Carbon::parse($item['fechaPublicacion']) : null,
+            'tipo_tesis' => $item['tipoTesis'] ?? $item['tipo'] ?? null,
+            'instancia' => $item['instancia'] ?? null,
+            'materia' => $item['materia'] ?? null,
+        ]);
         
         return true;
     }
