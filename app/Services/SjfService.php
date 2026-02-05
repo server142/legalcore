@@ -9,59 +9,58 @@ use Carbon\Carbon;
 
 class SjfService
 {
-    // Official API backend often used by mobile apps
-    protected $apiUrl = 'https://jfapi.scjn.gob.mx/api/v1/jurisprudencia';
-    protected $odataUrl = 'https://sjf2.scjn.gob.mx/sjfsist/odata/Tesis';
+    // Validated Microservice Endpoint (2026)
+    protected $apiUrl = 'https://sjf2.scjn.gob.mx/services/sjftesismicroservice/api/public/tesis';
 
     /**
      * Try to fetch recent publications.
-     * 
-     * @param int $days
-     * @return int|string Count of items or Error Message string
      */
     public function syncRecent($days = 7)
     {
-        // 1. Try modern JFAPI (JSON)
-        try {
-            $response = Http::timeout(20)
-                ->withHeaders([
-                    'User-Agent' => 'Mozilla/5.0',
-                    'Accept' => 'application/json',
-                ])
-                ->get("{$this->apiUrl}/busqueda", ['limit' => 20, 'sort' => 'fecha_publicacion,desc']);
+        Log::info("SJF: Attempting sync via Microservice...");
 
-            if ($response->successful()) {
-                $items = $response->json('result') ?? $response->json('data') ?? [];
-                return $this->processItems($items);
-            }
-            
-            Log::warning("SJF API V1 failed: " . $response->status());
-        } catch (\Exception $e) {
-            Log::warning("SJF API V1 Exception: " . $e->getMessage());
-        }
-
-        // 2. Fallback: OData Endpoint (Often more open)
         try {
-            Log::info("Attempting OData Fallback...");
             $response = Http::timeout(30)
-                ->withOptions(['verify' => false]) // SCJN SSL sometimes has issues
-                ->get($this->odataUrl, [
-                    '$orderby' => 'FechaPublicacion desc',
-                    '$top' => 20,
-                    '$format' => 'json'
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Referer' => 'https://sjf2.scjn.gob.mx/listado-resultado-tesis',
+                    'Origin' => 'https://sjf2.scjn.gob.mx',
+                    'Accept' => 'application/json, text/plain, */*',
+                ])
+                ->get($this->apiUrl, [
+                    'page' => 1,
+                    'size' => 50,
+                    // 'sort' => 'fechaPublicacion,desc' // Investigar si soporta sort. Por defecto suele ser relevancia o fecha.
                 ]);
 
             if ($response->successful()) {
-                $data = $response->json();
-                $items = $data['value'] ?? []; // OData collection is usually in 'value'
-                return $this->processItems($items, 'odata');
+                $json = $response->json();
+                
+                // Spring Boot Pagination usually returns 'content' array.
+                // Or sometimes 'data', or root array.
+                $items = $json['content'] ?? $json['result'] ?? $json['data'] ?? ($json['lista'] ?? []);
+                
+                if (empty($items) && is_array($json) && isset($json[0])) {
+                    $items = $json;
+                }
+
+                if (empty($items)) {
+                    Log::warning("SJF Microservice returned 200 but no items found in known keys.");
+                    Log::info("Sample Raw Response Keys: " . implode(',', array_keys($json)));
+                    return 0;
+                }
+
+                Log::info("SJF: Found " . count($items) . " items.");
+                return $this->processItems($items, 'microservice');
             }
-            Log::error("SJF OData failed: " . $response->status());
-            return "Connection failed (API: " . $response->status() . ")";
+            
+            Log::error("SJF Microservice failed: " . $response->status());
+            Log::info("Response Body Snippet: " . substr($response->body(), 0, 200));
+            return "Connection failed (Status: " . $response->status() . ")";
 
         } catch (\Exception $e) {
-            Log::error("SJF Sync/OData Error: " . $e->getMessage());
-            return "Connection Error: " . $e->getMessage();
+            Log::error("SJF Sync Error: " . $e->getMessage());
+            return "Exception: " . $e->getMessage();
         }
     }
 
