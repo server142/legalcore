@@ -15,3 +15,9 @@ Artisan::command('dof:fetch {date?}', function (\App\Services\DofService $servic
     
     $this->info("Done. Imported {$count} new publications.");
 })->purpose('Fetch publications from Diaro Oficial de la Federación')->dailyAt('06:00');
+
+Artisan::command('sjf:sync-daily', function () {
+    $this->info("Triggering SJF daily sync...");
+    Artisan::call('sjf:sync', ['--days' => 2]);
+    $this->info("SJF Sync completed.");
+})->purpose('Sync recent Jurisprudencia tesis from SCJN')->dailyAt('07:00');
