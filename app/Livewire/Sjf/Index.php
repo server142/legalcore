@@ -36,12 +36,13 @@ class Index extends Component
                 $queryVector = $aiService->getEmbeddings($this->search);
 
                 if ($queryVector) {
-                    // Fetch candidates with embeddings
-                    // Ensure we cast or parse embedding_data if stored as string
-                    $candidates = SjfPublication::whereNotNull('embedding_data')->get();
+                    // OPTIMIZED: Only select ID and Embedding to save memory with 30,000+ records
+                    $candidates = SjfPublication::whereNotNull('embedding_data')
+                        ->select('id', 'embedding_data')
+                        ->get();
                     
                     $rankedIds = $candidates->map(function ($pub) use ($aiService, $queryVector) {
-                        $vec = is_string($pub->embedding_data) ? json_decode($pub->embedding_data, true) : $pub->embedding_data;
+                        $vec = $pub->embedding_data; // Cast handles decoding already
                         
                         if (!is_array($vec)) return null;
 
@@ -52,7 +53,7 @@ class Index extends Component
                     })
                     ->filter()
                     ->sortByDesc('score')
-                    ->take(50)
+                    ->take(60)
                     ->pluck('id');
 
                     if ($rankedIds->isNotEmpty()) {
