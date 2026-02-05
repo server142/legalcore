@@ -1,7 +1,7 @@
 <nav class="space-y-1">
     <!-- Main Section -->
     <div class="pb-4">
-        <p class="px-2 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Principal</p>
+        <p x-show="!sidebarCollapsed" x-transition.opacity class="px-2 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap overflow-hidden">Principal</p>
         
         @if(auth()->user()->hasRole(['super_admin', 'admin', 'abogado']))
         <x-sidebar-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" icon="dashboard">
@@ -37,6 +37,10 @@
             {{ __('Asistente IA') }}
         </x-sidebar-link>
 
+        <x-sidebar-link :href="route('dof.index')" :active="request()->routeIs('dof.*')" icon="newspaper">
+            {{ __('Diario Oficial') }}
+        </x-sidebar-link>
+
         @can('manage billing')
         <x-sidebar-link :href="route('facturacion.index')" :active="request()->routeIs('facturacion.*')" icon="billing">
             {{ __('Facturación') }}
@@ -57,7 +61,7 @@
     <!-- SaaS Section -->
     @if(auth()->user()->hasRole('super_admin'))
     <div class="pt-4 border-t border-gray-300">
-        <p class="px-2 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">SaaS</p>
+        <p x-show="!sidebarCollapsed" x-transition.opacity class="px-2 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap overflow-hidden">SaaS</p>
         
         <x-sidebar-link :href="route('admin.tenants.index')" :active="request()->routeIs('admin.tenants.*')" icon="office-building">
             {{ __('Tenants') }}
@@ -80,7 +84,7 @@
     <!-- Administration Section -->
     @canany(['manage settings', 'manage users'])
     <div class="pt-4 border-t border-gray-300">
-        <p class="px-2 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Administración</p>
+        <p x-show="!sidebarCollapsed" x-transition.opacity class="px-2 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap overflow-hidden">Administración</p>
         
         @can('manage settings')
         <x-sidebar-link :href="route('admin.settings')" :active="request()->routeIs('admin.settings')" icon="settings">

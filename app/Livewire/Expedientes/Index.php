@@ -12,49 +12,114 @@ class Index extends Component
 {
     use WithPagination;
 
-    public $search = '';
+    public $viewMode = 'list'; // 'list' or 'kanban'
+    public $search = ''; // Search term for expedientes
 
-    public function updatingSearch()
+    public function mount()
     {
-        $this->resetPage();
+        // Restore view mode from session if available
+        $this->viewMode = session()->get('expedientes_view_mode', 'list');
     }
 
-    public function cerrar($id)
+    public function toggleViewMode($mode)
     {
-        $expediente = Expediente::findOrFail($id);
-        $cerrado = EstadoProcesal::where('nombre', 'Archivo')->first();
-        $expediente->update([
-            'estado_procesal' => 'Archivo',
-            'estado_procesal_id' => $cerrado?->id,
-        ]);
-        $this->dispatch('notify', 'Expediente cerrado exitosamente');
+        if (in_array($mode, ['list', 'kanban'])) {
+            $this->viewMode = $mode;
+            session()->put('expedientes_view_mode', $mode);
+        }
+    }
+
+    public function updateStatus($expedienteId, $newStatusId)
+    {
+        $expediente = Expediente::findOrFail($expedienteId);
+        
+        // Security check: ensure user has access to this expediente
+        $user = auth()->user();
+        if (!$user->can('view all expedientes') && 
+            $expediente->abogado_responsable_id !== $user->id && 
+            !$expediente->assignedUsers()->where('users.id', $user->id)->exists()) {
+            
+            $this->dispatch('notify', 'No tienes permiso para mover este expediente.');
+            return;
+        }
+
+        $status = EstadoProcesal::find($newStatusId);
+        if ($status) {
+            $expediente->update([
+                'estado_procesal_id' => $status->id,
+                'estado_procesal' => $status->nombre // Legacy field sync
+            ]);
+            $this->dispatch('notify', "Expediente movido a {$status->nombre}");
+        }
     }
 
     public function render()
     {
         $user = auth()->user();
-        $query = Expediente::query();
+        
+        // Base Query Builder
+        $queryBuilder = function() use ($user) {
+            $q = Expediente::query();
+            
+            if (($user->hasRole('abogado') && !$user->can('view all expedientes')) || $user->hasRole('super_admin')) {
+                $q->where(function($sq) use ($user) {
+                    $sq->where('abogado_responsable_id', $user->id)
+                      ->orWhereHas('assignedUsers', function($q2) use ($user) {
+                          $q2->where('users.id', $user->id);
+                      });
+                });
+            }
+            
+            if ($this->search) {
+                $q->where(function($sq) {
+                    $sq->where('numero', 'like', '%' . $this->search . '%')
+                       ->orWhere('titulo', 'like', '%' . $this->search . '%');
+                });
+            }
+            return $q;
+        };
 
-        if (($user->hasRole('abogado') && !$user->can('view all expedientes')) || $user->hasRole('super_admin')) {
-            $query->where(function($q) use ($user) {
-                $q->where('abogado_responsable_id', $user->id)
-                  ->orWhereHas('assignedUsers', function($q2) use ($user) {
-                      $q2->where('users.id', $user->id);
-                  });
-            });
+        if ($this->viewMode === 'kanban') {
+            $estados = EstadoProcesal::orderBy('orden', 'asc')->orderBy('id', 'asc')->get();
+            
+            // Populate groups
+            // Optimization: Fetch all matching expedientes and grouping in PHP to avoid N+1 queries
+            $allExpedientes = $queryBuilder()
+                ->with(['cliente', 'abogado'])
+                ->get();
+            
+            $kanbanData = [];
+            foreach ($estados as $estado) {
+                $kanbanData[] = [
+                    'estado' => $estado,
+                    'expedientes' => $allExpedientes->where('estado_procesal_id', $estado->id)
+                ];
+            }
+            
+            // Handle expedientes with no status or invalid status ID
+            $orphans = $allExpedientes->whereNull('estado_procesal_id');
+            if ($orphans->count() > 0) {
+                 $kanbanData[] = [
+                    'estado' => (object)['id' => null, 'nombre' => 'Sin Clasificar', 'color' => 'gray'],
+                    'expedientes' => $orphans
+                ];
+            }
+
+            return view('livewire.expedientes.index', [
+                'kanbanData' => $kanbanData
+            ]);
+
+        } else {
+            // LIST MODE
+            $expedientes = $queryBuilder()
+                ->with(['cliente', 'abogado', 'estadoProcesal'])
+                ->withCount(['actuaciones', 'documentos', 'eventos', 'comentarios'])
+                ->orderByDesc('id')
+                ->paginate(10);
+
+            return view('livewire.expedientes.index', [
+                'expedientes' => $expedientes
+            ]);
         }
-
-        $expedientes = $query->where(function($q) {
-                $q->where('numero', 'like', '%' . $this->search . '%')
-                  ->orWhere('titulo', 'like', '%' . $this->search . '%');
-            })
-            ->with(['cliente', 'abogado', 'estadoProcesal'])
-            ->withCount(['actuaciones', 'documentos', 'eventos', 'comentarios'])
-            ->orderByDesc('id')
-            ->paginate(10);
-
-        return view('livewire.expedientes.index', [
-            'expedientes' => $expedientes
-        ]);
     }
 }

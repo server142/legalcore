@@ -33,21 +33,13 @@
         </style>
         @stack('styles')
     </head>
-    <body class="font-sans antialiased bg-gray-100" 
-          x-data="{ 
-              mobileMenuOpen: false, 
-              sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
-              toggleSidebar() {
-                  this.sidebarCollapsed = !this.sidebarCollapsed;
-                  localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
-              }
-          }">
-    <div class="flex h-[100dvh] overflow-hidden bg-gray-100">
-        <!-- Sidebar Component -->
-        <livewire:layout.navigation />
+    <body class="font-sans antialiased bg-gray-100" x-data="{ mobileMenuOpen: false }">
+        <div class="flex h-screen overflow-hidden bg-gray-100">
+            <!-- Sidebar Component -->
+            <livewire:layout.navigation />
 
-        <!-- Main Content Area -->
-        <div class="flex flex-col flex-1 min-w-0 overflow-hidden bg-gray-100 relative z-0">
+            <!-- Main Content Area -->
+            <div class="flex flex-col flex-1 min-w-0 overflow-hidden bg-gray-100">
                 <!-- Top Header -->
                 <header class="bg-white border-b border-gray-200 z-20 flex-shrink-0">
                     <div class="px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">

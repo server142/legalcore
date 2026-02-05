@@ -27,13 +27,7 @@ $iconSvg = match($icon) {
 };
 @endphp
 
-<a 
-    x-data
-    {{ $attributes->merge(['class' => $classes]) }} 
-    wire:navigate
-    @mouseenter="$dispatch('show-tooltip', { text: '{{ trim(strip_tags($slot)) }}', rect: $el.getBoundingClientRect() })" 
-    @mouseleave="$dispatch('hide-tooltip')"
->
+<a {{ $attributes->merge(['class' => $classes]) }} wire:navigate>
     {!! $iconSvg !!}
     <span x-show="!sidebarCollapsed" x-transition.opacity class="whitespace-nowrap overflow-hidden">
         {{ $slot }}

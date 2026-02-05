@@ -57,30 +57,7 @@ new class extends Component
         class="hidden lg:flex lg:flex-col h-full bg-gray-200 border-r border-gray-300 transition-all duration-300 ease-in-out relative group" 
         :class="sidebarCollapsed ? 'w-20' : 'w-64'"
         style="background-color: #e2e8f0;"
-        x-data="{ 
-            hoveredLink: '', 
-            tooltipTop: 0,
-            init() {
-                // No init needed
-            }
-        }"
-        @show-tooltip.window="
-            if (!sidebarCollapsed) return;
-            hoveredLink = $event.detail.text;
-            const rect = $event.detail.rect;
-            tooltipTop = rect.top + (rect.height / 2) - 15;
-        "
-        @hide-tooltip.window="hoveredLink = ''"
     >
-        <!-- Floating Tooltip (Fixed Position) -->
-        <div 
-            x-show="hoveredLink && sidebarCollapsed"
-            x-transition.opacity.duration.200ms
-            class="fixed left-20 ml-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md shadow-lg z-[100] pointer-events-none whitespace-nowrap"
-            :style="`top: ${tooltipTop}px`"
-            x-text="hoveredLink"
-            style="display: none;"
-        ></div>
         <div class="flex items-center h-16 px-4 bg-gray-300 border-b border-gray-400 overflow-hidden whitespace-nowrap"
              :class="sidebarCollapsed ? 'justify-center' : 'justify-between'">
             

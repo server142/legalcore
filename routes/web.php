@@ -70,6 +70,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // AI Global Assistant
     Route::get('/asistente-ia', \App\Livewire\AiGlobalAssistant::class)->name('ai.assistant');
+
+    // Monitor DOF (Diario Oficial)
+    Route::get('/dof', \App\Livewire\Dof\Index::class)->name('dof.index');
     
     // Admin only - Trial Management
     // Admin - Tenant Management
