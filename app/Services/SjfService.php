@@ -17,7 +17,15 @@ class SjfService
      */
     public function syncRecent($days = 7)
     {
-        Log::info("SJF: Attempting sync via Microservice...");
+        return $this->syncPage(1, 50);
+    }
+
+    /**
+     * Fetch a specific page of results.
+     */
+    public function syncPage($page = 1, $size = 50)
+    {
+        Log::info("SJF: Attempting sync via Microservice for page {$page}...");
 
         try {
             $response = Http::timeout(30)
@@ -28,23 +36,18 @@ class SjfService
                     'Accept' => 'application/json, text/plain, */*',
                 ])
                 ->get($this->apiUrl, [
-                    'page' => 1,
-                    'size' => 50,
-                    // 'sort' => 'fechaPublicacion,desc' // Investigar si soporta sort. Por defecto suele ser relevancia o fecha.
+                    'page' => $page,
+                    'size' => $size,
                 ]);
 
             // Retry with POST if GET is not allowed (Error 405)
-            // Or if we default to POST based on recent findings.
-            // We use the payload structure provided by successful browser interception.
             if ($response->status() === 405 || $response->status() === 400) {
-                Log::info("SJF: Switching to POST with Payload...");
-                
                 $payload = [
-                    "classifiers" => [], // Empty to search global/recent
+                    "classifiers" => [],
                     "searchTerms" => [],
                     "bFacet" => true,
                     "ius" => [],
-                    "idApp" => "SJFAPP2020", // Critical auth/app ID
+                    "idApp" => "SJFAPP2020",
                     "lbSearch" => [],
                     "filterExpression" => ""
                 ];
@@ -57,14 +60,13 @@ class SjfService
                         'Accept' => 'application/json, text/plain, */*',
                         'Content-Type' => 'application/json'
                     ])
-                    ->post($this->apiUrl . '?page=1&size=50', $payload);
+                    ->post($this->apiUrl . "?page={$page}&size={$size}", $payload);
             }
 
             if ($response->successful()) {
                 $json = $response->json();
                 
                 // Spring Boot Pagination usually returns 'content' array.
-                // Found 'documents' via debug logs (step 836)
                 $items = $json['documents'] ?? $json['content'] ?? $json['result'] ?? $json['data'] ?? ($json['lista'] ?? []);
                 
                 if (empty($items) && is_array($json) && isset($json[0])) {
@@ -73,16 +75,13 @@ class SjfService
 
                 if (empty($items)) {
                     Log::warning("SJF Microservice returned 200 but no items found in known keys.");
-                    Log::info("Full JSON response: " . json_encode($json));
                     return 0;
                 }
 
-                Log::info("SJF: Found " . count($items) . " items. Sample item structure: " . json_encode($items[0]));
                 return $this->processItems($items, 'microservice');
             }
             
             Log::error("SJF Microservice failed: " . $response->status());
-            Log::info("Response Body Snippet: " . substr($response->body(), 0, 200));
             return "Connection failed (Status: " . $response->status() . ")";
 
         } catch (\Exception $e) {
