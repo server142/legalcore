@@ -34,8 +34,21 @@ class SjfService
                 ]);
 
             // Retry with POST if GET is not allowed (Error 405)
-            if ($response->status() === 405) {
-                Log::info("SJF: 405 Method Not Allowed via GET. Switching to POST...");
+            // Or if we default to POST based on recent findings.
+            // We use the payload structure provided by successful browser interception.
+            if ($response->status() === 405 || $response->status() === 400) {
+                Log::info("SJF: Switching to POST with Payload...");
+                
+                $payload = [
+                    "classifiers" => [], // Empty to search global/recent
+                    "searchTerms" => [],
+                    "bFacet" => true,
+                    "ius" => [],
+                    "idApp" => "SJFAPP2020", // Critical auth/app ID
+                    "lbSearch" => [],
+                    "filterExpression" => ""
+                ];
+
                 $response = Http::timeout(30)
                     ->withHeaders([
                         'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -44,9 +57,7 @@ class SjfService
                         'Accept' => 'application/json, text/plain, */*',
                         'Content-Type' => 'application/json'
                     ])
-                    // Some APIs expect params in URL even for POST, others in body.
-                    // We try keeping them in URL as captured pattern, and empty body.
-                    ->post($this->apiUrl . '?page=1&size=50', []);
+                    ->post($this->apiUrl . '?page=1&size=50', $payload);
             }
 
             if ($response->successful()) {
