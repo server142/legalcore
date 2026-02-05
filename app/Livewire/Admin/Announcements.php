@@ -15,11 +15,13 @@ class Announcements extends Component
     public $subject = '';
     public $content = '';
     public $target = 'all';
+    public $testEmail = '';
 
     protected $rules = [
         'subject' => 'required|min:5|max:255',
         'content' => 'required|min:10',
-        'target' => 'required|in:all,admins,superadmins'
+        'target' => 'required|in:all,admins,superadmins',
+        'testEmail' => 'nullable|email'
     ];
 
     public function sendTest()
@@ -27,11 +29,14 @@ class Announcements extends Component
         $this->validate([
             'subject' => 'required|min:5|max:255',
             'content' => 'required|min:10',
+            'testEmail' => 'nullable|email'
         ]);
 
+        $recipient = !empty($this->testEmail) ? $this->testEmail : auth()->user()->email;
+
         try {
-            Mail::to(auth()->user()->email)->send(new SystemAnnouncement($this->subject, $this->content));
-            session()->flash('success', "¡Correo de prueba enviado a " . auth()->user()->email . "!");
+            Mail::to($recipient)->send(new SystemAnnouncement($this->subject, $this->content));
+            session()->flash('success', "¡Correo de prueba enviado a {$recipient}!");
         } catch (\Exception $e) {
             \Log::error("Failed to send test announcement: " . $e->getMessage());
             session()->flash('error', "Error al enviar la prueba: " . $e->getMessage());

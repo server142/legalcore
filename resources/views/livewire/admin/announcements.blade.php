@@ -65,14 +65,19 @@
                             <p class="text-xs text-gray-500 mt-2 italic">Tip: El mensaje se enviará con un formato elegante y profesional.</p>
                         </div>
 
-                        <div class="flex justify-between items-center pt-4">
-                            <button type="button" 
-                                    wire:click="sendTest"
-                                    wire:loading.attr="disabled"
-                                    class="text-indigo-600 font-bold text-sm hover:underline flex items-center gap-1 group">
-                                <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                                Enviar prueba a mi correo
-                            </button>
+                        <div class="flex flex-col gap-2 pt-4">
+                            <div class="flex items-center gap-2">
+                                <x-text-input wire:model.live="testEmail" type="email" class="text-xs py-1 rounded-lg w-64" placeholder="Correo para prueba (opcional)" />
+                                <button type="button" 
+                                        wire:click="sendTest"
+                                        wire:loading.attr="disabled"
+                                        class="text-indigo-600 font-bold text-sm hover:underline flex items-center gap-1 group">
+                                    <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                    Enviar prueba
+                                </button>
+                            </div>
+                            <x-input-error :messages="$errors->get('testEmail')" class="mt-1" />
+                        </div>
 
                             <button type="submit" 
                                     wire:loading.attr="disabled"
