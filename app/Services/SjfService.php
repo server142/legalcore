@@ -65,7 +65,7 @@ class SjfService
         }
     }
 
-    protected function processItems($items, $source = 'api')
+    public function processItems($items, $source = 'api')
     {
         $count = 0;
         foreach ($items as $item) {
