@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Http;
 use App\Models\DofPublication;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class DofService
 {
@@ -103,20 +105,8 @@ class DofService
     public function search($queryRaw, $filters = [])
     {
         $query = DofPublication::query();
-
-        if (!empty($queryRaw)) {
-            // Standard search (keyword based)
-            $query->where(function($q) use ($queryRaw) {
-                $q->where('titulo', 'like', "%{$queryRaw}%")
-                  ->orWhere('resumen', 'like', "%{$queryRaw}%")
-                  ->orWhere('texto_completo', 'like', "%{$queryRaw}%");
-            });
-            
-            // TODO: Semantic Search integration point
-            // $vector = $this->aiService->getEmbeddings($queryRaw);
-            // $query->semanticSearch($vector);
-        }
-
+        
+        // Apply Filters first (Date, Organismo) to reduce search space
         if (isset($filters['date_from'])) {
             $query->whereDate('fecha_publicacion', '>=', $filters['date_from']);
         }
@@ -125,8 +115,53 @@ class DofService
             $query->whereDate('fecha_publicacion', '<=', $filters['date_to']);
         }
 
-        if (isset($filters['organismo'])) {
+        if (isset($filters['organismo']) && !empty($filters['organismo'])) {
             $query->where('organismo', 'like', "%{$filters['organismo']}%");
+        }
+
+        // Semantic Search Logic
+        if (!empty($queryRaw)) {
+            $aiService = app(\App\Services\AIService::class);
+            $vector = $aiService->getEmbeddings($queryRaw);
+
+            if ($vector) {
+                // Limit semantic search candidate pool to prevent memory exhaustion (e.g., last 2000 records matching filters)
+                // If filters are strict, this limit might not even be reached.
+                $candidates = $query->latest('fecha_publicacion')->take(2000)->get();
+
+                // Calculate similarity in PHP
+                $scoredCandidates = $candidates->map(function ($item) use ($vector) {
+                    $itemVec = $item->embedding_data; 
+                    // Handle case where embedding_data might be null or invalid
+                    if (!$itemVec || !is_array($itemVec)) {
+                        $item->similarity_score = 0;
+                        return $item;
+                    }
+                    
+                    $item->similarity_score = DofPublication::cosineSimilarity($vector, $itemVec);
+                    return $item;
+                })->sortByDesc('similarity_score');
+
+                // Pagination logic for collection
+                $page = Paginator::resolveCurrentPage() ?: 1;
+                $perPage = 20;
+                $results = $scoredCandidates->forPage($page, $perPage);
+
+                return new LengthAwarePaginator(
+                    $results,
+                    $scoredCandidates->count(),
+                    $perPage,
+                    $page,
+                    ['path' => Paginator::resolveCurrentPath()]
+                );
+            } else {
+                // Fallback to traditional SQL LIKE if embedding fails
+                 $query->where(function($q) use ($queryRaw) {
+                    $q->where('titulo', 'like', "%{$queryRaw}%")
+                      ->orWhere('resumen', 'like', "%{$queryRaw}%")
+                      ->orWhere('texto_completo', 'like', "%{$queryRaw}%");
+                });
+            }
         }
 
         return $query->orderBy('fecha_publicacion', 'desc')->paginate(20);

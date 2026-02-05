@@ -27,10 +27,24 @@ class DofPublication extends Model
     ];
 
     // Placeholder for semantic search scope
-    public function scopeSemanticSearch($query, $vector)
+    // Helper to calculate cosine similarity between two vectors
+    public static function cosineSimilarity(array $vecA, array $vecB): float
     {
-        // This would implement the cosine similarity logic if using pgvector
-        // return $query->orderByRaw('embedding <=> ?', [$vector]);
-        return $query;
+        $dotProduct = 0.0;
+        $normA = 0.0;
+        $normB = 0.0;
+
+        foreach ($vecA as $key => $value) {
+            $valB = $vecB[$key] ?? 0;
+            $dotProduct += $value * $valB;
+            $normA += $value * $value;
+            $normB += $valB * $valB;
+        }
+
+        if ($normA == 0 || $normB == 0) {
+            return 0.0;
+        }
+
+        return $dotProduct / (sqrt($normA) * sqrt($normB));
     }
 }
