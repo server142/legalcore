@@ -12,7 +12,7 @@ class Index extends Component
     use WithPagination;
 
     public $search = '';
-    public $useAI = false;
+    public $useAI = true; // Always on by default
     public $loading = false;
 
     // Filters
@@ -24,31 +24,33 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function updatedUseAI()
-    {
-        $this->resetPage();
-    }
-
     public function render()
     {
         $query = SjfPublication::query();
 
         if ($this->search) {
-            if ($this->useAI && strlen($this->search) > 3) {
+            // Use AI automatically if search phrase is significant (concept search)
+            if (strlen($this->search) > 5) {
                 // Semantic Search Logic
                 $aiService = app(\App\Services\AIService::class);
                 $queryVector = $aiService->getEmbeddings($this->search);
 
                 if ($queryVector) {
                     // Fetch candidates with embeddings
+                    // Ensure we cast or parse embedding_data if stored as string
                     $candidates = SjfPublication::whereNotNull('embedding_data')->get();
                     
                     $rankedIds = $candidates->map(function ($pub) use ($aiService, $queryVector) {
+                        $vec = is_string($pub->embedding_data) ? json_decode($pub->embedding_data, true) : $pub->embedding_data;
+                        
+                        if (!is_array($vec)) return null;
+
                         return [
                             'id' => $pub->id,
-                            'score' => $aiService->cosineSimilarity($queryVector, $pub->embedding_data)
+                            'score' => $aiService->cosineSimilarity($queryVector, $vec)
                         ];
                     })
+                    ->filter()
                     ->sortByDesc('score')
                     ->take(50)
                     ->pluck('id');
@@ -71,7 +73,7 @@ class Index extends Component
             ->when($this->instancia, function ($q) {
                 $q->where('instancia', 'like', '%' . $this->instancia . '%');
             })
-            ->when(!$this->useAI || !$this->search, function($q) {
+            ->when(strlen($this->search) <= 5, function($q) {
                 $q->orderBy('fecha_publicacion', 'desc')
                   ->orderBy('reg_digital', 'desc');
             })
@@ -92,17 +94,20 @@ class Index extends Component
     }
 
     /**
-     * Trigger a quick sync of latestesis (Example functionality)
+     * Trigger a quick sync of latestesis
      */
     public function syncLatest()
     {
-        // This would call the Service/Command logic
         $this->loading = true;
         
-        // Simulating delay for user feedback
-        // In production, this might dispatch a Job
-        
-        $this->dispatch('notify', 'Sincronización iniciada en segundo plano.');
+        try {
+            $service = app(\App\Services\SjfService::class);
+            $service->syncRecent(7);
+            $this->dispatch('notify', 'Sincronización completada exitosamente.');
+        } catch (\Exception $e) {
+            $this->dispatch('notify', 'Error al sincronizar: ' . $e->getMessage());
+        }
+
         $this->loading = false;
     }
 }

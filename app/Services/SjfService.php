@@ -137,7 +137,7 @@ class SjfService
             array_merge([
                 'rubro' => $rubro,
                 'texto' => $texto,
-                'embedding_data' => $embedding ? json_encode($embedding) : null,
+                'embedding_data' => $embedding,
             ], $extra)
         );
     }
