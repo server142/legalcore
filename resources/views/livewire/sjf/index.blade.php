@@ -60,28 +60,41 @@
             <!-- Mobile: Cards Layout -->
             <div class="md:hidden space-y-4">
                 @forelse($publications as $pub)
-                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 shadow-sm">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
-                                #{{ $pub->reg_digital }}
-                            </span>
-                            <div class="text-[10px] text-gray-500 text-right">
-                                <div>{{ $pub->instancia }}</div>
-                                <div>{{ $pub->fecha_publicacion ? $pub->fecha_publicacion->format('d/m/Y') : '' }}</div>
-                            </div>
-                        </div>
-                        <h4 class="text-sm font-bold text-gray-800 leading-snug mb-3">
-                            {{ Str::limit($pub->rubro, 180) }}
+                <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start gap-4 mb-3">
+                        <h4 class="text-sm font-extrabold text-gray-900 leading-tight flex-1">
+                            {{ $pub->rubro }}
                         </h4>
-                        <div class="flex justify-end">
-                            <a href="https://sjf2.scjn.gob.mx/detalle/tesis/{{ $pub->reg_digital }}" target="_blank" class="text-xs font-bold text-white bg-indigo-600 px-4 py-2 rounded-lg text-center w-full">
-                                Ver Detalle Oficial
-                            </a>
-                        </div>
+                        <span class="text-[10px] font-bold text-gray-400 shrink-0 mt-1">
+                            {{ $pub->fecha_publicacion ? $pub->fecha_publicacion->format('d/m/Y') : '' }}
+                        </span>
                     </div>
+
+                    <!-- Metadata line style from image -->
+                    <div class="text-[11px] text-gray-500 leading-relaxed mb-4 font-medium italic">
+                        @php
+                            $metadata = array_filter([
+                                $pub->instancia,
+                                $pub->epoca,
+                                $pub->fuente,
+                                $pub->localizacion
+                            ]);
+                        @endphp
+                        {{ implode('; ', $metadata) }}
+                    </div>
+
+                    <div class="flex items-center justify-between pt-3 border-t border-gray-50">
+                        <span class="text-[10px] font-black tracking-widest text-indigo-300 uppercase">
+                            REG. {{ $pub->reg_digital }}
+                        </span>
+                        <a href="https://sjf2.scjn.gob.mx/detalle/tesis/{{ $pub->reg_digital }}" target="_blank" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100 transition-all active:scale-95">
+                            Ver detalle
+                        </a>
+                    </div>
+                </div>
                 @empty
-                    <div class="text-center py-6 text-gray-500 text-sm">
-                        No hay resultados para mostrar.
+                    <div class="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                        <p class="text-sm text-gray-400">No se encontraron documentos.</p>
                     </div>
                 @endforelse
             </div>
