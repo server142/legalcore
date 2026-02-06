@@ -61,13 +61,18 @@
             <div class="md:hidden space-y-4">
                 @forelse($publications as $pub)
                 <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="flex justify-between items-start gap-4 mb-3">
-                        <h4 class="text-sm font-extrabold text-gray-900 leading-tight flex-1">
+                    <!-- Top: Registration Number -->
+                    <div class="mb-1">
+                        <span class="text-[9px] font-black tracking-widest text-indigo-400 uppercase">
+                            REG. {{ $pub->reg_digital }}
+                        </span>
+                    </div>
+
+                    <!-- Title (Rubro) -->
+                    <div class="mb-3">
+                        <h4 class="text-sm font-extrabold text-gray-900 leading-tight">
                             {{ $pub->rubro }}
                         </h4>
-                        <span class="text-[10px] font-bold text-gray-400 shrink-0 mt-1">
-                            {{ $pub->fecha_publicacion ? $pub->fecha_publicacion->format('d/m/Y') : '' }}
-                        </span>
                     </div>
 
                     <!-- Metadata line style from image -->
@@ -83,9 +88,10 @@
                         {{ implode('; ', $metadata) }}
                     </div>
 
+                    <!-- Footer: Date and Action Button -->
                     <div class="flex items-center justify-between pt-3 border-t border-gray-50">
                         <span class="text-[10px] font-black tracking-widest text-indigo-300 uppercase">
-                            REG. {{ $pub->reg_digital }}
+                            {{ $pub->fecha_publicacion ? $pub->fecha_publicacion->format('d/m/Y') : '' }}
                         </span>
                         <a href="https://sjf2.scjn.gob.mx/detalle/tesis/{{ $pub->reg_digital }}" target="_blank" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100 transition-all active:scale-95">
                             Ver detalle
