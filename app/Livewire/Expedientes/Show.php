@@ -199,7 +199,7 @@ class Show extends Component
             'abogado_responsable_id' => 'required|exists:users,id',
         ]);
 
-        $estado = $this->estado_procesal_id ? EstadoProcesal::find($this->estado_procesal_id) : null;
+        $estado = !empty($this->estado_procesal_id) ? EstadoProcesal::find($this->estado_procesal_id) : null;
 
         $this->expediente->update([
             'numero' => $this->numero,
@@ -207,12 +207,12 @@ class Show extends Component
             'materia' => $this->materia,
             'juzgado' => $this->juzgado,
             'estado_procesal' => $estado?->nombre ?? $this->expediente->estado_procesal,
-            'estado_procesal_id' => $this->estado_procesal_id,
+            'estado_procesal_id' => !empty($this->estado_procesal_id) ? $this->estado_procesal_id : null,
             'nombre_juez' => $this->nombre_juez,
-            'fecha_inicio' => $this->fecha_inicio,
+            'fecha_inicio' => $this->fecha_inicio ?: null,
             'cliente_id' => $this->cliente_id,
             'abogado_responsable_id' => $this->abogado_responsable_id,
-            'honorarios_totales' => $this->honorarios_totales,
+            'honorarios_totales' => $this->honorarios_totales ?: 0,
         ]);
 
         $oldHonorarios = $this->expediente->getOriginal('honorarios_totales');

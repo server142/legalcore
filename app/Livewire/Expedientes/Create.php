@@ -103,7 +103,7 @@ class Create extends Component
             }
         }
 
-        $estado = $this->estado_procesal_id ? EstadoProcesal::find($this->estado_procesal_id) : null;
+        $estado = !empty($this->estado_procesal_id) ? EstadoProcesal::find($this->estado_procesal_id) : null;
         $saldo = (float)$this->honorarios_totales - (float)$this->anticipo_inicial;
 
         $expediente = Expediente::create([
@@ -114,10 +114,10 @@ class Create extends Component
             'nombre_juez' => $this->nombre_juez,
             'cliente_id' => $this->cliente_id,
             'abogado_responsable_id' => $this->abogado_responsable_id,
-            'descripcion' => $this->descripcion,
-            'fecha_inicio' => $this->fecha_inicio,
+            'descripcion' => $this->descripcion ?: null,
+            'fecha_inicio' => $this->fecha_inicio ?: null,
             'estado_procesal' => $estado?->nombre ?? 'inicial',
-            'estado_procesal_id' => $this->estado_procesal_id,
+            'estado_procesal_id' => !empty($this->estado_procesal_id) ? $this->estado_procesal_id : null,
             'honorarios_totales' => $this->honorarios_totales ?: 0,
             'saldo_pendiente' => $saldo > 0 ? $saldo : 0,
         ]);
