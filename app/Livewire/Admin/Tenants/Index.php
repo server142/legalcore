@@ -22,6 +22,7 @@ class Index extends Component
     public $editName;
     public $editSlug;
     public $editIsActive;
+    public $editSubscriptionEndsAt;
 
     public $confirmingTenantEdit = false;
     public $confirmingPlanChange = false;
@@ -47,6 +48,7 @@ class Index extends Component
         $this->editSlug = $tenant->slug;
         $this->editIsActive = $tenant->is_active;
         $this->selectedPlanId = $tenant->plan_id;
+        $this->editSubscriptionEndsAt = $tenant->subscription_ends_at ? $tenant->subscription_ends_at->format('Y-m-d') : '';
         $this->dispatch('open-modal', 'edit-tenant-modal');
     }
     public function updateTenant()
@@ -63,6 +65,7 @@ class Index extends Component
         $tenant->name = $this->editName;
         $tenant->slug = $this->editSlug;
         $tenant->is_active = $this->editIsActive;
+        $tenant->subscription_ends_at = $this->editSubscriptionEndsAt ?: null;
 
         // Si el plan cambió, aplicar la nueva configuración de plan
         if ($tenant->plan_id !== $plan->id) {

@@ -15,7 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SecurityHeadersMiddleware::class,
             \App\Http\Middleware\TenantMiddleware::class,
             \App\Http\Middleware\CheckLegalAcceptance::class,
-            // \App\Http\Middleware\CheckSubscription::class,
+            \App\Http\Middleware\CheckSubscription::class,
+        ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'stripe/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

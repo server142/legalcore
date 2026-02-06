@@ -365,6 +365,12 @@
                     <x-input-error :messages="$errors->get('selectedPlanId')" class="mt-2" />
                 </div>
 
+                <div>
+                    <x-input-label for="editSubscriptionEndsAt" value="{{ __('Vencimiento de Suscripción (Dejar vacío para ilimitado)') }}" />
+                    <x-text-input wire:model="editSubscriptionEndsAt" id="editSubscriptionEndsAt" class="mt-1 block w-full" type="date" />
+                    <p class="text-[10px] text-gray-500 mt-1">Si dejas este campo vacío y el plan no es 'Trial', el despacho tendrá acceso ilimitado.</p>
+                </div>
+
                 <div class="flex items-center">
                     <input type="checkbox" wire:model="editIsActive" id="editIsActive" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                     <x-input-label for="editIsActive" value="{{ __('Tenant Activo') }}" class="ml-2" />

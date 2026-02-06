@@ -25,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::subscribe(\App\Listeners\AuthEventsSubscriber::class);
+        Event::listen(
+            \Laravel\Cashier\Events\WebhookHandled::class,
+            \App\Listeners\StripeWebhookListener::class
+        );
 
         \App\Models\Evento::observe(\App\Observers\EventoObserver::class);
 

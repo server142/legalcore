@@ -36,14 +36,24 @@ class Index extends Component
                 $queryVector = $aiService->getEmbeddings($this->search);
 
                 if ($queryVector) {
-                    // OPTIMIZED: Only select ID and Embedding to save memory with 30,000+ records
-                    $candidates = SjfPublication::whereNotNull('embedding_data')
+                    // OPTIMIZED: Use FullText to filter candidates first if table is large
+                    $candidateIds = SjfPublication::query()
+                        ->whereRaw("MATCH(rubro, texto) AGAINST(? IN NATURAL LANGUAGE MODE)", [$this->search])
+                        ->limit(300)
+                        ->pluck('id');
+
+                    if ($candidateIds->isEmpty()) {
+                        // Fallback to recent if no keyword match
+                        $candidateIds = SjfPublication::latest('fecha_publicacion')->take(100)->pluck('id');
+                    }
+
+                    $candidates = SjfPublication::whereIn('id', $candidateIds)
+                        ->whereNotNull('embedding_data')
                         ->select('id', 'embedding_data')
                         ->get();
                     
                     $rankedIds = $candidates->map(function ($pub) use ($aiService, $queryVector) {
-                        $vec = $pub->embedding_data; // Cast handles decoding already
-                        
+                        $vec = $pub->embedding_data; 
                         if (!is_array($vec)) return null;
 
                         return [
@@ -87,11 +97,8 @@ class Index extends Component
 
     protected function applyTraditionalSearch($query)
     {
-        $query->where(function ($q) {
-            $q->where('rubro', 'like', '%' . $this->search . '%')
-              ->orWhere('texto', 'like', '%' . $this->search . '%')
+        $query->whereRaw("MATCH(rubro, texto) AGAINST(? IN NATURAL LANGUAGE MODE)", [$this->search])
               ->orWhere('reg_digital', 'like', '%' . $this->search . '%');
-        });
     }
 
     /**

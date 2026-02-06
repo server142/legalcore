@@ -88,6 +88,11 @@ class Tenant extends Model
 
     public function isSubscriptionActive()
     {
+        // EXEMPT: Si tiene el plan 'exento' o 'lifetime', siempre activo
+        if ($this->plan === 'exento' || $this->plan === 'lifetime') {
+            return true;
+        }
+
         // Soporte para datos legados: Si no es trial y no tiene fecha, permitir acceso si está activo
         if ($this->is_active && $this->plan !== 'trial' && $this->subscription_ends_at === null) {
             return true;

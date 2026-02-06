@@ -221,9 +221,9 @@
                                 <x-input-label for="ai_provider" value="Proveedor de IA" />
                                 <select wire:model="ai_provider" id="ai_provider" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
                                     <option value="openai">OpenAI (Recomendado)</option>
-                <option value="groq">Groq (Gratis/Rápido)</option>
-                <option value="anthropic">Anthropic (Claude)</option>
-                <option value="deepseek">DeepSeek (Económico)</option>
+                                    <option value="groq">Groq (Gratis/Rápido)</option>
+                                    <option value="anthropic">Anthropic (Claude)</option>
+                                    <option value="deepseek">DeepSeek (Económico)</option>
                                 </select>
                             </div>
                             <div>

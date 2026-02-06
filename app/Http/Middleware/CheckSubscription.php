@@ -17,15 +17,20 @@ class CheckSubscription
     {
         $user = $request->user();
 
-        // 1. Si no hay usuario o es Super Admin, permitir acceso
-        if (!$user || $user->role === 'super_admin' || $user->hasRole('super_admin')) {
+        // 1. Si no hay usuario o es Super Admin, permitir acceso total
+        if (!$user || $user->hasRole('super_admin') || $user->role === 'super_admin') {
             return $next($request);
         }
 
         $tenant = $user->tenant;
 
-        // 2. Si no hay tenant asociado, algo está mal (o es un usuario global sin tenant)
+        // 2. Si no hay tenant asociado, permitir acceso (podría ser un usuario administrativo global)
         if (!$tenant) {
+            return $next($request);
+        }
+
+        // 2.5 EXENCIÓN: Si el despacho está marcado como exento o tiene un plan vitalicio
+        if ($tenant->plan === 'exento' || $tenant->plan === 'lifetime' || $tenant->is_active && $tenant->subscription_ends_at === null && $tenant->plan !== 'trial') {
             return $next($request);
         }
 
@@ -35,14 +40,14 @@ class CheckSubscription
             $request->routeIs('profile.*') || 
             $request->routeIs('logout') || 
             $request->is('logout') ||
-            $request->is('livewire/update') // Permitir actualizaciones de Livewire (necesario para logout y otros)
+            $request->is('livewire/update')
         ) {
             return $next($request);
         }
 
         $now = now();
 
-        // 0. Verificar Pago Pendiente (Nuevo registro con plan de pago)
+        // 0. Verificar Pago Pendiente
         if ($tenant->subscription_status === 'pending_payment') {
             return redirect()->route('billing.subscribe', ['plan' => $tenant->plan]);
         }
@@ -52,7 +57,6 @@ class CheckSubscription
             if ($tenant->isOnTrial()) {
                 return $next($request);
             } else {
-                // Trial vencido -> Mover a Grace Period si no estaba ya
                 if ($tenant->subscription_status !== 'grace_period' && $tenant->subscription_status !== 'cancelled') {
                     $this->handleExpiredTrial($tenant);
                 }

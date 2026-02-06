@@ -125,14 +125,27 @@ class DofService
             $vector = $aiService->getEmbeddings($queryRaw);
 
             if ($vector) {
-                // Limit semantic search candidate pool to prevent memory exhaustion (e.g., last 2000 records matching filters)
-                // If filters are strict, this limit might not even be reached.
-                $candidates = $query->latest('fecha_publicacion')->take(2000)->get();
+                // CANDIDATE POOL: Get the most relevant candidates via FullText first to reduce vector calculations
+                // This prevents memory exhaustion and speed up the process significantly.
+                $candidateIds = DofPublication::query()
+                    ->select('id')
+                    ->whereRaw("MATCH(titulo, resumen) AGAINST(? IN NATURAL LANGUAGE MODE)", [$queryRaw])
+                    ->when(isset($filters['date_from']), function($q) use ($filters) {
+                        $q->whereDate('fecha_publicacion', '>=', $filters['date_from']);
+                    })
+                    ->limit(500) // Take top 500 relevant by text
+                    ->pluck('id');
 
-                // Calculate similarity in PHP
+                if ($candidateIds->isEmpty()) {
+                    // If no text match, maybe just take very recent ones
+                    $candidateIds = DofPublication::latest('fecha_publicacion')->take(300)->pluck('id');
+                }
+
+                $candidates = DofPublication::whereIn('id', $candidateIds)->get();
+
+                // Calculate similarity in PHP (only for the reduced pool)
                 $scoredCandidates = $candidates->map(function ($item) use ($vector) {
                     $itemVec = $item->embedding_data; 
-                    // Handle case where embedding_data might be null or invalid
                     if (!$itemVec || !is_array($itemVec)) {
                         $item->similarity_score = 0;
                         return $item;
@@ -155,12 +168,9 @@ class DofService
                     ['path' => Paginator::resolveCurrentPath()]
                 );
             } else {
-                // Fallback to traditional SQL LIKE if embedding fails
-                 $query->where(function($q) use ($queryRaw) {
-                    $q->where('titulo', 'like', "%{$queryRaw}%")
-                      ->orWhere('resumen', 'like', "%{$queryRaw}%")
-                      ->orWhere('texto_completo', 'like', "%{$queryRaw}%");
-                });
+                // Fallback to ULTRA FAST FullText Search
+                 $query->whereRaw("MATCH(titulo, resumen) AGAINST(? IN NATURAL LANGUAGE MODE)", [$queryRaw]);
+                 // A boost for exact title matches if needed, but NLP mode is usually better.
             }
         }
 
