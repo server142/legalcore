@@ -38,23 +38,56 @@
                 </div>
 
                 <div class="flex items-center justify-between text-xs">
-                    <div class="text-gray-500">
+                    <div class="text-gray-500 flex flex-wrap gap-2">
                         @if($search)
-                            <span class="flex items-center text-indigo-600">
-                                Analizando conceptos legales para "{{ $search }}"...
+                            <span class="flex items-center text-indigo-600 font-medium">
+                                <svg class="w-3 h-3 mr-1 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                Analizando para "{{ $search }}"...
+                            </span>
+                            <span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">
+                                coincidencias: {{ $publications->total() }}
                             </span>
                         @else
                             Busca conceptos, frases o números de registro digital.
                         @endif
                     </div>
                     <div class="text-gray-400 italic">
-                        Base de datos: {{ \App\Models\SjfPublication::count() }} tesis registradas.
+                        Base de datos: {{ \App\Models\SjfPublication::count() }} docs. registrados.
                     </div>
                 </div>
             </div>
 
-            <!-- Results Table -->
-            <div class="overflow-x-auto">
+            <!-- Mobile: Cards Layout -->
+            <div class="md:hidden space-y-4">
+                @forelse($publications as $pub)
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+                                #{{ $pub->reg_digital }}
+                            </span>
+                            <div class="text-[10px] text-gray-500 text-right">
+                                <div>{{ $pub->instancia }}</div>
+                                <div>{{ $pub->fecha_publicacion ? $pub->fecha_publicacion->format('d/m/Y') : '' }}</div>
+                            </div>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-800 leading-snug mb-3">
+                            {{ Str::limit($pub->rubro, 180) }}
+                        </h4>
+                        <div class="flex justify-end">
+                            <a href="https://sjf2.scjn.gob.mx/detalle/tesis/{{ $pub->reg_digital }}" target="_blank" class="text-xs font-bold text-white bg-indigo-600 px-4 py-2 rounded-lg text-center w-full">
+                                Ver Detalle Oficial
+                            </a>
+                        </div>
+                    </div>
+                @empty
+                    <div class="text-center py-6 text-gray-500 text-sm">
+                        No hay resultados para mostrar.
+                    </div>
+                @endforelse
+            </div>
+
+            <!-- Desktop: Results Table -->
+            <div class="hidden md:block overflow-x-auto border border-gray-100 rounded-xl">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -73,7 +106,7 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($publications as $pub)
+                        @foreach($publications as $pub)
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">
                                     {{ $pub->reg_digital }}
@@ -99,15 +132,7 @@
                                     </a>
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">
-                                    No se encontraron tesis registradas.
-                                    <br>
-                                    <span class="text-xs">Usa el botón de sincronizar o ejecuta el comando de importación.</span>
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>

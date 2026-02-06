@@ -39,17 +39,16 @@ class Index extends Component
                     // OPTIMIZED: Use FullText to filter candidates first if table is large
                     $candidateIds = SjfPublication::query()
                         ->whereRaw("MATCH(rubro, texto) AGAINST(? IN NATURAL LANGUAGE MODE)", [$this->search])
-                        ->limit(300)
+                        ->limit(1000)
                         ->pluck('id');
 
                     if ($candidateIds->isEmpty()) {
-                        // Fallback to recent if no keyword match
-                        $candidateIds = SjfPublication::latest('fecha_publicacion')->take(100)->pluck('id');
+                        $candidateIds = SjfPublication::latest('fecha_publicacion')->take(500)->pluck('id');
                     }
 
                     $candidates = SjfPublication::whereIn('id', $candidateIds)
                         ->whereNotNull('embedding_data')
-                        ->select('id', 'embedding_data')
+                        ->select('id', 'rubro', 'texto', 'embedding_data', 'fecha_publicacion', 'reg_digital', 'instancia')
                         ->get();
                     
                     $rankedIds = $candidates->map(function ($pub) use ($aiService, $queryVector) {
@@ -61,9 +60,9 @@ class Index extends Component
                             'score' => $aiService->cosineSimilarity($queryVector, $vec)
                         ];
                     })
-                    ->filter()
+                    ->filter(fn($item) => $item !== null && $item['score'] > 0.55) // Refined threshold
                     ->sortByDesc('score')
-                    ->take(60)
+                    ->take(50) // Show top 50 in current view
                     ->pluck('id');
 
                     if ($rankedIds->isNotEmpty()) {
@@ -98,7 +97,8 @@ class Index extends Component
     protected function applyTraditionalSearch($query)
     {
         $query->whereRaw("MATCH(rubro, texto) AGAINST(? IN NATURAL LANGUAGE MODE)", [$this->search])
-              ->orWhere('reg_digital', 'like', '%' . $this->search . '%');
+              ->orWhere('reg_digital', 'like', '%' . $this->search . '%')
+              ->orderByRaw("MATCH(rubro, texto) AGAINST(? IN NATURAL LANGUAGE MODE) DESC", [$this->search]);
     }
 
     /**

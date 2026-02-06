@@ -38,24 +38,32 @@
                 <label for="date_to" class="block text-xs font-medium text-gray-500 mb-1">Hasta</label>
                 <input type="date" wire:model.live="dateTo" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
-            <div class="flex items-end">
-                <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-2 text-xs font-medium text-green-800">
-                    <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
+            <div class="flex flex-col justify-end items-end gap-1">
+                <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-medium text-green-800">
+                    <svg class="-ml-0.5 mr-1 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
                     Buscador Semántico Listo
                 </span>
+                @if($search)
+                <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-1 text-[10px] font-bold text-indigo-800">
+                    coincidencias: {{ $results->total() }}
+                </span>
+                @endif
             </div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-gray-50 flex justify-between items-center text-[10px] text-gray-400 uppercase tracking-widest">
+            <span>{{ $search ? 'Filtrando por relevancia concepto' : 'Mostrando más recientes' }}</span>
+            <span class="font-bold">Base de datos: {{ \App\Models\DofPublication::count() }} docs. registrados</span>
         </div>
     </div>
 
-    <!-- Results Section -->
     <div class="space-y-4">
         @forelse($results as $result)
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                <div class="flex justify-between items-start">
-                    <a href="{{ $result->link_pdf }}" target="_blank" class="text-xl font-semibold text-indigo-600 hover:underline block mb-1">
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="flex flex-col sm:flex-row justify-between items-start gap-2">
+                    <a href="{{ $result->link_pdf }}" target="_blank" class="text-base sm:text-xl font-bold text-indigo-600 hover:underline block leading-tight">
                         {{ $result->titulo }}
                     </a>
-                    <span class="inline-flex items-center rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+                    <span class="inline-flex items-center rounded-full bg-gray-50 px-3 py-1 text-[10px] font-bold text-gray-500 border border-gray-100 shrink-0">
                         {{ $result->fecha_publicacion->format('d M, Y') }}
                     </span>
                 </div>

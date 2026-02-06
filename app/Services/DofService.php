@@ -133,27 +133,28 @@ class DofService
                     ->when(isset($filters['date_from']), function($q) use ($filters) {
                         $q->whereDate('fecha_publicacion', '>=', $filters['date_from']);
                     })
-                    ->limit(500) // Take top 500 relevant by text
+                    ->limit(1000) // Increase pool for better coverage
                     ->pluck('id');
 
                 if ($candidateIds->isEmpty()) {
-                    // If no text match, maybe just take very recent ones
-                    $candidateIds = DofPublication::latest('fecha_publicacion')->take(300)->pluck('id');
+                    $candidateIds = DofPublication::latest('fecha_publicacion')->take(500)->pluck('id');
                 }
 
                 $candidates = DofPublication::whereIn('id', $candidateIds)->get();
 
-                // Calculate similarity in PHP (only for the reduced pool)
+                // Calculate similarity and FILTER by threshold to "reduce" results
                 $scoredCandidates = $candidates->map(function ($item) use ($vector) {
                     $itemVec = $item->embedding_data; 
                     if (!$itemVec || !is_array($itemVec)) {
-                        $item->similarity_score = 0;
+                        $item->score = 0;
                         return $item;
                     }
                     
-                    $item->similarity_score = DofPublication::cosineSimilarity($vector, $itemVec);
+                    $item->score = DofPublication::cosineSimilarity($vector, $itemVec);
                     return $item;
-                })->sortByDesc('similarity_score');
+                })
+                ->filter(fn($item) => $item->score > 0.55) // Refined threshold
+                ->sortByDesc('score');
 
                 // Pagination logic for collection
                 $page = Paginator::resolveCurrentPage() ?: 1;
@@ -168,9 +169,9 @@ class DofService
                     ['path' => Paginator::resolveCurrentPath()]
                 );
             } else {
-                // Fallback to ULTRA FAST FullText Search
-                 $query->whereRaw("MATCH(titulo, resumen) AGAINST(? IN NATURAL LANGUAGE MODE)", [$queryRaw]);
-                 // A boost for exact title matches if needed, but NLP mode is usually better.
+                // Fallback to FullText but with better ranking
+                 $query->whereRaw("MATCH(titulo, resumen) AGAINST(? IN NATURAL LANGUAGE MODE)", [$queryRaw])
+                       ->orderByRaw("MATCH(titulo, resumen) AGAINST(? IN NATURAL LANGUAGE MODE) DESC", [$queryRaw]);
             }
         }
 
