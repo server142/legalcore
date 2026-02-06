@@ -63,7 +63,7 @@
                 <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                     <!-- Top: Registration Number -->
                     <div class="mb-1">
-                        <span class="text-[9px] font-black tracking-widest text-indigo-400 uppercase">
+                        <span class="text-[11px] font-black tracking-widest text-indigo-400 uppercase">
                             REG. {{ $pub->reg_digital }}
                         </span>
                     </div>
