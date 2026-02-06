@@ -21,3 +21,14 @@ Artisan::command('sjf:sync-daily', function () {
     Artisan::call('sjf:sync', ['--days' => 2]);
     $this->info("SJF Sync completed.");
 })->purpose('Sync recent Jurisprudencia tesis from SCJN')->dailyAt('07:00');
+
+// AUTOMATION: Generate embeddings in batches every hour to complete history
+Artisan::command('dof:embeddings-auto', function () {
+    $this->info("Procesando lote horario de embeddings...");
+    Artisan::call('dof:embeddings', ['--limit' => 2000, '--order' => 'desc']);
+})->purpose('Process DOF embeddings in background batches')->hourly();
+
+Artisan::command('sjf:embeddings-auto', function () {
+    $this->info("Procesando remanente de embeddings SJF...");
+    Artisan::call('sjf:embeddings', ['--limit' => 500]);
+})->purpose('Process SJF embeddings in background batches')->hourly();
