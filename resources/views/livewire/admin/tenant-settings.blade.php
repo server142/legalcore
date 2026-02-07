@@ -350,6 +350,42 @@
                             </div>
                         </div>
 
+                        <!-- Agenda Reminders Settings -->
+                        <div class="md:col-span-2 pt-6 border-t">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ __('Alertas de Vencimiento (Agenda)') }}</h3>
+                            <p class="text-sm text-gray-500 mb-6">Configura los tiempos de anticipación para las notificaciones por correo de tus eventos y audiencias.</p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                                <div>
+                                    <x-input-label for="reminder_1_hours" :value="__('1ra Alerta (horas)')" />
+                                    <x-text-input wire:model="reminder_1_hours" id="reminder_1_hours" type="number" min="1" class="block mt-1 w-full" />
+                                    <p class="mt-1 text-[10px] text-gray-500 italic">Sugerido: 120 (5 días)</p>
+                                    <x-input-error :messages="$errors->get('reminder_1_hours')" class="mt-2" />
+                                </div>
+
+                                <div>
+                                    <x-input-label for="reminder_2_hours" :value="__('2da Alerta (horas)')" />
+                                    <x-text-input wire:model="reminder_2_hours" id="reminder_2_hours" type="number" min="1" class="block mt-1 w-full" />
+                                    <p class="mt-1 text-[10px] text-gray-500 italic">Sugerido: 72 (3 días)</p>
+                                    <x-input-error :messages="$errors->get('reminder_2_hours')" class="mt-2" />
+                                </div>
+
+                                <div>
+                                    <x-input-label for="reminder_3_hours" :value="__('3ra Alerta (horas)')" />
+                                    <x-text-input wire:model="reminder_3_hours" id="reminder_3_hours" type="number" min="1" class="block mt-1 w-full" />
+                                    <p class="mt-1 text-[10px] text-gray-500 italic">Sugerido: 24 (1 día)</p>
+                                    <x-input-error :messages="$errors->get('reminder_3_hours')" class="mt-2" />
+                                </div>
+
+                                <div>
+                                    <x-input-label for="reminder_4_hours" :value="__('4ta Alerta (horas)')" />
+                                    <x-text-input wire:model="reminder_4_hours" id="reminder_4_hours" type="number" min="1" class="block mt-1 w-full" />
+                                    <p class="mt-1 text-[10px] text-gray-500 italic">Sugerido: 12 (0.5 día)</p>
+                                    <x-input-error :messages="$errors->get('reminder_4_hours')" class="mt-2" />
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="flex items-center justify-end space-x-4">
                             @if ($errors->any())
                                 <span class="text-sm text-red-600 font-medium">Hay errores en el formulario. Por favor revisa los campos.</span>

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Evento;
 use App\Models\User;
+use App\Models\Tenant;
 use App\Mail\AgendaReminder;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
@@ -23,36 +24,48 @@ class CheckUpcomingEvents extends Command
      *
      * @var string
      */
-    protected $description = 'Check for upcoming events and send email reminders (5d, 3d, 24h, 12h).';
+    protected $description = 'Check for upcoming events and send email reminders based on per-tenant settings.';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $this->info('Consultando eventos próximos a vencer...');
+        $this->info('Consultando eventos próximos a vencer por Tenant...');
 
-        $reminders = [
+        // Defaults if no settings are present
+        $defaultReminders = [
             ['label' => '5 días', 'hours' => 120],
             ['label' => '3 días', 'hours' => 72],
             ['label' => '24 horas', 'hours' => 24],
             ['label' => '12 horas', 'hours' => 12],
         ];
 
-        foreach ($reminders as $reminder) {
-            $this->checkThreshold($reminder['hours'], $reminder['label']);
+        $tenants = Tenant::where('is_active', true)->get();
+
+        foreach ($tenants as $tenant) {
+            $this->info("Procesando Tenant: {$tenant->name} (ID: {$tenant->id})");
+            
+            // Get tenant specific reminders or use defaults
+            $reminders = data_get($tenant->settings, 'reminder_intervals', $defaultReminders);
+
+            foreach ($reminders as $reminder) {
+                $this->checkThresholdForTenant($tenant, $reminder['hours'], $reminder['label']);
+            }
         }
 
         $this->info('Proceso de recordatorios finalizado.');
         return 0;
     }
 
-    protected function checkThreshold(int $hours, string $label)
+    protected function checkThresholdForTenant(Tenant $tenant, int $hours, string $label)
     {
         $start = Carbon::now()->addHours($hours);
-        $end = Carbon::now()->addHours($hours)->addHour(); // Captura ventana de 1 hora
+        $end = Carbon::now()->addHours($hours)->addHour(); // Window of 1 hour
 
+        // SECURITY: We only fetch events belonging to THIS tenant
         $events = Evento::with(['expediente.assignedUsers', 'expediente.abogado'])
+            ->where('tenant_id', $tenant->id)
             ->whereBetween('start_time', [$start, $end])
             ->get();
 
@@ -60,23 +73,34 @@ class CheckUpcomingEvents extends Command
             $expediente = $event->expediente;
             if (!$expediente) continue;
 
+            // DOUBLE SECURITY CHECK: Ensure expediente tenant matches tenant being processed
+            if ($expediente->tenant_id !== $tenant->id) {
+                continue;
+            }
+
             $recipients = collect();
             
             // Abogado Responsable
             if ($expediente->abogado_responsable_id) {
-                $recipients->push(User::find($expediente->abogado_responsable_id));
+                $responsible = User::find($expediente->abogado_responsable_id);
+                // Ensure recipient belongs to the same tenant
+                if ($responsible && $responsible->tenant_id === $tenant->id) {
+                    $recipients->push($responsible);
+                }
             }
 
             // Colaboradores
             foreach ($expediente->assignedUsers as $user) {
-                $recipients->push($user);
+                if ($user->tenant_id === $tenant->id) {
+                    $recipients->push($user);
+                }
             }
 
             $recipients = $recipients->unique('id')->filter();
 
             foreach ($recipients as $recipient) {
                 Mail::to($recipient->email)->queue(new AgendaReminder($event, $recipient, $label));
-                $this->info("Notificación de {$label} enviada a {$recipient->email} para el evento: {$event->titulo}");
+                $this->info("Notificación de {$label} enviada a [{$tenant->name}] {$recipient->email} para: {$event->titulo}");
             }
         }
     }

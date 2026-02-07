@@ -48,6 +48,12 @@ class TenantSettings extends Component
     public $billing_apply_iva = true;
 
     public $agenda_enforce_availability = false;
+    
+    // Agenda Reminders
+    public $reminder_1_hours = 120;
+    public $reminder_2_hours = 72;
+    public $reminder_3_hours = 24;
+    public $reminder_4_hours = 12;
 
     // Plan & Billing
     public $currentPlanDetails;
@@ -100,6 +106,11 @@ class TenantSettings extends Component
 
         $this->agenda_enforce_availability = $settings['agenda_enforce_availability'] ?? false;
 
+        $this->reminder_1_hours = $settings['reminder_1_hours'] ?? 120;
+        $this->reminder_2_hours = $settings['reminder_2_hours'] ?? 72;
+        $this->reminder_3_hours = $settings['reminder_3_hours'] ?? 24;
+        $this->reminder_4_hours = $settings['reminder_4_hours'] ?? 12;
+
         // Plan Info
         $this->currentPlanDetails = $tenant->planRelation;
         $this->subscriptionStatus = $tenant->subscription_status;
@@ -147,6 +158,10 @@ class TenantSettings extends Component
             'asesorias_billing_enabled' => 'boolean',
             'billing_apply_iva' => 'boolean',
             'agenda_enforce_availability' => 'boolean',
+            'reminder_1_hours' => 'required|integer|min:1',
+            'reminder_2_hours' => 'required|integer|min:1',
+            'reminder_3_hours' => 'required|integer|min:1',
+            'reminder_4_hours' => 'required|integer|min:1',
         ], [
             'logo.max' => 'La imagen es demasiado pesada. El límite es de 5MB.',
             'logo.image' => 'El archivo debe ser una imagen (jpg, png, etc).',
@@ -193,6 +208,19 @@ class TenantSettings extends Component
         unset($settings['asesorias_billing_apply_iva']); // Cleanup old key if moving forward
 
         $settings['agenda_enforce_availability'] = (bool) $this->agenda_enforce_availability;
+        
+        $settings['reminder_1_hours'] = (int) $this->reminder_1_hours;
+        $settings['reminder_2_hours'] = (int) $this->reminder_2_hours;
+        $settings['reminder_3_hours'] = (int) $this->reminder_3_hours;
+        $settings['reminder_4_hours'] = (int) $this->reminder_4_hours;
+
+        // Construct the array that the command uses
+        $settings['reminder_intervals'] = [
+            ['label' => ($this->reminder_1_hours / 24) >= 1 ? round($this->reminder_1_hours / 24) . ' días' : $this->reminder_1_hours . ' horas', 'hours' => (int)$this->reminder_1_hours],
+            ['label' => ($this->reminder_2_hours / 24) >= 1 ? round($this->reminder_2_hours / 24) . ' días' : $this->reminder_2_hours . ' horas', 'hours' => (int)$this->reminder_2_hours],
+            ['label' => ($this->reminder_3_hours / 24) >= 1 ? round($this->reminder_3_hours / 24) . ' días' : $this->reminder_3_hours . ' horas', 'hours' => (int)$this->reminder_3_hours],
+            ['label' => ($this->reminder_4_hours / 24) >= 1 ? round($this->reminder_4_hours / 24) . ' días' : $this->reminder_4_hours . ' horas', 'hours' => (int)$this->reminder_4_hours],
+        ];
 
         $tenant->update([
             'name' => $this->name,
