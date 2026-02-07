@@ -32,3 +32,6 @@ Artisan::command('sjf:embeddings-auto', function () {
     $this->info("Procesando remanente de embeddings SJF...");
     Artisan::call('sjf:embeddings', ['--limit' => 500]);
 })->purpose('Process SJF embeddings in background batches')->hourly();
+
+// Check for upcoming agenda events every hour
+\Illuminate\Support\Facades\Schedule::command('agenda:check-reminders')->hourly();

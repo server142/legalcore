@@ -41,7 +41,7 @@ class Comentarios extends Component
             return;
         }
 
-        Comentario::create([
+        $comentario = Comentario::create([
             'expediente_id' => $this->expediente->id,
             'user_id' => $user->id,
             'tenant_id' => $user->tenant_id,
@@ -49,8 +49,36 @@ class Comentarios extends Component
             'parent_id' => null,
         ]);
 
+        $this->notificarParticipantes($comentario);
+
         $this->nuevoComentario = '';
         $this->expediente->load('comentarios.user', 'comentarios.respuestas.user', 'comentarios.reacciones.user');
+    }
+
+    protected function notificarParticipantes(Comentario $comentario)
+    {
+        $expediente = $comentario->expediente;
+        $authorId = $comentario->user_id;
+
+        // Collect all participants (responsible + assigned)
+        $participants = collect();
+        
+        if ($expediente->abogado_responsable_id && $expediente->abogado_responsable_id != $authorId) {
+            $participants->push(\App\Models\User::find($expediente->abogado_responsable_id));
+        }
+
+        foreach ($expediente->assignedUsers as $u) {
+            if ($u->id != $authorId) {
+                $participants->push($u);
+            }
+        }
+
+        // Unique to avoid duplicate emails to the same user
+        $participants = $participants->unique('id')->filter();
+
+        foreach ($participants as $p) {
+            \Illuminate\Support\Facades\Mail::to($p->email)->queue(new \App\Mail\CommentPosted($comentario, $p));
+        }
     }
 
     public function responder($comentarioId)
@@ -93,13 +121,15 @@ class Comentarios extends Component
             $content = '@' . $targetComment->user->name . ' ' . $content;
         }
 
-        Comentario::create([
+        $comentario = Comentario::create([
             'expediente_id' => $this->expediente->id,
             'user_id' => $user->id,
             'tenant_id' => $user->tenant_id,
             'contenido' => $content,
             'parent_id' => $parentId,
         ]);
+
+        $this->notificarParticipantes($comentario);
 
         $this->replyContent = '';
         $this->respondiendo = null;

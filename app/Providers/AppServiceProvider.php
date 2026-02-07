@@ -30,6 +30,16 @@ class AppServiceProvider extends ServiceProvider
             \App\Listeners\StripeWebhookListener::class
         );
 
+        Event::listen(
+            \Illuminate\Mail\Events\MessageSending::class,
+            \App\Listeners\LogSendingMessage::class
+        );
+
+        Event::listen(
+            \Illuminate\Mail\Events\MessageSent::class,
+            \App\Listeners\LogSentMessage::class
+        );
+
         \App\Models\Evento::observe(\App\Observers\EventoObserver::class);
 
         Schema::defaultStringLength(191);
