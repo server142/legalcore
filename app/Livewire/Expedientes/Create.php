@@ -122,6 +122,12 @@ class Create extends Component
             'saldo_pendiente' => $saldo > 0 ? $saldo : 0,
         ]);
 
+        // Notify responsible lawyer
+        $responsible = User::find($this->abogado_responsable_id);
+        if ($responsible) {
+            \Illuminate\Support\Facades\Mail::to($responsible->email)->queue(new \App\Mail\ExpedienteAssigned($expediente, $responsible, true));
+        }
+
         // Crear factura por el anticipo si existe
         if ($this->anticipo_inicial > 0) {
             \App\Models\Factura::create([

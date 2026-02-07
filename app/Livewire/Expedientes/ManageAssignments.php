@@ -22,7 +22,18 @@ class ManageAssignments extends Component
 
     public function updateAssignments()
     {
+        $oldUsers = $this->expediente->assignedUsers->pluck('id')->toArray();
+        
         $this->expediente->assignedUsers()->sync($this->selectedUsers);
+
+        // Notify NEWLY assigned users
+        $newlyAssignedIds = array_diff($this->selectedUsers, $oldUsers);
+        foreach ($newlyAssignedIds as $userId) {
+            $user = User::find($userId);
+            if ($user) {
+                \Illuminate\Support\Facades\Mail::to($user->email)->queue(new \App\Mail\ExpedienteAssigned($this->expediente, $user));
+            }
+        }
 
         AuditLog::create([
             'user_id' => auth()->id(),
@@ -47,6 +58,14 @@ class ManageAssignments extends Component
         $this->expediente->update([
             'abogado_responsable_id' => $this->newResponsible
         ]);
+
+        // Notify NEW responsible if changed
+        if ($oldResponsible != $this->newResponsible) {
+            $user = User::find($this->newResponsible);
+            if ($user) {
+                \Illuminate\Support\Facades\Mail::to($user->email)->queue(new \App\Mail\ExpedienteAssigned($this->expediente, $user, true));
+            }
+        }
 
         AuditLog::create([
             'user_id' => auth()->id(),
