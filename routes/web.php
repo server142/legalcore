@@ -10,6 +10,7 @@ use App\Models\Expediente; // Added for the moved route
 Route::get('/', function () {
     $plans = Plan::where('is_active', true)
         ->where('slug', '!=', 'trial')
+        ->where('slug', '!=', 'exento')
         ->orderBy('price', 'asc')
         ->get();
     
