@@ -13,10 +13,13 @@ use App\Models\Materia;
 use App\Models\Juzgado;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 
 class Show extends Component
 {
     public Expediente $expediente;
+    
+    #[Url]
     public $activeTab = 'actuaciones';
     public $showAddActuacion = false;
     public $showAddEvent = false;
