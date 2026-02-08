@@ -38,9 +38,10 @@ class DatabaseBackupController extends Controller
         // 4. Construct Command
         // We use shell redirection to avoid loading the whole dump into PHP memory
         // Password shielding is tricky in raw shell, we use minimal environment variables approach if possible
-        // but for compatibility we will build a command string carefully.
-        
+        // 4. Construct mysqldump Command
         $dumpFile = $path;
+        $zipFile = str_replace('.sql', '.zip', $path);
+        
         // Adding --column-statistics=0 to prevent hangs on some mysql client versions
         $cmd = sprintf(
             'mysqldump --user=%s --password=%s --host=%s --port=%s --single-transaction --quick --no-tablespaces --column-statistics=0 %s > %s',
@@ -52,10 +53,8 @@ class DatabaseBackupController extends Controller
             escapeshellarg($dumpFile)
         );
 
-        // Security Note: The password is visible in process list for the duration of the dump.
-        // In a shared hosting environment this is bad. On a private VPS it is acceptable risk for this feature.
-
         try {
+            // STEP 1: Generate SQL Dump
             $process = Process::fromShellCommandline($cmd);
             $process->setTimeout(1200); // 20 minutes max
             $process->run();
@@ -66,14 +65,46 @@ class DatabaseBackupController extends Controller
             }
 
             if (!file_exists($dumpFile) || filesize($dumpFile) === 0) {
-                throw new \Exception('El archivo de respaldo está vacío o no se creó.');
+                throw new \Exception('El archivo de respaldo SQL está vacío o no se creó.');
             }
 
-            Log::info("Backup generado por Super Admin: " . auth()->user()->email);
+            // STEP 2: Compress and Encrypt with ZIP
+            // We use the same DB password for the ZIP file for simplicity and security consistency
+            $zipCmd = sprintf(
+                'zip -j -P %s %s %s',
+                escapeshellarg($dbPass),
+                escapeshellarg($zipFile),
+                escapeshellarg($dumpFile)
+            );
 
-            return response()->download($dumpFile)->deleteFileAfterSend(true);
+            $zipProcess = Process::fromShellCommandline($zipCmd);
+            $zipProcess->setTimeout(600);
+            $zipProcess->run();
+
+            // Verify ZIP creation
+            if (!$zipProcess->isSuccessful() || !file_exists($zipFile)) {
+                // Determine if 'zip' command is missing
+                $error = $zipProcess->getErrorOutput();
+                Log::warning("ZIP compression failed (sending SQL instead): " . $error);
+                
+                // Fallback: Send SQL file if ZIP fails (e.g., zip not installed)
+                Log::info("Backup generado (SQL sin comprimir) por Super Admin: " . auth()->user()->email);
+                return response()->download($dumpFile)->deleteFileAfterSend(true);
+            }
+
+            // ZIP Successful
+            Log::info("Backup generado (ZIP cifrado) por Super Admin: " . auth()->user()->email);
+            
+            // Cleanup SQL file immediately, download ZIP and delete after send
+            unlink($dumpFile);
+
+            return response()->download($zipFile)->deleteFileAfterSend(true);
 
         } catch (\Exception $e) {
+            // Cleanup in case of error
+            if (file_exists($dumpFile)) unlink($dumpFile);
+            if (isset($zipFile) && file_exists($zipFile)) unlink($zipFile);
+
             Log::error('Database Backup Failed: ' . $e->getMessage());
             return back()->with('error', 'Error generando el respaldo: ' . $e->getMessage());
         }
