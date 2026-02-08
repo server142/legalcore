@@ -41,8 +41,9 @@ class DatabaseBackupController extends Controller
         // but for compatibility we will build a command string carefully.
         
         $dumpFile = $path;
+        // Adding --column-statistics=0 to prevent hangs on some mysql client versions
         $cmd = sprintf(
-            'mysqldump --user=%s --password=%s --host=%s --port=%s --single-transaction --quick --no-tablespaces %s > %s',
+            'mysqldump --user=%s --password=%s --host=%s --port=%s --single-transaction --quick --no-tablespaces --column-statistics=0 %s > %s',
             escapeshellarg($dbUser),
             escapeshellarg($dbPass),
             escapeshellarg($dbHost),
@@ -56,7 +57,7 @@ class DatabaseBackupController extends Controller
 
         try {
             $process = Process::fromShellCommandline($cmd);
-            $process->setTimeout(300);
+            $process->setTimeout(1200); // 20 minutes max
             $process->run();
 
             if (!$process->isSuccessful()) {
