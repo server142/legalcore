@@ -21,9 +21,9 @@ class SjfService
     }
 
     /**
-     * Fetch a specific page of results.
+     * Fetch a specific page of results with filters.
      */
-    public function syncPage($page = 1, $size = 50)
+    public function syncPage($page = 1, $size = 50, $filters = [])
     {
         Log::info("SJF: Attempting sync via Microservice for page {$page}...");
 
@@ -43,16 +43,16 @@ class SjfService
             // Retry with POST if GET is not allowed (Error 405)
             if ($response->status() === 405 || $response->status() === 400) {
                 $payload = [
-                    "classifiers" => [],
-                    "searchTerms" => [],
+                    "classifiers" => $filters['classifiers'] ?? [],
+                    "searchTerms" => $filters['search_terms'] ?? [],
                     "bFacet" => true,
                     "ius" => [],
                     "idApp" => "SJFAPP2020",
                     "lbSearch" => [],
-                    "filterExpression" => ""
+                    "filterExpression" => $filters['expression'] ?? ""
                 ];
 
-                $response = Http::timeout(30)
+                $response = Http::timeout(45)
                     ->withHeaders([
                         'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                         'Referer' => 'https://sjf2.scjn.gob.mx/listado-resultado-tesis',
@@ -122,14 +122,16 @@ class SjfService
 
     protected function storeWithEmbedding($reg, $rubro, $texto, $extra)
     {
-        // Check existence to avoid re-embedding cost
-        if (SjfPublication::where('reg_digital', $reg)->exists()) {
-             // Maybe update? For now skip cost.
-             return;
-        }
-
+        $existing = SjfPublication::where('reg_digital', $reg)->first();
         $aiService = app(\App\Services\AIService::class);
-        $embedding = $aiService->getEmbeddings($rubro . "\n" . $texto);
+        $embedding = null;
+
+        if ($existing) {
+            $embedding = $existing->embedding_data;
+        } else {
+            // Only generate new embedding if NOT present to save API cost
+            $embedding = $aiService->getEmbeddings($rubro . "\n" . $texto);
+        }
 
         SjfPublication::updateOrCreate(
             ['reg_digital' => $reg],
