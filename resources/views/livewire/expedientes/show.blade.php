@@ -498,13 +498,16 @@
 
     <!-- Modal Visor de Archivos -->
     @if($showViewer && $selectedDoc)
-        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div x-data="{ maximized: false }" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="closeViewer"></div>
+                <div x-show="!maximized" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="closeViewer"></div>
 
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-                <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <div 
+                    :class="maximized ? 'w-full h-full sm:my-0 rounded-none fixed inset-0 z-[60]' : 'inline-block align-middle sm:my-8 sm:max-w-4xl sm:w-full rounded-2xl'"
+                    class="bg-white text-left overflow-hidden shadow-xl transform transition-all"
+                >
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="flex justify-between items-center mb-4 border-b pb-3">
                             <h3 class="text-lg font-bold text-gray-900 truncate flex items-center">
@@ -513,16 +516,25 @@
                                 </span>
                                 {{ $selectedDoc->nombre }}
                             </h3>
-                            <button wire:click="closeViewer" class="text-gray-400 hover:text-gray-600">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            </button>
+                            <div class="flex items-center gap-3">
+                                <button @click="maximized = !maximized" class="text-gray-400 hover:text-indigo-600 transition" title="Maximizar/Restaurar">
+                                    <svg x-show="!maximized" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                                    <svg x-show="maximized" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v-4m0 0h4m-4 0l5 5m11-5v-4m0 0h-4m4 0l-5 5M4 8V4m0 0h4M4 4l5 5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                                </button>
+                                <button wire:click="closeViewer" class="text-gray-400 hover:text-red-500 transition">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
                         </div>
                         
-                        <div class="bg-gray-100 rounded-xl overflow-hidden flex justify-center items-center min-h-[500px]">
+                        <div 
+                            :class="maximized ? 'h-[calc(100vh-80px)]' : 'min-h-[500px]'"
+                            class="bg-gray-100 rounded-xl overflow-hidden flex justify-center items-center"
+                        >
                             @if($selectedDoc->tipo == 'image')
-                                <img src="{{ route('documentos.show', $selectedDoc) }}" class="max-w-full max-h-[70vh] object-contain shadow-lg">
+                                <img src="{{ route('documentos.show', $selectedDoc) }}" :class="maximized ? 'max-h-full' : 'max-h-[70vh]'" class="max-w-full object-contain shadow-lg">
                             @elseif($selectedDoc->tipo == 'pdf')
-                                <iframe src="{{ route('documentos.show', $selectedDoc) }}" class="w-full h-[70vh]" frameborder="0"></iframe>
+                                <iframe src="{{ route('documentos.show', $selectedDoc) }}" class="w-full h-full" frameborder="0" :style="maximized ? 'height: 100%' : 'height: 70vh'"></iframe>
                             @elseif($selectedDoc->tipo == 'video')
                                 <video controls class="max-w-full max-h-[70vh] shadow-lg">
                                     <source src="{{ route('documentos.show', $selectedDoc) }}" type="video/{{ $selectedDoc->extension }}">
