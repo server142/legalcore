@@ -196,10 +196,12 @@
                                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                                                 Descargar
                                             </a>
-                                            <button wire:click="deleteDocument({{ $doc->id }})" wire:confirm="¿Estás seguro de eliminar este documento?" class="flex items-center text-xs font-bold text-red-600 hover:text-red-800 transition whitespace-nowrap">
-                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                                Eliminar
-                                            </button>
+                                            @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('super_admin') || $doc->uploaded_by === auth()->id())
+                                                <button wire:click="deleteDocument({{ $doc->id }})" wire:confirm="¿Estás seguro de eliminar este documento?" class="flex items-center text-xs font-bold text-red-600 hover:text-red-800 transition whitespace-nowrap">
+                                                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                    Eliminar
+                                                </button>
+                                            @endif
                                         </div>
 
                                         <div class="mt-2 pt-2 border-t border-gray-100">

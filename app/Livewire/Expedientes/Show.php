@@ -148,6 +148,16 @@ class Show extends Component
     {
         $doc = Documento::find($docId);
         if ($doc) {
+            // Security Check: Only uploader or admin/super_admin can delete
+            $user = auth()->user();
+            $isAdmin = $user->hasRole('admin') || $user->hasRole('super_admin');
+            $isUploader = $doc->uploaded_by === $user->id;
+
+            if (!$isAdmin && !$isUploader) {
+                $this->dispatch('notify', 'No tienes permiso para eliminar este documento.');
+                return;
+            }
+
             $nombre = $doc->nombre;
             Storage::disk('local')->delete($doc->path);
             $doc->delete();
@@ -162,6 +172,7 @@ class Show extends Component
             ]);
 
             $this->expediente->load('documentos');
+            $this->dispatch('notify', 'Documento eliminado correctamente.');
         }
     }
 
