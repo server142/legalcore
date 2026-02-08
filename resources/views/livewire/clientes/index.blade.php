@@ -36,8 +36,8 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $cliente->email }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $cliente->telefono }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</a>
-                        <a href="#" class="text-red-600 hover:text-red-900">Eliminar</a>
+                        <a href="{{ route('clientes.edit', $cliente) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Editar</a>
+                        <button wire:click="delete({{ $cliente->id }})" wire:confirm="¿Estás seguro de eliminar este cliente?" class="text-red-600 hover:text-red-900">Eliminar</button>
                     </td>
                 </tr>
                 @endforeach
@@ -75,9 +75,15 @@
                     @endif
                 </div>
 
-                <div class="flex justify-end space-x-3">
-                    <a href="#" class="text-indigo-600 font-medium text-sm hover:text-indigo-800">Editar</a>
-                    <a href="#" class="text-red-600 font-medium text-sm hover:text-red-800">Eliminar</a>
+                <div class="flex justify-end space-x-4">
+                    <a href="{{ route('clientes.edit', $cliente) }}" class="text-indigo-600 font-bold text-sm hover:text-indigo-800 flex items-center">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        Editar
+                    </a>
+                    <button wire:click="delete({{ $cliente->id }})" wire:confirm="¿Estás seguro de eliminar este cliente?" class="text-red-600 font-bold text-sm hover:text-red-800 flex items-center">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        Eliminar
+                    </button>
                 </div>
             </div>
             @endforeach

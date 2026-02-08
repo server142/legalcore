@@ -42,7 +42,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/expedientes/{expediente}', \App\Livewire\Expedientes\Show::class)->name('expedientes.show');
 
     Route::get('/clientes', \App\Livewire\Clientes\Index::class)->name('clientes.index');
-    Route::get('/clientes/nuevo', \App\Livewire\Clientes\Create::class)->name('clientes.create');
+    Route::get('/clientes/nuevo', \App\Livewire\Clientes\Form::class)->name('clientes.create');
+    Route::get('/clientes/{cliente}/editar', \App\Livewire\Clientes\Form::class)->name('clientes.edit');
 
     Route::get('/agenda', \App\Livewire\Agenda\Index::class)->name('agenda.index');
     Route::get('/terminos', \App\Livewire\Terminos\Index::class)->name('terminos.index');

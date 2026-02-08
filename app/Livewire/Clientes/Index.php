@@ -9,7 +9,7 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination;
+    use WithPagination, \App\Traits\Auditable;
 
     public $search = '';
 
@@ -18,10 +18,26 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function delete($id)
+    {
+        $cliente = Cliente::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
+        
+        $nombre = $cliente->nombre;
+        $cliente->delete();
+
+        $this->logAudit('eliminar', 'Clientes', "Eliminó al cliente: {$nombre}", ['cliente_id' => $id]);
+
+        $this->dispatch('notify', 'Cliente eliminado correctamente.');
+    }
+
     public function render()
     {
-        $clientes = Cliente::where('nombre', 'like', '%' . $this->search . '%')
-            ->orWhere('rfc', 'like', '%' . $this->search . '%')
+        $clientes = Cliente::where('tenant_id', auth()->user()->tenant_id)
+            ->where(function($q) {
+                $q->where('nombre', 'like', '%' . $this->search . '%')
+                  ->orWhere('rfc', 'like', '%' . $this->search . '%')
+                  ->orWhere('email', 'like', '%' . $this->search . '%');
+            })
             ->latest()
             ->paginate(10);
 
