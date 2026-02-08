@@ -2,8 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Evento;
-use App\Models\User;
+use App\Models\Asesoria;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -11,22 +10,21 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class AgendaReminder extends Mailable implements ShouldQueue
+class AsesoriaNotificationAbogado extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public $event;
-    public $user;
-    public $timeLabel;
+    public $asesoria;
+    public $publicUrl;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Evento $event, User $recipient, string $timeLabel)
+    public function __construct(Asesoria $asesoria)
     {
-        $this->event = $event;
-        $this->user = $recipient;
-        $this->timeLabel = $timeLabel;
+        $this->asesoria = $asesoria;
+        // La URL pública es útil también para el abogado para ver la "ficha" rápidamente
+        $this->publicUrl = route('asesorias.public', ['token' => $asesoria->public_token]);
     }
 
     /**
@@ -34,14 +32,8 @@ class AgendaReminder extends Mailable implements ShouldQueue
      */
     public function envelope(): Envelope
     {
-        $subject = "RECORDATORIO ({$this->timeLabel}): " . $this->event->titulo;
-        
-        if ($this->event->expediente) {
-            $subject .= " - Exp. " . $this->event->expediente->numero;
-        }
-
         return new Envelope(
-            subject: $subject,
+            subject: 'Nueva Asesoría Asignada - Folio: ' . $this->asesoria->folio,
         );
     }
 
@@ -50,8 +42,11 @@ class AgendaReminder extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
+        // Reutilizamos la misma vista que el cliente pero el contexto cambia en el asunto
+        // y el abogado entenderá que es su copia de la ficha.
+        // Si se requiere algo muy diferente, se debe crear emails.asesorias.notification_abogado
         return new Content(
-            markdown: 'emails.agenda.reminder',
+            markdown: 'emails.asesorias.notification_abogado',
         );
     }
 

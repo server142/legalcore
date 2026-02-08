@@ -5,13 +5,29 @@
     />
 </x-slot>
 
-<div class="p-4 md:p-6 max-w-5xl mx-auto">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+<div class="p-4 md:p-6 max-w-5xl mx-auto" x-data="{ saving: false }">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
+        {{-- Overlay de Carga --}}
+        <div wire:loading wire:target="guardar" class="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div class="flex flex-col items-center">
+                <svg class="animate-spin h-12 w-12 text-indigo-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-indigo-900 font-black uppercase tracking-widest text-sm">Guardando Información...</p>
+            </div>
+        </div>
+
         {{-- Header del Formulario --}}
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-            <div>
-                <h3 class="text-lg font-bold text-gray-900">Datos de la Asesoría</h3>
-                <p class="text-sm text-gray-500">Completa la información para agendar o gestionar la cita</p>
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <a href="{{ route('asesorias.index') }}" class="p-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-500 flex-shrink-0 shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </a>
+                <div>
+                    <h3 class="text-lg font-black text-gray-900">{{ $modoEdicion ? 'Actualizar Asesoría' : 'Nueva Asesoría' }}</h3>
+                    <p class="text-xs text-gray-500">{{ $modoEdicion ? 'Folio: ' . $asesoria->folio : 'Registro de nuevo prospecto y cita' }}</p>
+                </div>
             </div>
             @if($modoEdicion)
                 <div class="flex items-center space-x-2">
@@ -28,78 +44,115 @@
         </div>
 
         <div class="p-6 space-y-8">
+            {{-- Errores de Validación (MUY VISIBLE) --}}
+            @if ($errors->any())
+                <div id="error-summary" class="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl shadow-md border border-red-100">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-black text-red-800 uppercase tracking-tight">Atención: No se pudo guardar</h3>
+                            <p class="text-xs text-red-600 mt-1 mb-2">Por favor corrige los siguientes errores para continuar:</p>
+                            <div class="mt-2 text-xs text-red-700 space-y-1 bg-white/50 p-2 rounded-lg">
+                                @foreach ($errors->all() as $error)
+                                    <p class="flex items-center">
+                                        <span class="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></span>
+                                        {{ $error }}
+                                    </p>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- Sección 1: Información del Prospecto --}}
             <div>
-                <h4 class="text-sm font-bold text-indigo-600 uppercase mb-4 border-b pb-2">1. Información del Prospecto / Cliente</h4>
+                <h4 class="text-sm font-bold text-indigo-600 uppercase mb-4 border-b pb-2 flex items-center">
+                    <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] mr-2">1</span>
+                    Información del Prospecto / Cliente
+                </h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="md:col-span-3">
-                        <div class="flex justify-between items-center">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
-                            <button type="button" wire:click="$set('showClienteModal', true)" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold">+ Nuevo Cliente</button>
+                        <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-100 mb-2">
+                            <div>
+                                <label class="block text-xs font-black text-gray-500 uppercase">¿Es un cliente existente?</label>
+                                <p class="text-[10px] text-gray-400">Si ya está registrado, selecciónalo aquí</p>
+                            </div>
+                            <button type="button" wire:click="$set('showClienteModal', true)" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-black transition flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                NUEVO CLIENTE
+                            </button>
                         </div>
-                        <select wire:model.live="cliente_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="">Seleccione un cliente</option>
+                        <select wire:model.live="cliente_id" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 font-bold text-sm">
+                            <option value="">-- Selecciona un Cliente del Sistema o deja vacío para Prospecto --</option>
                             @foreach($clientes as $cliente)
                                 <option value="{{ $cliente->id }}">{{ $cliente->nombre }}</option>
                             @endforeach
                         </select>
-                        @error('cliente_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        @error('cliente_id') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="md:col-span-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo *</label>
-                        <input wire:model="nombre_prospecto" type="text" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('nombre_prospecto') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <label class="block text-xs font-black text-gray-500 uppercase mb-1">Nombre Completo *</label>
+                        <input wire:model="nombre_prospecto" type="text" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 font-bold text-sm" placeholder="Ej. Juan Pérez">
+                        @error('nombre_prospecto') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                        <input wire:model="telefono" type="text" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('telefono') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <label class="block text-xs font-black text-gray-500 uppercase mb-1">Teléfono</label>
+                        <input wire:model="telefono" type="text" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 font-bold text-sm" placeholder="10 dígitos">
+                        @error('telefono') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <input wire:model="email" type="email" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <label class="block text-xs font-black text-gray-500 uppercase mb-1">Email</label>
+                        <input wire:model="email" type="email" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 font-bold text-sm" placeholder="correo@ejemplo.com">
+                        @error('email') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     <div class="md:col-span-3">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Asunto / Motivo de Consulta *</label>
-                        <textarea wire:model="asunto" rows="2" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"></textarea>
-                        @error('asunto') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <label class="block text-xs font-black text-gray-500 uppercase mb-1">Asunto / Motivo de Consulta *</label>
+                        <textarea wire:model="asunto" rows="2" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 font-bold text-sm" placeholder="Describe brevemente el motivo..."></textarea>
+                        @error('asunto') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                     </div>
                 </div>
             </div>
 
             {{-- Sección 2: Detalles de la Cita --}}
             <div>
-                <h4 class="text-sm font-bold text-indigo-600 uppercase mb-4 border-b pb-2">2. Detalles de la Cita</h4>
+                <h4 class="text-sm font-bold text-indigo-600 uppercase mb-4 border-b pb-2 flex items-center">
+                    <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] mr-2">2</span>
+                    Detalles de la Cita
+                </h4>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha *</label>
-                        <input wire:model="fecha" type="date" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('fecha') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <label class="block text-xs font-black text-gray-500 uppercase mb-1">Fecha *</label>
+                        <input wire:model="fecha" type="date" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 font-bold text-sm">
+                        @error('fecha') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Hora *</label>
-                        <input wire:model="hora" type="time" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('hora') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <label class="block text-xs font-black text-gray-500 uppercase mb-1">Hora *</label>
+                        <input wire:model="hora" type="time" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 font-bold text-sm">
+                        @error('hora') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     @if($suggested_fecha && $suggested_hora)
-                        <div class="md:col-span-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                                <div>
-                                    <p class="text-sm font-bold text-yellow-800">Horario sugerido</p>
-                                    <p class="text-sm text-yellow-700">{{ $suggested_fecha }} {{ $suggested_hora }}</p>
-                                </div>
-                                <button type="button" wire:click="applySuggestedSlot" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-bold shadow-sm transition">
-                                    Usar horario sugerido
-                                </button>
+                        <div class="md:col-span-4 bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <p class="text-sm font-black text-amber-900">⚠️ Conflicto de Horario</p>
+                                <p class="text-xs text-amber-800 font-medium">El abogado ya tiene compromisos en esa hora. Sugerimos:</p>
+                                <p class="text-sm font-black text-amber-700 mt-1">{{ Carbon\Carbon::parse($suggested_fecha)->format('d/m/Y') }} a las {{ $suggested_hora }}</p>
                             </div>
+                            <button type="button" wire:click="applySuggestedSlot" class="px-5 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 font-black text-xs shadow-lg shadow-amber-200 transition-all flexitems-center">
+                                USAR ESTE HORARIO
+                            </button>
                         </div>
                     @endif
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Duración (min)</label>
-                        <select wire:model="duracion_minutos" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                        <label class="block text-xs font-black text-gray-500 uppercase mb-1">Duración</label>
+                        <select wire:model="duracion_minutos" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 font-bold text-sm">
                             <option value="15">15 min</option>
                             <option value="30">30 min</option>
                             <option value="45">45 min</option>
@@ -109,8 +162,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Asesoría *</label>
-                        <select wire:model.live="tipo" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                        <label class="block text-xs font-black text-gray-500 uppercase mb-1">Modalidad *</label>
+                        <select wire:model.live="tipo" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 font-bold text-sm">
                             <option value="presencial">🏢 Presencial</option>
                             <option value="telefonica">📞 Telefónica</option>
                             <option value="videoconferencia">📹 Videoconferencia</option>
@@ -119,58 +172,62 @@
                     
                     @if($tipo === 'videoconferencia')
                         <div class="md:col-span-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Link de Videoconferencia</label>
+                            <label class="block text-xs font-black text-gray-500 uppercase mb-1">Enlace de la reunión</label>
                             <div class="flex">
-                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                                    https://
+                                <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-gray-400 text-xs font-bold">
+                                    HTTPS://
                                 </span>
-                                <input wire:model="link_videoconferencia" type="text" class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="meet.google.com/abc-defg-hij">
+                                <input wire:model="link_videoconferencia" type="text" class="flex-1 block w-full rounded-none rounded-r-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 font-bold text-sm" placeholder="meet.google.com/xyz-abc">
                             </div>
-                            @error('link_videoconferencia') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            @error('link_videoconferencia') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                         </div>
                     @endif
 
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Abogado Asignado</label>
+                        <label class="block text-xs font-black text-gray-500 uppercase mb-1">Abogado Responsable</label>
                         @if($isAdmin)
-                            <select wire:model="abogado_id" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="">(Se asignará al creador si no eliges)</option>
+                            <select wire:model="abogado_id" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 font-bold text-sm">
+                                <option value="">-- Elige un abogado --</option>
                                 @foreach($abogados as $abogado)
                                     <option value="{{ $abogado->id }}">{{ $abogado->name }}</option>
                                 @endforeach
                             </select>
-                            @error('abogado_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            @error('abogado_id') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                         @else
-                            <div class="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
-                                Se asignará automáticamente a ti.
+                            <div class="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-2.5 text-sm font-bold text-gray-600 flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                Se asignará a tu agenda
                             </div>
                         @endif
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Costo ($)</label>
-                        <div class="relative rounded-md shadow-sm">
-                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <span class="text-gray-500 sm:text-sm">$</span>
+                        <label class="block text-xs font-black text-gray-500 uppercase mb-1">Costo de la Asesoría ($)</label>
+                        <div class="relative rounded-xl shadow-sm">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                                <span class="text-gray-900 font-black sm:text-sm">$</span>
                             </div>
-                            <input wire:model="costo" type="number" step="0.01" class="block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-indigo-500 focus:ring-indigo-500" placeholder="0.00">
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                <span class="text-gray-500 sm:text-sm">MXN</span>
+                            <input wire:model="costo" type="number" step="0.01" class="block w-full rounded-xl border-gray-200 pl-8 pr-12 focus:border-indigo-500 focus:ring-indigo-500 font-black text-sm" placeholder="0.00">
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+                                <span class="text-gray-400 font-bold sm:text-[10px]">MXN</span>
                             </div>
                         </div>
-                        @error('costo') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        @error('costo') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                     </div>
                 </div>
             </div>
 
-            {{-- Sección 3: Seguimiento y Estado (Solo visible en edición o si se cambia estado) --}}
-            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                <h4 class="text-sm font-bold text-indigo-600 uppercase mb-4 border-b pb-2 border-gray-300">3. Seguimiento y Estado</h4>
+            {{-- Sección 3: Seguimiento --}}
+            <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200 shadow-inner">
+                <h4 class="text-sm font-bold text-indigo-600 uppercase mb-4 flex items-center">
+                    <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] mr-2">3</span>
+                    Seguimiento y Registro
+                </h4>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Estado Actual</label>
-                        <select wire:model.live="estado" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 font-bold">
+                        <label class="block text-xs font-black text-gray-500 uppercase mb-1">Estado de la Cita</label>
+                        <select wire:model.live="estado" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 font-black text-sm uppercase tracking-tighter">
                             <option value="agendada">📅 Agendada</option>
                             <option value="realizada">✅ Realizada</option>
                             <option value="cancelada">❌ Cancelada</option>
@@ -178,209 +235,197 @@
                         </select>
                     </div>
 
-                    {{-- Pago (solo si está habilitado por tenant y el usuario puede facturar) --}}
+                    {{-- Pago --}}
                     @if($asesoriasBillingEnabled && $canManageBilling)
-                        <div class="flex items-center space-x-4 pt-6">
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="checkbox" wire:model.live="pagado" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                <span class="ml-2 text-sm font-bold text-gray-700">¿Asesoría Pagada?</span>
-                            </label>
-                            
-                            @if($pagado)
-                                <input wire:model="fecha_pago" type="date" class="rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                            @endif
-
-                            @if($modoEdicion && $asesoria && $asesoria->factura_id)
-                                <a href="{{ route('reportes.factura', $asesoria->factura_id) }}" target="_blank" class="text-sm text-indigo-600 hover:text-indigo-800 font-bold underline">
-                                    Descargar recibo (PDF)
-                                </a>
-                            @endif
+                        <div class="flex flex-col justify-center">
+                            <div class="flex items-center space-x-4">
+                                <label class="inline-flex items-center cursor-pointer group">
+                                    <input type="checkbox" wire:model.live="pagado" class="w-5 h-5 rounded-lg border-gray-300 text-indigo-600 focus:ring-indigo-500 transition-all cursor-pointer">
+                                    <span class="ml-3 text-sm font-black text-gray-700 uppercase tracking-tighter group-hover:text-indigo-600">¿Asesoría Pagada?</span>
+                                </label>
+                                
+                                @if($pagado)
+                                    <input wire:model="fecha_pago" type="date" class="rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold ml-4">
+                                @endif
+                            </div>
                         </div>
-
-                        @if($pagado)
-                            @php
-                                $settingsPay = auth()->user()->tenant?->settings ?? [];
-                                $tBank = trim((string) ($settingsPay['payment_transfer_bank'] ?? ''));
-                                $tHolder = trim((string) ($settingsPay['payment_transfer_holder'] ?? ''));
-                                $tClabe = trim((string) ($settingsPay['payment_transfer_clabe'] ?? ''));
-                                $tAccount = trim((string) ($settingsPay['payment_transfer_account'] ?? ''));
-                                $cBank = trim((string) ($settingsPay['payment_card_bank'] ?? ''));
-                                $cHolder = trim((string) ($settingsPay['payment_card_holder'] ?? ''));
-                                $cNumber = trim((string) ($settingsPay['payment_card_number'] ?? ''));
-                                $hasTransfer = !empty($tBank) || !empty($tHolder) || !empty($tClabe) || !empty($tAccount);
-                                $hasCard = !empty($cBank) || !empty($cHolder) || !empty($cNumber);
-                            @endphp
-
-                            @if($hasTransfer || $hasCard)
-                                <div class="mt-4 p-4 rounded-xl border border-emerald-100 bg-emerald-50">
-                                    <div class="flex items-center gap-2">
-                                        <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-3.314 0-6 1.79-6 4s2.686 4 6 4 6-1.79 6-4-2.686-4-6-4z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12V7a2 2 0 012-2h14a2 2 0 012 2v5"/></svg>
-                                        <div class="text-sm font-extrabold text-emerald-900">Formas de pago (para registrar el cobro)</div>
-                                    </div>
-                                    <div class="mt-1 text-xs text-emerald-800">Usa estos datos para que el cliente realice el pago.</div>
-
-                                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        @if($hasTransfer)
-                                            <div class="bg-white rounded-xl border border-emerald-100 p-4">
-                                                <div class="flex items-center gap-2">
-                                                    <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"/></svg>
-                                                    <div class="text-sm font-extrabold text-emerald-900">Transferencia</div>
-                                                </div>
-                                                <div class="mt-2 text-xs text-gray-700 space-y-1">
-                                                    @if($tBank)<div><span class="font-bold">Banco:</span> {{ $tBank }}</div>@endif
-                                                    @if($tHolder)<div><span class="font-bold">Titular:</span> {{ $tHolder }}</div>@endif
-                                                    @if($tClabe)<div><span class="font-bold">CLABE:</span> {{ $tClabe }}</div>@endif
-                                                    @if($tAccount)<div><span class="font-bold">Cuenta:</span> {{ $tAccount }}</div>@endif
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        @if($hasCard)
-                                            <div class="bg-white rounded-xl border border-emerald-100 p-4">
-                                                <div class="flex items-center gap-2">
-                                                    <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 11h18M7 15h4m-7 4h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                                                    <div class="text-sm font-extrabold text-emerald-900">Tarjeta</div>
-                                                </div>
-                                                <div class="mt-2 text-xs text-gray-700 space-y-1">
-                                                    @if($cBank)<div><span class="font-bold">Banco:</span> {{ $cBank }}</div>@endif
-                                                    @if($cHolder)<div><span class="font-bold">Titular:</span> {{ $cHolder }}</div>@endif
-                                                    @if($cNumber)<div><span class="font-bold">Tarjeta:</span> {{ $cNumber }}</div>@endif
-                                                </div>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endif
-                        @endif
                     @endif
                 </div>
 
-                {{-- Campos condicionales según estado --}}
                 @if($estado === 'cancelada')
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-red-700 mb-1">Motivo de Cancelación *</label>
-                        <textarea wire:model="motivo_cancelacion" rows="2" class="w-full rounded-lg border-red-300 focus:border-red-500 focus:ring-red-500 bg-red-50"></textarea>
-                        @error('motivo_cancelacion') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    <div class="mt-6 p-4 bg-red-50 rounded-xl border border-red-100">
+                        <label class="block text-xs font-black text-red-700 uppercase mb-1">Motivo de Cancelación *</label>
+                        <textarea wire:model="motivo_cancelacion" rows="2" class="w-full rounded-xl border-red-200 focus:border-red-500 focus:ring-red-500 bg-white text-sm font-bold"></textarea>
+                        @error('motivo_cancelacion') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                     </div>
                 @endif
 
                 @if($estado === 'no_atendida')
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Motivo de No Atención *</label>
-                        <textarea wire:model="motivo_no_atencion" rows="2" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"></textarea>
-                        @error('motivo_no_atencion') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    <div class="mt-6 p-4 bg-gray-100 rounded-xl border border-gray-200">
+                        <label class="block text-xs font-black text-gray-600 uppercase mb-1">Notas de No Atención *</label>
+                        <textarea wire:model="motivo_no_atencion" rows="2" class="w-full rounded-xl border-gray-300 focus:border-gray-500 focus:ring-gray-500 bg-white text-sm font-bold"></textarea>
+                        @error('motivo_no_atencion') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                     </div>
                 @endif
 
                 @if($estado === 'realizada')
-                    <div class="space-y-4">
+                    <div class="mt-6 space-y-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Resumen / Conclusiones</label>
-                            <textarea wire:model="resumen" rows="3" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" placeholder="¿Qué se trató? ¿Qué se acordó?"></textarea>
+                            <label class="block text-xs font-black text-gray-500 uppercase mb-1">Resumen / Conclusiones de la Consulta</label>
+                            <textarea wire:model="resumen" rows="3" class="w-full rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 bg-white text-sm font-bold" placeholder="¿Qué se acordó?"></textarea>
                         </div>
                         
-                        <div class="flex items-center space-x-6 bg-white p-3 rounded-lg border border-gray-200">
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="checkbox" wire:model="prospecto_acepto" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50">
-                                <span class="ml-2 text-sm font-bold text-gray-700">¿El prospecto aceptó contratar?</span>
-                            </label>
-                        </div>
-
-                        {{-- Opciones de conversión --}}
-                        @if($prospecto_acepto && $modoEdicion)
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                                @if(!$asesoria->cliente_id)
-                                    <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100 flex items-center justify-between">
-                                        <div>
-                                            <p class="text-sm font-bold text-indigo-800">Convertir a Cliente</p>
-                                            <p class="text-xs text-indigo-600">Crear perfil de cliente automáticamente</p>
-                                        </div>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" wire:model="crear_cliente" class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                                        </label>
+                        <div class="bg-indigo-900 rounded-2xl p-5 text-white shadow-xl shadow-indigo-100">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-indigo-700 rounded-xl flex items-center justify-center mr-4">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                     </div>
-                                @else
-                                    <div class="bg-green-50 p-3 rounded-lg border border-green-100">
-                                        <p class="text-sm font-bold text-green-800">✅ Cliente Vinculado</p>
-                                        <p class="text-xs text-green-600">{{ $asesoria->cliente->nombre }}</p>
+                                    <div>
+                                        <h5 class="text-sm font-black uppercase tracking-widest">¿Cierre de Venta?</h5>
+                                        <p class="text-[10px] text-indigo-300 font-bold">Activa esto para convertir al prospecto en cliente o crear un expediente</p>
                                     </div>
-                                @endif
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer scale-110">
+                                    <input type="checkbox" wire:model.live="prospecto_acepto" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-indigo-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-indigo-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                                </label>
+                            </div>
 
-                                @if($asesoria->cliente_id && !$asesoria->expediente_id)
-                                    <div class="bg-purple-50 p-3 rounded-lg border border-purple-100">
-                                        <div class="flex items-center justify-between">
+                            @if($prospecto_acepto && $modoEdicion)
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 border-t border-indigo-800 pt-6">
+                                    @if(!$asesoria->cliente_id)
+                                        <div class="bg-indigo-800/50 p-4 rounded-xl flex items-center justify-between border border-indigo-700">
                                             <div>
-                                                <p class="text-sm font-bold text-purple-800">Crear Expediente</p>
-                                                <p class="text-xs text-purple-600">Abrir nuevo expediente para este asunto</p>
+                                                <p class="text-xs font-black uppercase tracking-tighter">Convertir a Cliente</p>
+                                                <p class="text-[10px] text-indigo-300">Crear perfil definitivo</p>
                                             </div>
-                                            <button type="button" wire:click="crearExpedienteDesdeAsesoria" 
-                                                    class="px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-lg hover:bg-purple-700 transition-colors">
-                                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                                </svg>
-                                                Crear
+                                            <input type="checkbox" wire:model="crear_cliente" class="w-6 h-6 rounded-lg text-green-500 bg-indigo-900 border-indigo-700">
+                                        </div>
+                                    @endif
+
+                                    @if($asesoria->cliente_id && !$asesoria->expediente_id)
+                                        <div class="bg-indigo-800/50 p-4 rounded-xl flex items-center justify-between border border-indigo-700">
+                                            <div>
+                                                <p class="text-xs font-black uppercase tracking-tighter">Crear Expediente</p>
+                                                <p class="text-[10px] text-indigo-300">Iniciar trámite legal</p>
+                                            </div>
+                                            <button type="button" wire:click="crearExpedienteDesdeAsesoria" class="px-3 py-1.5 bg-green-500 text-white rounded-lg text-[10px] font-black hover:bg-green-600 transition-all shadow-lg shadow-green-900/50">
+                                                CREAR AHORA
                                             </button>
                                         </div>
-                                    </div>
-                                @elseif($asesoria->expediente_id)
-                                    <div class="bg-green-50 p-3 rounded-lg border border-green-100">
-                                        <p class="text-sm font-bold text-green-800">✅ Expediente Creado</p>
-                                        <a href="{{ route('expedientes.show', $asesoria->expediente_id) }}" target="_blank" class="text-xs text-green-600 underline hover:text-green-800">Ver Expediente</a>
-                                    </div>
-                                @endif
-                            </div>
-                        @endif
+                                    @elseif($asesoria->expediente_id)
+                                         <div class="bg-green-500/20 p-4 rounded-xl border border-green-500/30 flex items-center justify-between">
+                                            <div>
+                                                <p class="text-xs font-black uppercase tracking-tighter text-green-300">Expediente Generado</p>
+                                                <p class="text-[10px] text-green-400">Vinculado exitosamente</p>
+                                            </div>
+                                            <a href="{{ route('expedientes.show', $asesoria->expediente_id) }}" target="_blank" class="text-[10px] font-black text-white underline decoration-white/30 hover:text-green-200">VER EXPEDIENTE</a>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 @endif
             </div>
         </div>
 
         {{-- Footer con Botones --}}
-        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
-            <a href="{{ route('asesorias.index') }}" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
+        <div class="px-6 py-5 bg-gray-50 border-t border-gray-200 flex justify-end items-center space-x-4">
+            <div wire:loading wire:target="guardar" class="text-[10px] text-indigo-600 font-black uppercase tracking-widest animate-pulse mr-4">
+                Sincronizando con base de datos...
+            </div>
+            
+            <a href="{{ route('asesorias.index') }}" class="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-100 font-bold text-xs uppercase tracking-widest transition-all active:scale-95 shadow-sm">
                 Cancelar
             </a>
-            <button wire:click="guardar" wire:loading.attr="disabled" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold shadow-sm transition flex items-center">
-                <span wire:loading.remove wire:target="guardar">Guardar Asesoría</span>
-                <span wire:loading wire:target="guardar">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            
+            <button wire:click="guardar" wire:loading.attr="disabled" class="px-8 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100 transition-all flex items-center active:scale-95 group">
+                <span wire:loading.remove wire:target="guardar">GUARDAR ASESORÍA</span>
+                <span wire:loading wire:target="guardar" class="flex items-center">
+                    <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Guardando...
+                    PROCESANDO...
                 </span>
+                <svg wire:loading.remove wire:target="guardar" class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
             </button>
         </div>
     </div>
 
+    {{-- Modal: Registro de Cliente Rápido --}}
     @if($showClienteModal)
-        <div class="fixed inset-0 z-50 overflow-y-auto">
-            <div class="flex items-center justify-center min-h-screen px-4">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showClienteModal', false)"></div>
-                <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full z-50">
-                    <div class="p-6">
-                        <h3 class="text-lg font-bold mb-4">Nuevo Cliente</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <x-input-label for="newClienteNombre" :value="__('Nombre Completo')" />
-                                <x-text-input id="newClienteNombre" type="text" class="mt-1 block w-full" wire:model="newClienteNombre" />
-                                <x-input-error :messages="$errors->get('newClienteNombre')" class="mt-2" />
+        <div class="fixed inset-0 z-[100] overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen px-4 py-12">
+                <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" wire:click="$set('showClienteModal', false)"></div>
+                
+                <div class="bg-white rounded-3xl overflow-hidden shadow-2xl transform transition-all sm:max-w-2xl sm:w-full z-[110] border border-gray-100">
+                    <div class="px-8 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-indigo-200">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                             </div>
                             <div>
-                                <x-input-label for="newClienteEmail" :value="__('Email')" />
-                                <x-text-input id="newClienteEmail" type="email" class="mt-1 block w-full" wire:model="newClienteEmail" />
-                                <x-input-error :messages="$errors->get('newClienteEmail')" class="mt-2" />
-                            </div>
-                            <div>
-                                <x-input-label for="newClienteTelefono" :value="__('Teléfono')" />
-                                <x-text-input id="newClienteTelefono" type="text" class="mt-1 block w-full" wire:model="newClienteTelefono" />
-                                <x-input-error :messages="$errors->get('newClienteTelefono')" class="mt-2" />
+                                <h3 class="text-xl font-black text-gray-900 uppercase tracking-tighter">Alta Rápida de Cliente</h3>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Sincronización instantánea</p>
                             </div>
                         </div>
-                        <div class="mt-6 flex justify-end space-x-3">
-                            <button type="button" wire:click="$set('showClienteModal', false)" class="text-sm text-gray-500">Cancelar</button>
-                            <x-primary-button wire:click="createCliente">Guardar Cliente</x-primary-button>
+                        <button wire:click="$set('showClienteModal', false)" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                    <div class="p-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-black text-gray-500 uppercase mb-1.5 ml-1">Nombre Completo / Razón Social *</label>
+                                <input wire:model="newClienteNombre" type="text" class="w-full rounded-2xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold p-3.5 bg-gray-50/50">
+                                @error('newClienteNombre') <span class="text-red-500 text-[10px] font-bold mt-1 block ml-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-black text-gray-500 uppercase mb-1.5 ml-1">Tipo de Persona</label>
+                                <select wire:model="newClienteTipo" class="w-full rounded-2xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold p-3.5 bg-gray-50/50">
+                                    <option value="persona_fisica">Persona Física</option>
+                                    <option value="persona_moral">Persona Moral</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-black text-gray-500 uppercase mb-1.5 ml-1">RFC</label>
+                                <input wire:model="newClienteRFC" type="text" class="w-full rounded-2xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold p-3.5 bg-gray-50/50" placeholder="12 o 13 dígitos">
+                                @error('newClienteRFC') <span class="text-red-500 text-[10px] font-bold mt-1 block ml-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-black text-gray-500 uppercase mb-1.5 ml-1">Email Principal</label>
+                                <input wire:model="newClienteEmail" type="email" class="w-full rounded-2xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold p-3.5 bg-gray-50/50" placeholder="correo@ejemplo.com">
+                                @error('newClienteEmail') <span class="text-red-500 text-[10px] font-bold mt-1 block ml-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-black text-gray-500 uppercase mb-1.5 ml-1">Teléfono Móvil</label>
+                                <input wire:model="newClienteTelefono" type="text" class="w-full rounded-2xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold p-3.5 bg-gray-50/50" placeholder="Personal o Trabajo">
+                                @error('newClienteTelefono') <span class="text-red-500 text-[10px] font-bold mt-1 block ml-1">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-black text-gray-500 uppercase mb-1.5 ml-1">Dirección Fiscal / Particular</label>
+                                <textarea wire:model="newClienteDireccion" rows="2" class="w-full rounded-2xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold p-3.5 bg-gray-50/50" placeholder="Calle, Número, Colonia, CP..."></textarea>
+                                @error('newClienteDireccion') <span class="text-red-500 text-[10px] font-bold mt-1 block ml-1">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
+                        <div class="mt-8 flex justify-end gap-3 border-t border-gray-100 pt-8">
+                            <button type="button" wire:click="$set('showClienteModal', false)" class="px-6 py-3 text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-all">
+                                Cancelar
+                            </button>
+                            <button wire:click="createCliente" class="px-8 py-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100 transition-all flex items-center active:scale-95 group">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                REGISTRAR CLIENTE
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -391,63 +436,12 @@
 
 @push('scripts')
 <script>
-    window.addEventListener('asesoria-saved-receipt', (event) => {
-        const data = event.detail?.[0] || event.detail || {};
-
-        const overlay = document.createElement('div');
-        overlay.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4';
-
-        const modal = document.createElement('div');
-        modal.className = 'w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-200 overflow-hidden';
-
-        modal.innerHTML = `
-            <div class="p-6">
-                <div class="flex items-start gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center">
-                        <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="text-lg font-extrabold text-gray-900">Asesoría guardada</h3>
-                        <p class="mt-1 text-sm text-gray-600">${(data.message || 'Se guardó correctamente.')}</p>
-                        <p class="mt-3 text-sm font-semibold text-gray-800">¿Deseas generar el recibo ahora?</p>
-                    </div>
-                </div>
-            </div>
-            <div class="px-6 pb-6 flex justify-end gap-3">
-                <button type="button" data-action="edit" class="px-4 py-2 rounded-xl bg-gray-600 text-white font-bold hover:bg-gray-700">Seguir editando</button>
-                <button type="button" data-action="no" class="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 font-bold hover:bg-gray-50">Regresar a lista</button>
-                <button type="button" data-action="yes" class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700">Sí, emitir recibo</button>
-            </div>
-        `;
-
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-
-        const cleanup = () => {
-            try { document.body.removeChild(overlay); } catch (e) {}
-        };
-
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                cleanup();
-                if (data.redirectUrl) window.location.href = data.redirectUrl;
+    document.addEventListener('livewire:initialized', () => {
+        @this.on('notify-error', (event) => {
+            const errorDiv = document.getElementById('error-summary');
+            if (errorDiv) {
+                errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-        });
-
-        modal.querySelector('[data-action="edit"]').addEventListener('click', () => {
-            cleanup();
-            // No hace nada, se queda en la misma página
-        });
-
-        modal.querySelector('[data-action="no"]').addEventListener('click', () => {
-            cleanup();
-            if (data.redirectUrl) window.location.href = data.redirectUrl;
-        });
-
-        modal.querySelector('[data-action="yes"]').addEventListener('click', () => {
-            cleanup();
-            if (data.facturaUrl) window.open(data.facturaUrl, '_blank');
-            if (data.redirectUrl) window.location.href = data.redirectUrl;
         });
     });
 </script>

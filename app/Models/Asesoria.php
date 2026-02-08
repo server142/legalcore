@@ -54,10 +54,19 @@ class Asesoria extends Model
 
         static::creating(function ($asesoria) {
             if (!$asesoria->folio) {
-                // Contar por tenant sin el scope global de BelongsToTenant
-                $count = static::withoutGlobalScope('tenant')
+                // Obtener el último folio creado para este tenant (incluso eliminados)
+                $lastAsesoria = static::withoutGlobalScope('tenant')
                     ->where('tenant_id', $asesoria->tenant_id)
-                    ->count() + 1;
+                    ->withTrashed()
+                    ->orderBy('id', 'desc')
+                    ->first();
+
+                if ($lastAsesoria && preg_match('/ASE-(\d+)/', $lastAsesoria->folio, $matches)) {
+                    $count = intval($matches[1]) + 1;
+                } else {
+                    $count = 1;
+                }
+
                 $asesoria->folio = 'ASE-' . str_pad($count, 5, '0', STR_PAD_LEFT);
             }
 

@@ -17,6 +17,8 @@ use Illuminate\Validation\Rule;
 
 class Form extends Component
 {
+    use \App\Traits\Auditable;
+
     public ?Asesoria $asesoria = null;
     public $modoEdicion = false;
 
@@ -60,6 +62,9 @@ class Form extends Component
     public $newClienteNombre;
     public $newClienteEmail;
     public $newClienteTelefono;
+    public $newClienteTipo = 'persona_fisica';
+    public $newClienteRFC;
+    public $newClienteDireccion;
 
     public function mount($asesoria = null)
     {
@@ -300,20 +305,46 @@ class Form extends Component
             'newClienteNombre' => 'required|string|max:255',
             'newClienteEmail' => 'nullable|email',
             'newClienteTelefono' => 'nullable|string|max:255',
+            'newClienteTipo' => 'required|in:persona_fisica,persona_moral',
+            'newClienteRFC' => 'nullable|string|max:13',
+            'newClienteDireccion' => 'nullable|string',
         ]);
 
-        $cliente = Cliente::create([
-            'tenant_id' => auth()->user()->tenant_id,
-            'nombre' => $this->newClienteNombre,
-            'email' => $this->newClienteEmail,
-            'telefono' => $this->newClienteTelefono,
-            'tipo' => 'persona_fisica',
-            'origen' => 'asesoria',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        $this->cliente_id = $cliente->id;
-        $this->showClienteModal = false;
-        $this->reset(['newClienteNombre', 'newClienteEmail', 'newClienteTelefono']);
+            $this->logAudit('registrar', 'Clientes', "Registró nuevo cliente rápido: {$this->newClienteNombre}", [
+                'tipo' => $this->newClienteTipo,
+                'email' => $this->newClienteEmail
+            ]);
+
+            $cliente = Cliente::create([
+                'tenant_id' => auth()->user()->tenant_id,
+                'nombre' => $this->newClienteNombre,
+                'tipo' => $this->newClienteTipo,
+                'rfc' => $this->newClienteRFC,
+                'email' => $this->newClienteEmail,
+                'telefono' => $this->newClienteTelefono,
+                'direccion' => $this->newClienteDireccion,
+                'origen' => 'asesoria',
+            ]);
+
+            DB::commit();
+
+            $this->cliente_id = $cliente->id;
+            $this->nombre_prospecto = $cliente->nombre;
+            $this->telefono = $cliente->telefono;
+            $this->email = $cliente->email;
+
+            $this->showClienteModal = false;
+            $this->reset(['newClienteNombre', 'newClienteTipo', 'newClienteRFC', 'newClienteEmail', 'newClienteTelefono', 'newClienteDireccion']);
+            
+            $this->dispatch('notify', 'Cliente registrado y seleccionado correctamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creando cliente rápido: ' . $e->getMessage());
+            $this->dispatch('notify-error', 'Error al crear el cliente: ' . $e->getMessage());
+        }
     }
 
     private function syncFacturaFromPago(): void
@@ -329,7 +360,8 @@ class Form extends Component
         $this->asesoria->refresh();
 
         if (empty($this->asesoria->cliente_id)) {
-            throw new \RuntimeException('No se puede generar el recibo porque la asesoría no tiene cliente asociado.');
+            Log::warning('syncFacturaFromPago: No se pudo generar recibo porque no hay cliente vinculado (es un prospecto).');
+            return;
         }
 
         $factura = null;
@@ -380,7 +412,7 @@ class Form extends Component
 
         $rules = [
             'cliente_id' => [
-                'required',
+                'nullable',
                 Rule::exists('clientes', 'id')->where(function ($q) use ($user) {
                     $q->where('tenant_id', $user->tenant_id);
                 }),
@@ -439,10 +471,11 @@ class Form extends Component
                 if ($suggestion) {
                     $this->suggested_fecha = $suggestion->format('Y-m-d');
                     $this->suggested_hora = $suggestion->format('H:i');
-                    $this->addError('hora', 'El abogado no tiene disponibilidad en el horario seleccionado. Te proponemos el siguiente horario disponible.');
+                    $this->addError('hora', "El abogado no tiene disponibilidad en el horario seleccionado ({$fechaHora->format('H:i')}). Sugerimos el {$suggestion->format('d/m/Y')} a las {$suggestion->format('H:i')}.");
                 } else {
-                    $this->addError('hora', 'El abogado no tiene disponibilidad en el horario seleccionado.');
+                    $this->addError('hora', 'El abogado no tiene disponibilidad en el horario seleccionado y no se encontraron huecos cercanos.');
                 }
+                $this->dispatch('notify-error', 'Hay un conflicto en la agenda. Revisa los mensajes de error.');
                 return;
             }
         }
@@ -482,25 +515,22 @@ class Form extends Component
             if ($this->modoEdicion) {
                 $this->asesoria->update($datos);
                 $mensaje = 'Asesoría guardada correctamente.';
+                $isNewRecord = false;
             } else {
                 $datos['tenant_id'] = auth()->user()->tenant_id;
                 $this->asesoria = Asesoria::create($datos);
                 $mensaje = 'Asesoría guardada correctamente.';
                 $this->modoEdicion = true; // Cambiar a modo edición
-
-                // Send confirmation email on creation
-                if ($this->asesoria->email) {
-                    try {
-                        \Illuminate\Support\Facades\Mail::to($this->asesoria->email)
-                            ->send(new \App\Mail\AsesoriaConfirmation($this->asesoria));
-                    } catch (\Exception $e) {
-                        Log::error('Error enviando correo de confirmación: ' . $e->getMessage());
-                    }
-                }
+                $isNewRecord = true;
             }
 
             if ($syncToAgenda && $this->asesoria) {
-                $this->syncAsesoriaToAgenda();
+                try {
+                    $this->syncAsesoriaToAgenda();
+                } catch (\Throwable $e) {
+                    Log::error('Error sincronizando con agenda (Google/Local): ' . $e->getMessage());
+                    // No interrumpimos el guardado
+                }
             }
 
             if ($this->asesoriasBillingEnabled && $this->canManageBilling) {
@@ -514,6 +544,34 @@ class Form extends Component
             Log::error($e->getTraceAsString());
             $this->dispatch('notify-error', 'No se pudo guardar la asesoría o generar el recibo. Revisa los datos e inténtalo de nuevo.');
             return;
+        }
+
+        // Enviar correo fuera de la transacción si es registro nuevo
+        if ($isNewRecord) {
+            // 1. Correo al Cliente (Confirmación)
+            if ($this->asesoria->email) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($this->asesoria->email)
+                        ->send(new \App\Mail\AsesoriaConfirmation($this->asesoria));
+                    
+                    $this->logAudit('notificar', 'Asesorias', "Correo de confirmación enviado al cliente {$this->asesoria->email}", ['asesoria_id' => $this->asesoria->id]);
+                } catch (\Exception $e) {
+                    Log::error('Error enviando correo de confirmación al cliente: ' . $e->getMessage());
+                    // No detenemos el flujo, solo logueamos
+                }
+            }
+
+            // 2. Correo al Abogado (Notificación de Asignación)
+            if ($this->asesoria->abogado && $this->asesoria->abogado->email) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($this->asesoria->abogado->email)
+                        ->send(new \App\Mail\AsesoriaNotificationAbogado($this->asesoria));
+                    
+                    $this->logAudit('notificar', 'Asesorias', "Notificación de nueva asesoría enviada al abogado {$this->asesoria->abogado->email}", ['asesoria_id' => $this->asesoria->id]);
+                } catch (\Exception $e) {
+                    Log::error('Error enviando correo de notificación al abogado: ' . $e->getMessage());
+                }
+            }
         }
 
         $this->asesoria->refresh();
@@ -533,16 +591,12 @@ class Form extends Component
             $mensaje .= ' Se creó el expediente.';
         }
 
+        session()->flash('message', $mensaje);
+        
         if ($shouldOfferReceipt && $facturaUrl) {
-            $this->dispatch('asesoria-saved-receipt', [
-                'message' => $mensaje,
-                'facturaUrl' => $facturaUrl,
-                'redirectUrl' => route('asesorias.index'),
-            ]);
-            return;
+            session()->flash('facturaUrl', $facturaUrl);
         }
 
-        $this->dispatch('notify', $mensaje);
         return redirect()->route('asesorias.index');
     }
 

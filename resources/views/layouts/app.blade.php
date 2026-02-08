@@ -136,12 +136,14 @@
                     </div>
                 @endif
 
+                {{-- 
                 @if(session()->has('message'))
                     <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 m-4" role="alert">
                         <p class="font-bold">Éxito</p>
                         <p>{{ session('message') }}</p>
                     </div>
-                @endif
+                @endif 
+                --}}
 
                 <!-- Page Content -->
                 <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">

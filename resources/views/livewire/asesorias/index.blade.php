@@ -3,6 +3,26 @@
 </x-slot>
 
 <div class="p-4 md:p-6 space-y-6">
+    {{-- Notificaciones Flash --}}
+    @if (session()->has('message'))
+        <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 4000)" x-show="show" x-transition.duration.500ms class="p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded-r-xl shadow-sm mb-4">
+            <div class="flex items-center">
+                <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <p class="font-bold">{{ session('message') }}</p>
+            </div>
+        </div>
+    @endif
+
+    @if (session()->has('facturaUrl'))
+        <div class="p-4 bg-indigo-50 border-l-4 border-indigo-500 text-indigo-700 rounded-r-xl shadow-sm mb-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3h7l3 3v15a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
+                <p class="font-bold">El recibo de pago está listo para descargar.</p>
+            </div>
+            <a href="{{ session('facturaUrl') }}" target="_blank" class="px-4 py-1 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition">Descargar PDF</a>
+        </div>
+    @endif
+
     {{-- Header y Botón Nuevo --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>

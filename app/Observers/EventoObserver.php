@@ -49,11 +49,16 @@ class EventoObserver
             $eventId = $this->googleService->createEvent($user, $eventData);
             
             if ($eventId) {
-                $evento->google_event_id = $eventId;
-                $evento->saveQuietly();
+                // Use DB facade to update without triggering observers again
+                // and to avoid issues if saveQuietly isn't working as expected in older Laravel versions or specific setups
+                \Illuminate\Support\Facades\DB::table('eventos')
+                    ->where('id', $evento->id)
+                    ->update(['google_event_id' => $eventId]);
+                    
                 Log::info("Evento sincronizado con Google Calendar: {$eventId} para el usuario {$user->email}");
             }
         } catch (\Exception $e) {
+            // Log error but DO NOT throw exception, to allow local event creation to proceed
             Log::error("Error sincronizando evento Google para {$user->email}: " . $e->getMessage());
         }
     }
@@ -94,6 +99,7 @@ class EventoObserver
             $this->googleService->updateEvent($user, $evento->google_event_id, $eventData);
             Log::info("Evento actualizado en Google Calendar: {$evento->google_event_id}");
         } catch (\Exception $e) {
+            // Log error but DO NOT throw exception, to allow local event update to proceed
             Log::error("Error actualizando evento {$evento->id} en Google: " . $e->getMessage());
         }
     }
@@ -144,6 +150,7 @@ class EventoObserver
                 $this->googleService->deleteEvent($user, $evento->google_event_id);
                 Log::info("Evento eliminado de Google Calendar: {$evento->google_event_id}");
             } catch (\Exception $e) {
+                // Log error but DO NOT throw exception, to allow local event deletion to proceed
                 Log::error("Error eliminando evento {$evento->id} de Google: " . $e->getMessage());
             }
         }

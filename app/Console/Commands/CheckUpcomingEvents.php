@@ -107,36 +107,50 @@ class CheckUpcomingEvents extends Command
 
         foreach ($events as $event) {
             $expediente = $event->expediente;
-            if (!$expediente) continue;
 
-            // DOUBLE SECURITY CHECK: Ensure expediente tenant matches tenant being processed
-            if ($expediente->tenant_id !== $tenant->id) {
-                continue;
-            }
-
-            $recipients = collect();
-            
-            // Abogado Responsable
-            if ($expediente->abogado_responsable_id) {
-                $responsible = User::find($expediente->abogado_responsable_id);
-                // Ensure recipient belongs to the same tenant
-                if ($responsible && $responsible->tenant_id === $tenant->id) {
-                    $recipients->push($responsible);
+            // CASO 1: Evento vinculado a Expediente
+            if ($expediente) {
+                // DOUBLE SECURITY CHECK: Ensure expediente tenant matches tenant being processed
+                if ($expediente->tenant_id !== $tenant->id) {
+                    continue;
                 }
-            }
 
-            // Colaboradores
-            foreach ($expediente->assignedUsers as $user) {
-                if ($user->tenant_id === $tenant->id) {
-                    $recipients->push($user);
+                $recipients = collect();
+                
+                // Abogado Responsable
+                if ($expediente->abogado_responsable_id) {
+                    $responsible = User::find($expediente->abogado_responsable_id);
+                    // Ensure recipient belongs to the same tenant
+                    if ($responsible && $responsible->tenant_id === $tenant->id) {
+                        $recipients->push($responsible);
+                    }
                 }
-            }
 
-            $recipients = $recipients->unique('id')->filter();
+                // Colaboradores
+                foreach ($expediente->assignedUsers as $user) {
+                    if ($user->tenant_id === $tenant->id) {
+                        $recipients->push($user);
+                    }
+                }
 
-            foreach ($recipients as $recipient) {
-                Mail::to($recipient->email)->queue(new AgendaReminder($event, $recipient, $label));
-                $this->info("Notificación de {$label} enviada a [{$tenant->name}] {$recipient->email} para: {$event->titulo}");
+                $recipients = $recipients->unique('id')->filter();
+
+                foreach ($recipients as $recipient) {
+                    Mail::to($recipient->email)->queue(new AgendaReminder($event, $recipient, $label));
+                    $this->info("Notificación de {$label} enviada a [{$tenant->name}] {$recipient->email} para: {$event->titulo}");
+                }
+            } 
+            // CASO 2: Evento de Asesoría (Sin Expediente aún) o Evento Personal
+            else {
+                 $recipient = null;
+                 if ($event->user_id) {
+                    $recipient = User::find($event->user_id);
+                 }
+
+                 if ($recipient && $recipient->tenant_id === $tenant->id) {
+                    Mail::to($recipient->email)->queue(new AgendaReminder($event, $recipient, $label));
+                    $this->info("Notificación de {$label} enviada a [{$tenant->name}] {$recipient->email} para: {$event->titulo}");
+                 }
             }
         }
     }
