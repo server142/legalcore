@@ -528,13 +528,13 @@
                         </div>
                         
                         <div 
-                            :class="maximized ? 'h-[calc(100vh-80px)]' : 'min-h-[500px]'"
-                            class="bg-gray-100 rounded-xl overflow-hidden flex justify-center items-center"
+                            :class="maximized ? 'h-[calc(100vh-100px)]' : 'max-h-[70vh] min-h-[500px]'"
+                            class="bg-gray-200 rounded-xl overflow-auto flex justify-center items-start custom-scrollbar"
                         >
                             @if($selectedDoc->tipo == 'image')
-                                <img src="{{ route('documentos.show', $selectedDoc) }}" :class="maximized ? 'max-h-full' : 'max-h-[70vh]'" class="max-w-full object-contain shadow-lg">
+                                <img src="{{ route('documentos.show', $selectedDoc) }}" class="max-w-full h-auto shadow-2xl">
                             @elseif($selectedDoc->tipo == 'pdf')
-                                <iframe src="{{ route('documentos.show', $selectedDoc) }}" class="w-full h-full" frameborder="0" :style="maximized ? 'height: 100%' : 'height: 70vh'"></iframe>
+                                <iframe src="{{ route('documentos.show', $selectedDoc) }}" class="w-full h-full min-h-[70vh]" frameborder="0"></iframe>
                             @elseif($selectedDoc->tipo == 'video')
                                 <video controls class="max-w-full max-h-[70vh] shadow-lg">
                                     <source src="{{ route('documentos.show', $selectedDoc) }}" type="video/{{ $selectedDoc->extension }}">
