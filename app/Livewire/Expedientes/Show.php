@@ -29,7 +29,7 @@ class Show extends Component
     public $viewingNote = null;
 
     // Edit fields
-    public $numero, $titulo, $materia, $juzgado, $estado_procesal, $estado_procesal_id, $nombre_juez, $fecha_inicio, $cliente_id, $abogado_responsable_id;
+    public $numero, $titulo, $materia, $juzgado, $estado_procesal, $estado_procesal_id, $nombre_juez, $fecha_inicio, $vencimiento_termino, $cliente_id, $abogado_responsable_id;
     public $honorarios_totales, $saldo_pendiente, $anticipo = 0;
 
     // Payment fields
@@ -181,6 +181,7 @@ class Show extends Component
         $this->estado_procesal_id = $this->expediente->estado_procesal_id;
         $this->nombre_juez = $this->expediente->nombre_juez;
         $this->fecha_inicio = $this->expediente->fecha_inicio?->format('Y-m-d');
+        $this->vencimiento_termino = $this->expediente->vencimiento_termino?->format('Y-m-d');
         $this->cliente_id = $this->expediente->cliente_id;
         $this->abogado_responsable_id = $this->expediente->abogado_responsable_id;
         $this->honorarios_totales = $this->expediente->honorarios_totales;
@@ -213,6 +214,7 @@ class Show extends Component
             'estado_procesal_id' => !empty($this->estado_procesal_id) ? $this->estado_procesal_id : null,
             'nombre_juez' => $this->nombre_juez,
             'fecha_inicio' => $this->fecha_inicio ?: null,
+            'vencimiento_termino' => $this->vencimiento_termino ?: null,
             'cliente_id' => $this->cliente_id,
             'abogado_responsable_id' => $this->abogado_responsable_id,
             'honorarios_totales' => $this->honorarios_totales ?: 0,

@@ -35,11 +35,24 @@ class Index extends Component
         
         // Security check: ensure user has access to this expediente
         $user = auth()->user();
-        if (!$user->can('view all expedientes') && 
-            $expediente->abogado_responsable_id !== $user->id && 
-            !$expediente->assignedUsers()->where('users.id', $user->id)->exists()) {
-            
-            $this->dispatch('notify', 'No tienes permiso para mover este expediente.');
+        
+        // Super admins and users with 'view all' can move anything
+        if (!$user->hasRole('super_admin') && !$user->can('view all expedientes')) {
+            if ($expediente->abogado_responsable_id !== $user->id && 
+                !$expediente->assignedUsers()->where('users.id', $user->id)->exists()) {
+                
+                $this->dispatch('notify', 'No tienes permiso para mover este expediente.');
+                return;
+            }
+        }
+
+        // Handle move to "Sin Clasificar" (null)
+        if ($newStatusId === null || $newStatusId === 'null' || $newStatusId === '') {
+            $expediente->update([
+                'estado_procesal_id' => null,
+                'estado_procesal' => 'Sin Clasificar'
+            ]);
+            $this->dispatch('notify', "Expediente movido a Sin Clasificar");
             return;
         }
 
@@ -61,7 +74,9 @@ class Index extends Component
         $queryBuilder = function() use ($user) {
             $q = Expediente::query();
             
-            if (($user->hasRole('abogado') && !$user->can('view all expedientes')) || $user->hasRole('super_admin')) {
+            if ($user->hasRole('super_admin')) {
+                // Super admin sees everything
+            } elseif ($user->hasRole('abogado') && !$user->can('view all expedientes')) {
                 $q->where(function($sq) use ($user) {
                     $sq->where('abogado_responsable_id', $user->id)
                       ->orWhereHas('assignedUsers', function($q2) use ($user) {

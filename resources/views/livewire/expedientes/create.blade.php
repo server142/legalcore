@@ -120,6 +120,14 @@
                     <x-input-error :messages="$errors->get('fecha_inicio')" class="mt-2" />
                 </div>
 
+                <!-- Vencimiento del Término -->
+                <div>
+                    <x-input-label for="vencimiento_termino" class="text-red-600 font-bold" :value="__('🚨 Vencimiento del Término')" />
+                    <x-text-input id="vencimiento_termino" type="date" class="mt-1 block w-full border-red-300 focus:border-red-500 focus:ring-red-500" wire:model="vencimiento_termino" />
+                    <p class="mt-1 text-xs text-red-500 italic">Fecha fatal para contestar o presentar recursos.</p>
+                    <x-input-error :messages="$errors->get('vencimiento_termino')" class="mt-2" />
+                </div>
+
                 <!-- Información Financiera -->
                 <div class="md:col-span-2 mt-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">

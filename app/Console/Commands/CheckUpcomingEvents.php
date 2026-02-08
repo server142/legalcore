@@ -51,11 +51,47 @@ class CheckUpcomingEvents extends Command
 
             foreach ($reminders as $reminder) {
                 $this->checkThresholdForTenant($tenant, $reminder['hours'], $reminder['label']);
+                $this->checkExpedienteDeadlinesForTenant($tenant, $reminder['hours'], $reminder['label']);
             }
         }
 
         $this->info('Proceso de recordatorios finalizado.');
         return 0;
+    }
+
+    protected function checkExpedienteDeadlinesForTenant(Tenant $tenant, int $hours, string $label)
+    {
+        $start = Carbon::now()->addHours($hours);
+        $end = Carbon::now()->addHours($hours)->addHour();
+
+        $expedientes = \App\Models\Expediente::with(['assignedUsers', 'abogado'])
+            ->where('tenant_id', $tenant->id)
+            ->whereBetween('vencimiento_termino', [$start, $end])
+            ->get();
+
+        foreach ($expedientes as $expediente) {
+            $recipients = collect();
+            
+            if ($expediente->abogado_responsable_id) {
+                $responsible = User::find($expediente->abogado_responsable_id);
+                if ($responsible && $responsible->tenant_id === $tenant->id) {
+                    $recipients->push($responsible);
+                }
+            }
+
+            foreach ($expediente->assignedUsers as $user) {
+                if ($user->tenant_id === $tenant->id) {
+                    $recipients->push($user);
+                }
+            }
+
+            $recipients = $recipients->unique('id')->filter();
+
+            foreach ($recipients as $recipient) {
+                Mail::to($recipient->email)->queue(new \App\Mail\ExpedienteDeadlineReminder($expediente, $recipient, $label));
+                $this->info("Notificación FATAL de {$label} enviada a [{$tenant->name}] {$recipient->email} para Exp: {$expediente->numero}");
+            }
+        }
     }
 
     protected function checkThresholdForTenant(Tenant $tenant, int $hours, string $label)

@@ -24,6 +24,7 @@ class Create extends Component
     public $estado_procesal_id;
     public $descripcion;
     public $fecha_inicio;
+    public $vencimiento_termino;
     public $honorarios_totales = 0;
     public $anticipo_inicial = 0;
 
@@ -67,6 +68,8 @@ class Create extends Component
         'cliente_id' => 'required|exists:clientes,id',
         'abogado_responsable_id' => 'required|exists:users,id',
         'estado_procesal_id' => 'nullable|exists:estados_procesales,id',
+        'fecha_inicio' => 'nullable|date',
+        'vencimiento_termino' => 'nullable|date',
         'honorarios_totales' => 'nullable|numeric|min:0',
         'anticipo_inicial' => 'nullable|numeric|min:0',
     ];
@@ -116,6 +119,7 @@ class Create extends Component
             'abogado_responsable_id' => $this->abogado_responsable_id,
             'descripcion' => $this->descripcion ?: null,
             'fecha_inicio' => $this->fecha_inicio ?: null,
+            'vencimiento_termino' => $this->vencimiento_termino ?: null,
             'estado_procesal' => $estado?->nombre ?? 'inicial',
             'estado_procesal_id' => !empty($this->estado_procesal_id) ? $this->estado_procesal_id : null,
             'honorarios_totales' => $this->honorarios_totales ?: 0,

@@ -28,6 +28,7 @@ class Expediente extends Model
         'saldo_pendiente',
         'fecha_inicio',
         'fecha_cierre',
+        'vencimiento_termino',
     ];
 
     protected function casts(): array
@@ -35,6 +36,7 @@ class Expediente extends Model
         return [
             'fecha_inicio' => 'date',
             'fecha_cierre' => 'date',
+            'vencimiento_termino' => 'date',
         ];
     }
 

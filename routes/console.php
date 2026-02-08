@@ -35,3 +35,6 @@ Artisan::command('sjf:embeddings-auto', function () {
 
 // Check for upcoming agenda events every hour
 \Illuminate\Support\Facades\Schedule::command('agenda:check-reminders')->hourly();
+
+// Send weekly deadline report every Monday at 8:00 AM
+\Illuminate\Support\Facades\Schedule::command('agenda:weekly-report')->mondays()->at('08:00');

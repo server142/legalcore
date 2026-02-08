@@ -54,6 +54,34 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Sidebar Info -->
         <div class="space-y-6">
+            <!-- Vencimiento del Término Banner -->
+            @if($expediente->vencimiento_termino)
+                @php
+                    $days = now()->startOfDay()->diffInDays($expediente->vencimiento_termino, false);
+                    $colorClass = $days < 0 ? 'bg-red-600' : ($days <= 3 ? 'bg-orange-500' : 'bg-emerald-600');
+                @endphp
+                <div class="{{ $colorClass }} text-white rounded-lg shadow-lg p-5 mb-6 relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 opacity-20 transform group-hover:scale-110 transition-transform duration-500">
+                        <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"></path></svg>
+                    </div>
+                    <p class="text-xs uppercase font-black tracking-widest mb-1 opacity-80">Vencimiento del Término</p>
+                    <div class="flex items-baseline gap-2">
+                        <h4 class="text-2xl font-black">{{ $expediente->vencimiento_termino->format('d/m/Y') }}</h4>
+                    </div>
+                    <p class="mt-2 text-sm font-bold">
+                        @if($days < 0)
+                            ⚠️ VENCIDO HACE {{ abs($days) }} DÍAS
+                        @elseif($days == 0)
+                            🚨 VENCE HOY
+                        @elseif($days == 1)
+                            ⏰ VENCE MAÑANA
+                        @else
+                            ⏳ Faltan {{ $days }} días para el término
+                        @endif
+                    </p>
+                </div>
+            @endif
+
             <div class="bg-white rounded-lg shadow p-6">
                 <h3 class="text-lg font-semibold mb-4 border-b pb-2">Detalles del Asunto</h3>
                 <div class="space-y-3">
@@ -619,6 +647,12 @@
                     <div>
                         <x-input-label for="fecha_inicio" :value="__('Fecha de Inicio')" />
                         <x-text-input id="fecha_inicio" type="date" class="mt-1 block w-full" wire:model="fecha_inicio" />
+                    </div>
+
+                    <!-- Vencimiento Término -->
+                    <div>
+                        <x-input-label for="vencimiento_termino" class="text-red-600 font-bold" :value="__('🚨 Vencimiento del Término (Fatal)')" />
+                        <x-text-input id="vencimiento_termino" type="date" class="mt-1 block w-full border-red-300 focus:border-red-500" wire:model="vencimiento_termino" />
                     </div>
 
                      <!-- Honorarios -->

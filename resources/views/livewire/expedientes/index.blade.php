@@ -33,11 +33,19 @@
         </div>
     </div>
 
+    <div class="mb-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2 flex items-center gap-3">
+            <div class="flex-1 relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                </div>
+                <input wire:model.live="search" type="text" placeholder="Buscar expedientes por número, título o cliente..." class="block w-full pl-10 pr-3 py-2 border-none focus:ring-0 text-sm" />
+            </div>
+        </div>
+    </div>
+
     @if($viewMode === 'list')
         <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="p-4 border-b">
-                <input wire:model.live="search" type="text" placeholder="Buscar por número o título..." class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-            </div>
             
             {{-- Desktop Table --}}
             <div class="overflow-x-auto">
@@ -131,9 +139,11 @@
         <div class="flex overflow-x-auto pb-4 gap-4 items-start h-[calc(100vh-220px)]" id="kanban-container">
             @foreach($kanbanData as $col)
                 <div 
-                    class="flex-shrink-0 w-80 bg-gray-100 rounded-xl flex flex-col max-h-full border border-gray-200 shadow-sm"
-                    ondragover="event.preventDefault(); return false;"
-                    ondrop="handleDrop(event, {{ $col['estado']->id ?? 'null' }})"
+                    wire:key="col-{{ $col['estado']->id ?? 'null' }}"
+                    class="flex-shrink-0 w-80 bg-gray-100 rounded-xl flex flex-col max-h-full border border-gray-200 shadow-sm transition-colors duration-200"
+                    ondragover="event.preventDefault(); this.classList.add('bg-indigo-50', 'border-indigo-300'); return false;"
+                    ondragleave="this.classList.remove('bg-indigo-50', 'border-indigo-300')"
+                    ondrop="this.classList.remove('bg-indigo-50', 'border-indigo-300'); handleDrop(event, {{ $col['estado']->id ?? 'null' }})"
                 >
                     {{-- Column Header --}}
                     <div class="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-xl sticky top-0 z-10">
@@ -149,8 +159,10 @@
                     <div class="p-3 space-y-3 overflow-y-auto flex-1 custom-scrollbar">
                         @forelse($col['expedientes'] as $exp)
                             <div 
+                                wire:key="card-{{ $exp->id }}"
                                 draggable="true"
-                                ondragstart="event.dataTransfer.setData('expId', {{ $exp->id }}); event.dataTransfer.effectAllowed = 'move';"
+                                ondragstart="event.dataTransfer.setData('text/plain', '{{ $exp->id }}'); event.dataTransfer.setData('expId', '{{ $exp->id }}'); event.dataTransfer.effectAllowed = 'move'; this.classList.add('opacity-50')"
+                                ondragend="this.classList.remove('opacity-50')"
                                 class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm cursor-move hover:shadow-md hover:border-indigo-300 transition group relative"
                             >
                                 <div class="flex justify-between items-start mb-2">
@@ -177,9 +189,16 @@
                                     </div>
                                     @endif
                                 </div>
-                                <div class="mt-3 pt-2 border-t border-gray-100 flex justify-between items-center text-[10px] text-gray-400 font-medium">
-                                    <span>{{ $exp->materia ?? 'Materia N/A' }}</span>
-                                    <span>{{ $exp->updated_at->format('d/m') }}</span>
+                                <div class="mt-3 pt-2 border-t border-gray-100 grid grid-cols-3 items-center text-[10px] text-gray-400 font-medium uppercase tracking-tighter">
+                                    <span class="truncate" title="{{ $exp->materia }}">{{ Str::limit($exp->materia ?? 'N/A', 10) }}</span>
+                                    <span class="text-center" title="Última actividad: {{ $exp->updated_at->format('d/m/Y') }}">MOD: {{ $exp->updated_at->format('d/m') }}</span>
+                                    <span class="text-right {{ $exp->vencimiento_termino && $exp->vencimiento_termino->isPast() ? 'text-red-600 font-black' : ($exp->vencimiento_termino && $exp->vencimiento_termino->diffInDays(now()) <= 3 ? 'text-orange-600 font-black' : '') }}">
+                                        @if($exp->vencimiento_termino)
+                                            <span title="Vencimiento Fatal">FATAL: {{ $exp->vencimiento_termino->format('d/m') }}</span>
+                                        @else
+                                            --/--
+                                        @endif
+                                    </span>
                                 </div>
                             </div>
                         @empty
@@ -195,13 +214,11 @@
         <script>
             function handleDrop(event, newStatusId) {
                 event.preventDefault();
-                const expId = event.dataTransfer.getData("expId");
+                const expId = event.dataTransfer.getData("text/plain") || event.dataTransfer.getData("expId");
                 
-                // If dropping into "Sin Clasificar" (null) or a valid ID
-                // We pass null simply as null
                 if (expId) {
-                    // Visual feedback could be added here
-                    @this.call('updateStatus', expId, newStatusId);
+                    console.log('Moviendo expediente:', expId, 'a estado:', newStatusId);
+                    @this.updateStatus(expId, newStatusId);
                 }
             }
         </script>
