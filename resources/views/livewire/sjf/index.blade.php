@@ -14,7 +14,7 @@
             </div>
         </div>
 
-        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+        <div class="bg-white overflow-visible shadow-xl sm:rounded-lg p-6">
             <!-- Search Bar -->
             <div class="mb-6 space-y-4">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">

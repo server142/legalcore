@@ -49,6 +49,7 @@ class Index extends Component
                     $candidates = SjfPublication::whereIn('id', $candidateIds)
                         ->whereNotNull('embedding_data')
                         ->select('id', 'rubro', 'texto', 'embedding_data', 'fecha_publicacion', 'reg_digital', 'instancia')
+                        ->limit(300)
                         ->get();
                     
                     $rankedIds = $candidates->map(function ($pub) use ($aiService, $queryVector) {

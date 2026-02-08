@@ -140,7 +140,7 @@ class DofService
                     $candidateIds = DofPublication::latest('fecha_publicacion')->take(500)->pluck('id');
                 }
 
-                $candidates = DofPublication::whereIn('id', $candidateIds)->get();
+                $candidates = DofPublication::whereIn('id', $candidateIds)->limit(300)->get();
 
                 // Calculate similarity and FILTER by threshold to "reduce" results
                 $scoredCandidates = $candidates->map(function ($item) use ($vector) {

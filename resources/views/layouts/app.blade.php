@@ -47,7 +47,7 @@
         <livewire:layout.navigation />
 
         <!-- Main Content Area -->
-        <div class="flex flex-col flex-1 min-w-0 overflow-hidden bg-gray-100 relative z-0">
+        <div class="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden bg-gray-100 relative z-0">
                 <!-- Top Header -->
                 <header class="bg-white border-b border-gray-200 z-20 flex-shrink-0">
                     <div class="px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
