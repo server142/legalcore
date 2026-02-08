@@ -487,6 +487,16 @@ class Form extends Component
                 $this->asesoria = Asesoria::create($datos);
                 $mensaje = 'Asesoría guardada correctamente.';
                 $this->modoEdicion = true; // Cambiar a modo edición
+
+                // Send confirmation email on creation
+                if ($this->asesoria->email) {
+                    try {
+                        \Illuminate\Support\Facades\Mail::to($this->asesoria->email)
+                            ->send(new \App\Mail\AsesoriaConfirmation($this->asesoria));
+                    } catch (\Exception $e) {
+                        Log::error('Error enviando correo de confirmación: ' . $e->getMessage());
+                    }
+                }
             }
 
             if ($syncToAgenda && $this->asesoria) {

@@ -182,7 +182,38 @@
             </div>
         </div>
 
+        <livewire:push-notifications />
         @stack('scripts')
         <livewire:welcome-overlay />
+
+        <script>
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('urgent-deadline-alert', (event) => {
+                    const data = event[0];
+                    
+                    // 1. Browser Notification
+                    if ("Notification" in window) {
+                        if (Notification.permission === "granted") {
+                            new Notification(data.title, {
+                                body: data.message,
+                                icon: '/favicon.ico'
+                            }).onclick = () => window.location.href = data.url;
+                        } else if (Notification.permission !== "denied") {
+                            Notification.requestPermission();
+                        }
+                    }
+
+                    // 2. In-app Toast (Optional but good)
+                    window.dispatchEvent(new CustomEvent('notify', { detail: data.message }));
+                });
+            });
+
+            // Request permission on first load if not set
+            if ("Notification" in window && Notification.permission === "default") {
+                setTimeout(() => {
+                    Notification.requestPermission();
+                }, 10000);
+            }
+        </script>
     </body>
 </html>

@@ -16,6 +16,8 @@ class TenantAdmin extends Component
     public $recentExpedientes;
     public $urgentTerminos;
     public $eventos;
+    public $sjfCount;
+    public $dofCount;
     
     // Financial Stats
     public $totalCobrado;
@@ -168,6 +170,9 @@ class TenantAdmin extends Component
         } else {
             $this->resetFinancials();
         }
+
+        $this->sjfCount = \App\Models\SjfPublication::count();
+        $this->dofCount = \App\Models\DofPublication::count();
     }
 
     private function resetFinancials()

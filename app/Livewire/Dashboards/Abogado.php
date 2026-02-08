@@ -14,6 +14,8 @@ class Abogado extends Component
     public $misExpedientes;
     public $urgentTerminos;
     public $eventos;
+    public $sjfCount;
+    public $dofCount;
 
     public function mount()
     {
@@ -72,6 +74,9 @@ class Abogado extends Component
             ->orderBy('start_time')
             ->take(10)
             ->get();
+
+        $this->sjfCount = \App\Models\SjfPublication::count();
+        $this->dofCount = \App\Models\DofPublication::count();
     }
 
     public function render()

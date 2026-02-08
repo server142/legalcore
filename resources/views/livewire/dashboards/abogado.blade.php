@@ -156,5 +156,32 @@
             </a>
             @endforeach
         </div>
+    <!-- Monitor Inteligente (SJF / DOF) -->
+    <div class="mt-8">
+        <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            Herramientas de Investigación
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <a href="{{ route('sjf.index') }}" class="bg-white p-4 rounded-xl border border-gray-100 hover:border-indigo-200 transition-all flex items-center justify-between group shadow-sm">
+                <div>
+                    <span class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Semanario</span>
+                    <p class="text-lg font-bold text-gray-900">{{ number_format($sjfCount) }} Tesis</p>
+                </div>
+                <div class="text-indigo-600 group-hover:translate-x-1 transition-transform">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                </div>
+            </a>
+            <a href="{{ route('dof.index') }}" class="bg-white p-4 rounded-xl border border-gray-100 hover:border-amber-200 transition-all flex items-center justify-between group shadow-sm">
+                <div>
+                    <span class="text-[10px] font-black text-amber-400 uppercase tracking-widest">Diario Oficial</span>
+                    <p class="text-lg font-bold text-gray-900">{{ number_format($dofCount) }} Notas</p>
+                </div>
+                <div class="text-amber-600 group-hover:translate-x-1 transition-transform">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                </div>
+            </a>
+        </div>
     </div>
 </div>
+
