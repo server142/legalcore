@@ -528,8 +528,8 @@
                         </div>
                         
                         <div 
-                            :class="maximized ? 'h-[calc(100vh-100px)]' : 'max-h-[70vh] min-h-[500px]'"
-                            class="bg-gray-200 rounded-xl overflow-y-auto overflow-x-hidden p-4 text-center custom-scrollbar"
+                            :class="maximized ? 'h-auto min-h-screen' : 'max-h-[70vh] min-h-[500px]'"
+                            class="bg-gray-200 rounded-xl overflow-visible p-4 text-center"
                         >
                             @if($selectedDoc->tipo == 'image')
                                 <img src="{{ route('documentos.show', $selectedDoc) }}" class="inline-block max-w-full h-auto shadow-2xl rounded-sm">
