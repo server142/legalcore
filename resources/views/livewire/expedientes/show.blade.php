@@ -505,10 +505,10 @@
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
                 <div 
-                    :class="maximized ? 'w-full h-full sm:my-0 rounded-none fixed inset-0 z-[60]' : 'inline-block align-middle sm:my-8 sm:max-w-4xl sm:w-full rounded-2xl'"
+                    :class="maximized ? 'w-full h-screen sm:my-0 rounded-none fixed inset-0 z-[60] flex flex-col' : 'inline-block align-middle sm:my-8 sm:max-w-4xl sm:w-full rounded-2xl min-h-[600px]'"
                     class="bg-white text-left overflow-hidden shadow-xl transform transition-all"
                 >
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div :class="maximized ? 'flex flex-col h-full' : ''" class="bg-white px-4 pt-5 pb-4 sm:p-6">
                         <div class="flex justify-between items-center mb-4 border-b pb-3">
                             <h3 class="text-lg font-bold text-gray-900 truncate flex items-center">
                                 <span class="mr-2 p-1 bg-indigo-100 text-indigo-600 rounded">
@@ -528,8 +528,8 @@
                         </div>
                         
                         <div 
-                            :class="maximized ? 'h-auto min-h-screen' : 'max-h-[70vh] min-h-[500px]'"
-                            class="bg-gray-200 rounded-xl overflow-visible p-4 text-center"
+                            :class="maximized ? 'flex-1 overflow-y-auto p-8' : 'h-[60vh] overflow-y-auto p-4'"
+                            class="bg-gray-200 rounded-xl text-center custom-scrollbar"
                         >
                             @if($selectedDoc->tipo == 'image')
                                 <img src="{{ route('documentos.show', $selectedDoc) }}" class="inline-block max-w-full h-auto shadow-2xl rounded-sm">
