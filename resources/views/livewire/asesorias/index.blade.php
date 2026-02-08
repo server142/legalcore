@@ -5,12 +5,22 @@
 <div class="p-4 md:p-6 space-y-6">
     {{-- Notificaciones Flash --}}
     @if (session()->has('message'))
-        <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 4000)" x-show="show" x-transition.duration.500ms class="p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded-r-xl shadow-sm mb-4">
+        <div class="p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded-r-xl shadow-sm mb-4" role="alert">
             <div class="flex items-center">
                 <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 <p class="font-bold">{{ session('message') }}</p>
             </div>
         </div>
+        <script>
+            setTimeout(function() {
+                const alert = document.querySelector('[role="alert"]');
+                if (alert) {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500);
+                }
+            }, 4000);
+        </script>
     @endif
 
     @if (session()->has('facturaUrl'))

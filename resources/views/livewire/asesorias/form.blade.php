@@ -6,9 +6,9 @@
 </x-slot>
 
 <div class="p-4 md:p-6 max-w-5xl mx-auto" x-data="{ saving: false }">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 relative">
         {{-- Overlay de Carga --}}
-        <div wire:loading wire:target="guardar" class="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div wire:loading wire:target="guardar" class="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center rounded-xl">
             <div class="flex flex-col items-center">
                 <svg class="animate-spin h-12 w-12 text-indigo-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
