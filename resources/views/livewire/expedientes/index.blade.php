@@ -7,7 +7,19 @@
         <h2 class="text-2xl font-bold text-gray-800">Expedientes</h2>
         
         <div class="flex items-center gap-3 w-full md:w-auto">
+            @if(auth()->user()->can('manage expedientes') || auth()->user()->hasRole(['super_admin', 'admin']))
+                <button 
+                    wire:click="toggleTrash" 
+                    class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors {{ $showTrash ? 'bg-red-100 text-red-700' : 'text-gray-600 hover:text-gray-900 bg-gray-100' }}">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        {{ $showTrash ? 'Salir' : 'Papelera' }}
+                    </div>
+                </button>
+            @endif
+
             <!-- View Switcher -->
+            @if(!$showTrash)
             <div class="bg-gray-200 p-1 rounded-lg flex gap-1">
                 <button 
                     wire:click="toggleViewMode('list')" 
@@ -26,6 +38,7 @@
                     </div>
                 </button>
             </div>
+            @endif
 
             <a href="{{ route('expedientes.create') }}" class="ml-auto bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-center font-bold text-sm">
                 + Nuevo
@@ -44,7 +57,62 @@
         </div>
     </div>
 
-    @if($viewMode === 'list')
+    @if($showTrash)
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 flex justify-between items-center animate-pulse">
+        <span class="text-red-800 font-bold flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            PAPELERA DE RECICLAJE
+        </span>
+        <button wire:click="toggleTrash" class="text-sm underline text-red-600 hover:text-red-800">Salir de la papelera</button>
+    </div>
+
+    <!-- Trash Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+             <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-red-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-red-800 uppercase tracking-wider">Número</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-red-800 uppercase tracking-wider">Título</th>
+                         <th class="px-6 py-3 text-left text-xs font-medium text-red-800 uppercase tracking-wider">Cliente</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-red-800 uppercase tracking-wider">Eliminado</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-red-800 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($expedientes as $exp)
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $exp->numero }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ $exp->titulo }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ $exp->cliente->nombre ?? 'N/A' }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 text-red-600">{{ $exp->deleted_at->format('d/m/Y H:i') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button wire:click="restore({{ $exp->id }})" class="text-green-600 hover:text-green-900 mr-3 font-bold flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                Restaurar
+                            </button>
+                            @if(auth()->user()->hasRole('super_admin'))
+                                <button wire:click="forceDelete({{ $exp->id }})" wire:confirm="¿ELIMINAR PERMANENTEMENTE? ESTA ACCIÓN NO SE PUEDE DESHACER." class="text-red-600 hover:text-red-900 font-bold flex items-center gap-1 mt-1">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    Eliminar Definitivamente
+                                </button>
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-10 text-center text-gray-500">La papelera está vacía.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="p-4 border-t">
+            {{ $expedientes->links() }}
+        </div>
+    </div>
+
+    @elseif($viewMode === 'list')
         <div class="bg-white rounded-lg shadow overflow-hidden">
             
             {{-- Desktop Table --}}

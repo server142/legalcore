@@ -14,6 +14,7 @@ class Index extends Component
 
     public $viewMode = 'list'; // 'list' or 'kanban'
     public $search = ''; // Search term for expedientes
+    public $showTrash = false; // Toggle for Trash View
 
     public function mount()
     {
@@ -108,6 +109,43 @@ class Index extends Component
         $this->dispatch('notify', 'Expediente eliminado (enviado a papelera) exitosamente.');
     }
 
+    public function toggleTrash()
+    {
+        $this->showTrash = !$this->showTrash;
+        $this->resetPage();
+    }
+
+    public function restore($id)
+    {
+        if (!auth()->user()->can('manage expedientes') && !auth()->user()->hasRole(['super_admin', 'admin'])) {
+            return;
+        }
+
+        $expediente = Expediente::onlyTrashed()->findOrFail($id);
+        $expediente->restore();
+
+        $this->dispatch('notify', 'Expediente restaurado exitosamente.');
+    }
+
+    public function forceDelete($id)
+    {
+        if (!auth()->user()->hasRole('super_admin')) {
+             $this->dispatch('notify', ['type' => 'error', 'message' => 'Solo el Super Admin puede eliminar permanentemente.']);
+             return;
+        }
+
+        $expediente = Expediente::onlyTrashed()->findOrFail($id);
+        
+        // Final Safety Check
+        if ($expediente->facturas()->exists()) {
+             $this->dispatch('notify', ['type' => 'error', 'message' => 'No se puede eliminar permanentemente si tiene facturas (aunque no esten pagadas, por integridad contable).']);
+             return;
+        }
+
+        $expediente->forceDelete();
+        $this->dispatch('notify', 'Expediente eliminado PERMANENTEMENTE.');
+    }
+
     public function render()
     {
         $user = auth()->user();
@@ -136,13 +174,14 @@ class Index extends Component
             return $q;
         };
 
-        if ($this->viewMode === 'kanban') {
+        if ($this->viewMode === 'kanban' && !$this->showTrash) {
             $estados = EstadoProcesal::orderBy('orden', 'asc')->orderBy('id', 'asc')->get();
             
             // Populate groups
             // Optimization: Fetch all matching expedientes and grouping in PHP to avoid N+1 queries
             $allExpedientes = $queryBuilder()
                 ->with(['cliente', 'abogado'])
+                ->when($this->showTrash, function($q) { $q->onlyTrashed(); })
                 ->orderBy('orden', 'asc') // Respect sorting
                 ->get();
             
@@ -172,6 +211,7 @@ class Index extends Component
             $expedientes = $queryBuilder()
                 ->with(['cliente', 'abogado', 'estadoProcesal'])
                 ->withCount(['actuaciones', 'documentos', 'eventos', 'comentarios'])
+                ->when($this->showTrash, function($q) { $q->onlyTrashed(); })
                 ->orderByDesc('id')
                 ->paginate(10);
 
