@@ -227,66 +227,82 @@
             @endforeach
         </div>
 
-        <!-- SortableJS -->
-        <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+        <!-- SortableJS Manager -->
         <script>
-            document.addEventListener('livewire:initialized', () => {
-                initKanban();
-            });
-
-            document.addEventListener('livewire:processed', () => {
-               initKanban();
-            });
+            // Robust SortableJS Loader & Initializer
+            function ensureSortable(callback) {
+                if (typeof Sortable === 'undefined') {
+                    if (!document.getElementById('sortable-js-cdn')) {
+                        const script = document.createElement('script');
+                        script.id = 'sortable-js-cdn';
+                        script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js';
+                        script.onload = callback;
+                        script.onerror = () => console.error('Failed to load SortableJS');
+                        document.head.appendChild(script);
+                    } else {
+                        // Script already loading, wait a bit
+                        setTimeout(() => ensureSortable(callback), 100);
+                    }
+                } else {
+                    callback();
+                }
+            }
 
             function initKanban() {
-                const lists = document.querySelectorAll('.kanban-list');
-                
-                lists.forEach(list => {
-                    if(list._sortable) list._sortable.destroy();
-
-                    list._sortable = new Sortable(list, {
-                        group: 'expedientes',
-                        animation: 150,
-                        ghostClass: 'bg-indigo-50',
-                        dragClass: 'opacity-50',
-                        filter: 'button, a, .no-drag',
-                        preventOnFilter: false,
-                        onEnd: function (evt) {
-                            const newStatusId = evt.to.getAttribute('data-status-id');
-                            const orderedIds = Array.from(evt.to.children)
-                                .map(el => el.getAttribute('data-id'))
-                                .filter(id => id);
-
-                            console.log('Moved to status:', newStatusId, 'Order:', orderedIds);
-                            @this.updateOrder(newStatusId, orderedIds);
+                ensureSortable(() => {
+                    const lists = document.querySelectorAll('.kanban-list');
+                    
+                    lists.forEach(list => {
+                        // Destroy previous instance if exists to prevent duplicates
+                        if(list._sortable) {
+                            list._sortable.destroy();
+                            list._sortable = null;
                         }
+
+                        list._sortable = new Sortable(list, {
+                            group: 'expedientes',
+                            animation: 150,
+                            ghostClass: 'bg-indigo-50',
+                            dragClass: 'opacity-50',
+                            filter: 'button, a, .no-drag',
+                            preventOnFilter: false,
+                            onEnd: function (evt) {
+                                const newStatusId = evt.to.getAttribute('data-status-id');
+                                const orderedIds = Array.from(evt.to.children)
+                                    .map(el => el.getAttribute('data-id'))
+                                    .filter(id => id);
+
+                                // Optimistic UI update or just dispatch
+                                @this.updateOrder(newStatusId, orderedIds);
+                            }
+                        });
                     });
+                    
+                    initAutoScroll();
                 });
             }
-            
-            if (document.readyState !== 'loading') {
-                initKanban();
-            } else {
-                document.addEventListener('DOMContentLoaded', initKanban);
-            }
 
-            // Auto-scroll logic for board container
-            const kanbanContainer = document.getElementById('kanban-container');
-            if(kanbanContainer) {
-                 kanbanContainer.addEventListener('wheel', (evt) => {
+            function initAutoScroll() {
+                const kanbanContainer = document.getElementById('kanban-container');
+                if(!kanbanContainer || kanbanContainer._autoScrollInited) return;
+
+                kanbanContainer.addEventListener('wheel', (evt) => {
                     if (evt.deltaY !== 0) {
                         evt.preventDefault();
                         kanbanContainer.scrollLeft += evt.deltaY;
                     }
                 }, { passive: false });
+                
+                kanbanContainer._autoScrollInited = true;
 
+                // Dragging auto-scroll logic
                 let isDragging = false;
                 let scrollInterval;
 
                 document.addEventListener('dragstart', () => { isDragging = true; });
                 document.addEventListener('dragend', () => { 
                     isDragging = false; 
-                    clearInterval(scrollInterval);
+                    if(scrollInterval) clearInterval(scrollInterval);
                 });
 
                 kanbanContainer.addEventListener('dragover', (e) => {
@@ -296,7 +312,7 @@
                     const rect = kanbanContainer.getBoundingClientRect();
                     const x = e.clientX;
 
-                    clearInterval(scrollInterval);
+                    if(scrollInterval) clearInterval(scrollInterval);
 
                     if (x > rect.right - threshold) {
                         scrollInterval = setInterval(() => { kanbanContainer.scrollLeft += speed; }, 16);
@@ -305,8 +321,17 @@
                     }
                 });
 
-                kanbanContainer.addEventListener('dragleave', () => { clearInterval(scrollInterval); });
+                kanbanContainer.addEventListener('dragleave', () => { 
+                    if(scrollInterval) clearInterval(scrollInterval); 
+                });
             }
+
+            // Bind to Livewire Lifecycle
+            document.addEventListener('livewire:initialized', initKanban);
+            document.addEventListener('livewire:processed', initKanban); // Re-init after updates
+            
+            // Immediate init attempt (for initial render if not SPA nav)
+            initKanban();
         </script>
         
         <style>
