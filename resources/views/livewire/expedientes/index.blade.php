@@ -97,9 +97,9 @@
                                     <a href="{{ route('expedientes.assignments', $exp) }}" class="text-green-600 hover:text-green-900 mr-3">Gestionar</a>
                                 @endcan
                                 <button wire:click="cerrar({{ $exp->id }})" wire:confirm="¿Estás seguro de cerrar este expediente?" class="text-orange-600 hover:text-orange-900 mr-3">Cerrar</button>
-                                @can('manage expedientes')
+                                @if(auth()->user()->can('manage expedientes') || auth()->user()->hasRole(['super_admin', 'admin']))
                                     <button wire:click="delete({{ $exp->id }})" wire:confirm="¿Estás seguro de ELIMINAR este expediente (Papelera)?" class="text-red-600 hover:text-red-900 font-bold" title="Eliminar/Papelera">X</button>
-                                @endcan
+                                @endif
                             </td>
                         </tr>
                         @endforeach
@@ -176,7 +176,7 @@
                                         <a href="{{ route('expedientes.show', $exp) }}" title="Ver Expediente" class="text-gray-400 hover:text-indigo-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                                         </a>
-                                        @can('manage expedientes')
+                                        @if(auth()->user()->can('manage expedientes') || auth()->user()->hasRole(['super_admin', 'admin']))
                                         <button 
                                             wire:click.stop="delete({{ $exp->id }})" 
                                             wire:confirm="¿Estás seguro de eliminar este expediente? Se moverá a la papelera."
@@ -185,7 +185,7 @@
                                         >
                                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                         </button>
-                                        @endcan
+                                        @endif
                                     </div>
                                 </div>
 

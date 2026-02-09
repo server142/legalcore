@@ -19,6 +19,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'manage tenants',
             'view global metrics',
             'manage settings',
+            'manage expedientes', // Added for comprehensive management
             'manage users',
             'view all expedientes',
             'manage billing',
@@ -41,6 +42,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $admin = Role::firstOrCreate(['name' => 'admin']);
         $admin->syncPermissions([
             'manage users', 
+            'manage expedientes',
             'view all expedientes', 
             'manage billing', 
             'upload documents', 
