@@ -254,10 +254,11 @@
                         class="p-3 space-y-3 overflow-y-auto flex-1 custom-scrollbar kanban-list"
                         data-status-id="{{ $col['estado']->id ?? 'null' }}" 
                         style="min-height: 50px;"
-                        wire:ignore
+                        wire:key="kanban-list-{{ $col['estado']->id ?? 'null' }}-{{ $col['expedientes']->count() }}"
                         x-init="
                             ensureSortable(() => {
-                                new Sortable($el, {
+                                if ($el._sortable) { $el._sortable.destroy(); }
+                                $el._sortable = new Sortable($el, {
                                     group: 'expedientes',
                                     draggable: '.kanban-card',
                                     animation: 150,
@@ -291,7 +292,7 @@
                                         @if(auth()->user()->can('manage expedientes') || auth()->user()->hasRole(['super_admin', 'admin']))
                                         <button 
                                             wire:click.stop="delete({{ $exp->id }})" 
-                                            wire:confirm="¿Estás seguro de eliminar este expediente? Se moverá a la papelera."
+                                            wire:confirm="¿Estas seguro de eliminar este expediente? Se moverá a la papelera."
                                             class="text-red-400 hover:text-red-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity ml-2"
                                             title="Eliminar Expediente"
                                         >
@@ -318,7 +319,7 @@
                                     @endif
                                 </div>
                                 <div class="mt-3 pt-2 border-t border-gray-100 grid grid-cols-3 items-center text-[10px] text-gray-400 font-medium uppercase tracking-tighter">
-                                    <span class="truncate" title="{{ $exp->materia }}">{{ Str::limit($exp->materia ?? 'N/A', 10) }}</span>
+                                    <span class="truncate" title="{{ $exp->materia }}">{{ \Illuminate\Support\Str::limit($exp->materia ?? 'N/A', 10) }}</span>
                                     <span class="text-center" title="Última actividad: {{ $exp->updated_at->format('d/m/Y') }}">MOD: {{ $exp->updated_at->format('d/m') }}</span>
                                     <span class="text-right {{ $exp->vencimiento_termino && $exp->vencimiento_termino->isPast() ? 'text-red-600 font-black' : ($exp->vencimiento_termino && $exp->vencimiento_termino->diffInDays(now()) <= 3 ? 'text-orange-600 font-black' : '') }}">
                                         @if($exp->vencimiento_termino)
@@ -330,7 +331,8 @@
                                 </div>
                             </div>
                         @empty
-                            <div class="no-drag text-center py-6 text-gray-400 text-xs border-2 border-dashed border-gray-200 rounded-lg">
+                            <div class="kanban-empty-placeholder no-drag text-center py-8 text-gray-400 text-xs border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                                <svg class="w-8 h-8 mx-auto mb-2 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                                 Sin expedientes
                             </div>
                         @endforelse
@@ -431,6 +433,11 @@
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #9ca3af; 
+        }
+
+        /* Hide "No cases" placeholder if the list has cards */
+        .kanban-list:has(.kanban-card) .kanban-empty-placeholder {
+            display: none !important;
         }
     </style>
 </div>

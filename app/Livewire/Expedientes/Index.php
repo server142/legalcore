@@ -109,6 +109,13 @@ class Index extends Component
         $this->dispatch('notify', 'Expediente eliminado (enviado a papelera) exitosamente.');
     }
 
+    public function cerrar($id)
+    {
+        $expediente = Expediente::findOrFail($id);
+        $expediente->update(['fecha_cierre' => now()]);
+        $this->dispatch('notify', 'Expediente marcado como cerrado.');
+    }
+
     public function toggleTrash()
     {
         $this->showTrash = !$this->showTrash;
