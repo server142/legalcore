@@ -254,6 +254,25 @@
                         class="p-3 space-y-3 overflow-y-auto flex-1 custom-scrollbar kanban-list"
                         data-status-id="{{ $col['estado']->id ?? 'null' }}" 
                         style="min-height: 50px;"
+                        wire:ignore
+                        x-init="
+                            ensureSortable(() => {
+                                new Sortable($el, {
+                                    group: 'expedientes',
+                                    draggable: '.kanban-card',
+                                    animation: 150,
+                                    ghostClass: 'bg-indigo-50',
+                                    dragClass: 'opacity-50',
+                                    filter: 'button, a, .no-drag',
+                                    preventOnFilter: false,
+                                    onEnd: (evt) => {
+                                        const statusId = evt.to.getAttribute('data-status-id');
+                                        const ids = Array.from(evt.to.querySelectorAll('.kanban-card')).map(el => el.getAttribute('data-id'));
+                                        $wire.updateOrder(statusId, ids);
+                                    }
+                                });
+                            });
+                        "
                     >
                         @forelse($col['expedientes'] as $exp)
                             <div 
@@ -321,65 +340,43 @@
         </div>
     @endif
 
-    <!-- SortableJS Manager -->
     <script>
-        // Robust SortableJS Loader & Initializer
+        // Robust SortableJS Loader
         function ensureSortable(callback) {
-            if (typeof Sortable === 'undefined') {
-                if (!document.getElementById('sortable-js-cdn')) {
-                    const script = document.createElement('script');
-                    script.id = 'sortable-js-cdn';
-                    script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js';
-                    script.onload = callback;
-                    script.onerror = () => console.error('Failed to load SortableJS');
-                    document.head.appendChild(script);
-                } else {
-                    // Script already loading, wait a bit
-                    setTimeout(() => ensureSortable(callback), 100);
-                }
-            } else {
+            if (typeof Sortable !== 'undefined') {
                 callback();
+                return;
             }
-        }
-
-        function initKanban() {
-            ensureSortable(() => {
-                const lists = document.querySelectorAll('.kanban-list');
-                if (lists.length === 0) return;
-
-                lists.forEach(list => {
-                    // Destroy previous instance if exists to prevent duplicates
-                    if(list._sortable) {
-                        list._sortable.destroy();
-                        list._sortable = null;
+            
+            if (window._sortableLoading) {
+                let checkLoaded = setInterval(() => {
+                    if (typeof Sortable !== 'undefined') {
+                        clearInterval(checkLoaded);
+                        callback();
                     }
+                }, 50);
+                return;
+            }
 
-                    list._sortable = new Sortable(list, {
-                        group: 'expedientes',
-                        draggable: '.kanban-card',
-                        animation: 150,
-                        ghostClass: 'bg-indigo-50',
-                        dragClass: 'opacity-50',
-                        filter: 'button, a, .no-drag',
-                        preventOnFilter: false,
-                        onEnd: function (evt) {
-                            const newStatusId = evt.to.getAttribute('data-status-id');
-                            const orderedIds = Array.from(evt.to.querySelectorAll('.kanban-card'))
-                                .map(el => el.getAttribute('data-id'))
-                                .filter(id => id);
-
-                            @this.updateOrder(newStatusId, orderedIds);
-                        }
-                    });
-                });
-                
-                initAutoScroll();
-            });
+            window._sortableLoading = true;
+            const script = document.createElement('script');
+            script.id = 'sortable-js-cdn';
+            script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js';
+            script.onload = () => {
+                window._sortableLoading = false;
+                callback();
+            };
+            script.onerror = () => {
+                window._sortableLoading = false;
+                console.error('Failed to load SortableJS');
+            };
+            document.head.appendChild(script);
         }
 
-        function initAutoScroll() {
+        // Auto-scroll logic (Global)
+        document.addEventListener('livewire:initialized', () => {
             const kanbanContainer = document.getElementById('kanban-container');
-            if(!kanbanContainer || kanbanContainer._autoScrollInited) return;
+            if(!kanbanContainer) return;
 
             kanbanContainer.addEventListener('wheel', (evt) => {
                 if (evt.deltaY !== 0) {
@@ -387,10 +384,8 @@
                     kanbanContainer.scrollLeft += evt.deltaY;
                 }
             }, { passive: false });
-            
-            kanbanContainer._autoScrollInited = true;
 
-            // Dragging auto-scroll logic
+            // Dragging auto-scroll
             let isDragging = false;
             let scrollInterval;
 
@@ -419,17 +414,7 @@
             kanbanContainer.addEventListener('dragleave', () => { 
                 if(scrollInterval) clearInterval(scrollInterval); 
             });
-        }
-
-        // Bind to Livewire Lifecycle ONLY ONCE
-        if (!window._kanbanEventsAttached) {
-            document.addEventListener('livewire:initialized', initKanban);
-            document.addEventListener('livewire:processed', initKanban);
-            window._kanbanEventsAttached = true;
-        }
-        
-        // Immediate init attempt
-        initKanban();
+        });
     </script>
 
     <style>
