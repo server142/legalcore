@@ -212,15 +212,65 @@
         </div>
 
         <script>
-            function handleDrop(event, newStatusId) {
+            // Ensure function is global
+            window.handleDrop = function(event, newStatusId) {
                 event.preventDefault();
+                event.stopPropagation();
+                
+                // Get ID from dataTransfer (support for different browser implementations)
                 const expId = event.dataTransfer.getData("text/plain") || event.dataTransfer.getData("expId");
                 
                 if (expId) {
                     console.log('Moviendo expediente:', expId, 'a estado:', newStatusId);
-                    @this.updateStatus(expId, newStatusId);
+                    // Call Livewire component method safely
+                    @this.call('updateStatus', expId, newStatusId);
                 }
-            }
+            };
+
+            // Auto-scroll functionality for drag and drop
+            document.addEventListener('DOMContentLoaded', () => {
+                const container = document.getElementById('kanban-container');
+                if (!container) return;
+
+                let isDragging = false;
+                let scrollInterval;
+
+                // Detect drag start/end globally or on container
+                document.addEventListener('dragstart', () => { isDragging = true; });
+                document.addEventListener('dragend', () => { 
+                    isDragging = false; 
+                    clearInterval(scrollInterval);
+                });
+
+                // Monitor drag movement
+                container.addEventListener('dragover', (e) => {
+                    if (!isDragging) return;
+
+                    const threshold = 100; // Distance from edge to trigger scroll
+                    const speed = 10; // Scroll speed
+                    const rect = container.getBoundingClientRect();
+                    const x = e.clientX;
+
+                    clearInterval(scrollInterval);
+
+                    // Scroll Right
+                    if (x > rect.right - threshold) {
+                        scrollInterval = setInterval(() => {
+                            container.scrollLeft += speed;
+                        }, 16);
+                    }
+                    // Scroll Left
+                    else if (x < rect.left + threshold) {
+                        scrollInterval = setInterval(() => {
+                            container.scrollLeft -= speed;
+                        }, 16);
+                    }
+                });
+
+                container.addEventListener('dragleave', () => {
+                    clearInterval(scrollInterval);
+                });
+            });
         </script>
         
         <style>
