@@ -139,12 +139,192 @@
         </div>
     @else
         {{-- KANBAN BOARD VIEW --}}
-        <div class="flex overflow-x-auto pb-4 gap-4 items-start h-[calc(100vh-220px)]" id="kanban-container">
+        <div class="flex-row overflow-x-auto pb-4 gap-4 items-start custom-scrollbar" style="display: flex; flex-flow: row nowrap; gap: 1rem; align-items: flex-start; height: calc(100vh - 220px);" id="kanban-container">
             @foreach($kanbanData as $col)
                 <div 
                     wire:key="col-{{ $col['estado']->id ?? 'null' }}"
-                    class="flex-shrink-0 w-80 bg-gray-100 rounded-xl flex flex-col max-h-full border border-gray-200 shadow-sm"
+                    class="flex-shrink-0 flex flex-col max-h-full border border-gray-200 shadow-sm bg-gray-100 rounded-xl"
+                    style="min-width: 320px; width: 320px;"
                 >
+                    {{-- Column Header --}}
+                    <div class="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-xl sticky top-0 z-10">
+                        <h3 class="font-bold text-gray-700 text-sm truncate uppercase tracking-wider" title="{{ $col['estado']->nombre }}">
+                            {{ $col['estado']->nombre }}
+                        </h3>
+                        <span class="bg-white border border-gray-200 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">
+                            {{ $col['expedientes']->count() }}
+                        </span>
+                    </div>
+
+                    {{-- Cards Container (Sortable List) --}}
+                    <div 
+                        class="p-3 space-y-3 overflow-y-auto flex-1 custom-scrollbar kanban-list"
+                        data-status-id="{{ $col['estado']->id ?? 'null' }}" 
+                        style="min-height: 50px;"
+                    >
+                        @forelse($col['expedientes'] as $exp)
+                            <div 
+                                wire:key="card-{{ $exp->id }}"
+                                data-id="{{ $exp->id }}"
+                                class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm cursor-move hover:shadow-md hover:border-indigo-300 transition group relative"
+                            >
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">{{ $exp->numero }}</span>
+                                    
+                                    {{-- Actions --}}
+                                    <div class="flex items-center">
+                                        <a href="{{ route('expedientes.show', $exp) }}" title="Ver Expediente" class="text-gray-400 hover:text-indigo-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                        </a>
+                                        @can('manage expedientes')
+                                        <button 
+                                            wire:click.stop="delete({{ $exp->id }})" 
+                                            wire:confirm="¿Estás seguro de eliminar este expediente? Se moverá a la papelera."
+                                            class="text-red-400 hover:text-red-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity ml-2"
+                                            title="Eliminar Expediente"
+                                        >
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                        @endcan
+                                    </div>
+                                </div>
+
+                                <h4 class="text-sm font-bold text-gray-900 leading-snug mb-2 line-clamp-2" title="{{ $exp->titulo }}">
+                                    {{ $exp->titulo }}
+                                </h4>
+
+                                <div class="text-xs text-gray-500 space-y-1">
+                                    <div class="flex items-center gap-1">
+                                        <svg class="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                        <span class="truncate">{{ $exp->cliente->nombre }}</span>
+                                    </div>
+                                    @if($exp->abogado)
+                                    <div class="flex items-center gap-1">
+                                         <svg class="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                        <span class="truncate">{{ $exp->abogado->name }}</span>
+                                    </div>
+                                    @endif
+                                </div>
+                                <div class="mt-3 pt-2 border-t border-gray-100 grid grid-cols-3 items-center text-[10px] text-gray-400 font-medium uppercase tracking-tighter">
+                                    <span class="truncate" title="{{ $exp->materia }}">{{ Str::limit($exp->materia ?? 'N/A', 10) }}</span>
+                                    <span class="text-center" title="Última actividad: {{ $exp->updated_at->format('d/m/Y') }}">MOD: {{ $exp->updated_at->format('d/m') }}</span>
+                                    <span class="text-right {{ $exp->vencimiento_termino && $exp->vencimiento_termino->isPast() ? 'text-red-600 font-black' : ($exp->vencimiento_termino && $exp->vencimiento_termino->diffInDays(now()) <= 3 ? 'text-orange-600 font-black' : '') }}">
+                                        @if($exp->vencimiento_termino)
+                                            <span title="Vencimiento Fatal">FATAL: {{ $exp->vencimiento_termino->format('d/m') }}</span>
+                                        @else
+                                            --/--
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="no-drag text-center py-6 text-gray-400 text-xs border-2 border-dashed border-gray-200 rounded-lg">
+                                Sin expedientes
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <!-- SortableJS -->
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+        <script>
+            document.addEventListener('livewire:initialized', () => {
+                initKanban();
+            });
+
+            document.addEventListener('livewire:processed', () => {
+               initKanban();
+            });
+
+            function initKanban() {
+                const lists = document.querySelectorAll('.kanban-list');
+                
+                lists.forEach(list => {
+                    if(list._sortable) list._sortable.destroy();
+
+                    list._sortable = new Sortable(list, {
+                        group: 'expedientes',
+                        animation: 150,
+                        ghostClass: 'bg-indigo-50',
+                        dragClass: 'opacity-50',
+                        filter: 'button, a, .no-drag',
+                        preventOnFilter: false,
+                        onEnd: function (evt) {
+                            const newStatusId = evt.to.getAttribute('data-status-id');
+                            const orderedIds = Array.from(evt.to.children)
+                                .map(el => el.getAttribute('data-id'))
+                                .filter(id => id);
+
+                            console.log('Moved to status:', newStatusId, 'Order:', orderedIds);
+                            @this.updateOrder(newStatusId, orderedIds);
+                        }
+                    });
+                });
+            }
+            
+            if (document.readyState !== 'loading') {
+                initKanban();
+            } else {
+                document.addEventListener('DOMContentLoaded', initKanban);
+            }
+
+            // Auto-scroll logic for board container
+            const kanbanContainer = document.getElementById('kanban-container');
+            if(kanbanContainer) {
+                 kanbanContainer.addEventListener('wheel', (evt) => {
+                    if (evt.deltaY !== 0) {
+                        evt.preventDefault();
+                        kanbanContainer.scrollLeft += evt.deltaY;
+                    }
+                }, { passive: false });
+
+                let isDragging = false;
+                let scrollInterval;
+
+                document.addEventListener('dragstart', () => { isDragging = true; });
+                document.addEventListener('dragend', () => { 
+                    isDragging = false; 
+                    clearInterval(scrollInterval);
+                });
+
+                kanbanContainer.addEventListener('dragover', (e) => {
+                    if (!isDragging) return;
+                    const threshold = 100;
+                    const speed = 10;
+                    const rect = kanbanContainer.getBoundingClientRect();
+                    const x = e.clientX;
+
+                    clearInterval(scrollInterval);
+
+                    if (x > rect.right - threshold) {
+                        scrollInterval = setInterval(() => { kanbanContainer.scrollLeft += speed; }, 16);
+                    } else if (x < rect.left + threshold) {
+                        scrollInterval = setInterval(() => { kanbanContainer.scrollLeft -= speed; }, 16);
+                    }
+                });
+
+                kanbanContainer.addEventListener('dragleave', () => { clearInterval(scrollInterval); });
+            }
+        </script>
+        
+        <style>
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 4px;
+                height: 4px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: #f1f1f1; 
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: #d1d5db; 
+                border-radius: 4px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: #9ca3af; 
+            }
+        </style>
                     {{-- Column Header --}}
                     <div class="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-xl sticky top-0 z-10">
                         <h3 class="font-bold text-gray-700 text-sm truncate uppercase tracking-wider" title="{{ $col['estado']->nombre }}">
