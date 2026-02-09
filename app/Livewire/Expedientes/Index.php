@@ -70,8 +70,8 @@ class Index extends Component
     public function updateOrder($statusId, $orderedIds)
     {
         // Security check
-        if (!auth()->user()->can('manage expedientes') && !auth()->user()->hasRole('super_admin')) {
-            // Simplified check, could be more granular
+        if (!auth()->user()->hasRole(['super_admin', 'admin']) && !auth()->user()->can('manage expedientes')) {
+             return;
         }
 
         // Handle "Sin Clasificar"

@@ -239,7 +239,7 @@
                             <div 
                                 wire:key="card-{{ $exp->id }}"
                                 data-id="{{ $exp->id }}"
-                                class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm cursor-move hover:shadow-md hover:border-indigo-300 transition group relative"
+                                class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm cursor-move hover:shadow-md hover:border-indigo-300 transition group relative kanban-card"
                             >
                                 <div class="flex justify-between items-start mb-2">
                                     <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">{{ $exp->numero }}</span>
@@ -299,129 +299,133 @@
                 </div>
             @endforeach
         </div>
-
-        <!-- SortableJS Manager -->
-        <script>
-            // Robust SortableJS Loader & Initializer
-            function ensureSortable(callback) {
-                if (typeof Sortable === 'undefined') {
-                    if (!document.getElementById('sortable-js-cdn')) {
-                        const script = document.createElement('script');
-                        script.id = 'sortable-js-cdn';
-                        script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js';
-                        script.onload = callback;
-                        script.onerror = () => console.error('Failed to load SortableJS');
-                        document.head.appendChild(script);
-                    } else {
-                        // Script already loading, wait a bit
-                        setTimeout(() => ensureSortable(callback), 100);
-                    }
-                } else {
-                    callback();
-                }
-            }
-
-            function initKanban() {
-                ensureSortable(() => {
-                    const lists = document.querySelectorAll('.kanban-list');
-                    
-                    lists.forEach(list => {
-                        // Destroy previous instance if exists to prevent duplicates
-                        if(list._sortable) {
-                            list._sortable.destroy();
-                            list._sortable = null;
-                        }
-
-                        list._sortable = new Sortable(list, {
-                            group: 'expedientes',
-                            animation: 150,
-                            ghostClass: 'bg-indigo-50',
-                            dragClass: 'opacity-50',
-                            filter: 'button, a, .no-drag',
-                            preventOnFilter: false,
-                            onEnd: function (evt) {
-                                const newStatusId = evt.to.getAttribute('data-status-id');
-                                const orderedIds = Array.from(evt.to.children)
-                                    .map(el => el.getAttribute('data-id'))
-                                    .filter(id => id);
-
-                                // Optimistic UI update or just dispatch
-                                @this.updateOrder(newStatusId, orderedIds);
-                            }
-                        });
-                    });
-                    
-                    initAutoScroll();
-                });
-            }
-
-            function initAutoScroll() {
-                const kanbanContainer = document.getElementById('kanban-container');
-                if(!kanbanContainer || kanbanContainer._autoScrollInited) return;
-
-                kanbanContainer.addEventListener('wheel', (evt) => {
-                    if (evt.deltaY !== 0) {
-                        evt.preventDefault();
-                        kanbanContainer.scrollLeft += evt.deltaY;
-                    }
-                }, { passive: false });
-                
-                kanbanContainer._autoScrollInited = true;
-
-                // Dragging auto-scroll logic
-                let isDragging = false;
-                let scrollInterval;
-
-                document.addEventListener('dragstart', () => { isDragging = true; });
-                document.addEventListener('dragend', () => { 
-                    isDragging = false; 
-                    if(scrollInterval) clearInterval(scrollInterval);
-                });
-
-                kanbanContainer.addEventListener('dragover', (e) => {
-                    if (!isDragging) return;
-                    const threshold = 100;
-                    const speed = 10;
-                    const rect = kanbanContainer.getBoundingClientRect();
-                    const x = e.clientX;
-
-                    if(scrollInterval) clearInterval(scrollInterval);
-
-                    if (x > rect.right - threshold) {
-                        scrollInterval = setInterval(() => { kanbanContainer.scrollLeft += speed; }, 16);
-                    } else if (x < rect.left + threshold) {
-                        scrollInterval = setInterval(() => { kanbanContainer.scrollLeft -= speed; }, 16);
-                    }
-                });
-
-                kanbanContainer.addEventListener('dragleave', () => { 
-                    if(scrollInterval) clearInterval(scrollInterval); 
-                });
-            }
-
-            // Bind to Livewire Lifecycle
-            document.addEventListener('livewire:initialized', initKanban);
-            document.addEventListener('livewire:processed', initKanban); // Re-init after updates
-            
-            // Immediate init attempt (for initial render if not SPA nav)
-            initKanban();
-        </script>
-        
-        <style>
-            .custom-scrollbar::-webkit-scrollbar {
-                width: 4px;
-                height: 4px;
-            }
-            .custom-scrollbar::-webkit-scrollbar-track {
-                background: #f1f1f1; 
-            }
-            .custom-scrollbar::-webkit-scrollbar-thumb {
-                background: #d1d5db; 
-                border-radius: 4px;
-            }
-            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                background: #9ca3af; 
-            }
-        </style>
     @endif
+
+    <!-- SortableJS Manager -->
+    <script>
+        // Robust SortableJS Loader & Initializer
+        function ensureSortable(callback) {
+            if (typeof Sortable === 'undefined') {
+                if (!document.getElementById('sortable-js-cdn')) {
+                    const script = document.createElement('script');
+                    script.id = 'sortable-js-cdn';
+                    script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js';
+                    script.onload = callback;
+                    script.onerror = () => console.error('Failed to load SortableJS');
+                    document.head.appendChild(script);
+                } else {
+                    // Script already loading, wait a bit
+                    setTimeout(() => ensureSortable(callback), 100);
+                }
+            } else {
+                callback();
+            }
+        }
+
+        function initKanban() {
+            ensureSortable(() => {
+                const lists = document.querySelectorAll('.kanban-list');
+                if (lists.length === 0) return;
+
+                lists.forEach(list => {
+                    // Destroy previous instance if exists to prevent duplicates
+                    if(list._sortable) {
+                        list._sortable.destroy();
+                        list._sortable = null;
+                    }
+
+                    list._sortable = new Sortable(list, {
+                        group: 'expedientes',
+                        draggable: '.kanban-card',
+                        animation: 150,
+                        ghostClass: 'bg-indigo-50',
+                        dragClass: 'opacity-50',
+                        filter: 'button, a, .no-drag',
+                        preventOnFilter: false,
+                        onEnd: function (evt) {
+                            const newStatusId = evt.to.getAttribute('data-status-id');
+                            const orderedIds = Array.from(evt.to.querySelectorAll('.kanban-card'))
+                                .map(el => el.getAttribute('data-id'))
+                                .filter(id => id);
+
+                            @this.updateOrder(newStatusId, orderedIds);
+                        }
+                    });
+                });
+                
+                initAutoScroll();
+            });
+        }
+
+        function initAutoScroll() {
+            const kanbanContainer = document.getElementById('kanban-container');
+            if(!kanbanContainer || kanbanContainer._autoScrollInited) return;
+
+            kanbanContainer.addEventListener('wheel', (evt) => {
+                if (evt.deltaY !== 0) {
+                    evt.preventDefault();
+                    kanbanContainer.scrollLeft += evt.deltaY;
+                }
+            }, { passive: false });
+            
+            kanbanContainer._autoScrollInited = true;
+
+            // Dragging auto-scroll logic
+            let isDragging = false;
+            let scrollInterval;
+
+            document.addEventListener('dragstart', () => { isDragging = true; });
+            document.addEventListener('dragend', () => { 
+                isDragging = false; 
+                if(scrollInterval) clearInterval(scrollInterval);
+            });
+
+            kanbanContainer.addEventListener('dragover', (e) => {
+                if (!isDragging) return;
+                const threshold = 100;
+                const speed = 10;
+                const rect = kanbanContainer.getBoundingClientRect();
+                const x = e.clientX;
+
+                if(scrollInterval) clearInterval(scrollInterval);
+
+                if (x > rect.right - threshold) {
+                    scrollInterval = setInterval(() => { kanbanContainer.scrollLeft += speed; }, 16);
+                } else if (x < rect.left + threshold) {
+                    scrollInterval = setInterval(() => { kanbanContainer.scrollLeft -= speed; }, 16);
+                }
+            });
+
+            kanbanContainer.addEventListener('dragleave', () => { 
+                if(scrollInterval) clearInterval(scrollInterval); 
+            });
+        }
+
+        // Bind to Livewire Lifecycle ONLY ONCE
+        if (!window._kanbanEventsAttached) {
+            document.addEventListener('livewire:initialized', initKanban);
+            document.addEventListener('livewire:processed', initKanban);
+            window._kanbanEventsAttached = true;
+        }
+        
+        // Immediate init attempt
+        initKanban();
+    </script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af; 
+        }
+    </style>
 </div>
