@@ -42,14 +42,9 @@ class Index extends Component
         ]);
     }
 
-    public function create()
-    {
-        $this->reset(['name', 'email', 'password', 'password_confirmation', 'abogadoId', 'editMode']);
-        $this->showModal = true;
-    }
-
     public function edit($id)
     {
+        $this->reset(['name', 'email', 'password', 'password_confirmation']);
         $this->editMode = true;
         $this->abogadoId = $id;
         $abogado = User::findOrFail($id);
@@ -58,9 +53,19 @@ class Index extends Component
         $this->showModal = true;
     }
 
+    public function create()
+    {
+        $this->reset(['name', 'email', 'password', 'password_confirmation', 'abogadoId', 'editMode']);
+        $this->showModal = true;
+    }
+
     public function store()
     {
-        $this->validate();
+        $this->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|confirmed|min:8',
+        ]);
 
         if (!auth()->user()->tenant->canAddLawyerUser()) {
             $this->addError('email', 'Ha alcanzado el límite de abogados permitidos por su plan actual.');
@@ -89,24 +94,29 @@ class Index extends Component
 
     public function update()
     {
-        $this->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $this->abogadoId,
-        ]);
+        ];
+
+        if (!empty($this->password)) {
+            $rules['password'] = 'required|confirmed|min:8';
+        }
+
+        $this->validate($rules);
 
         $abogado = User::findOrFail($this->abogadoId);
         
-        $abogado->update([
+        $data = [
             'name' => $this->name,
             'email' => $this->email,
-        ]);
+        ];
 
         if (!empty($this->password)) {
-            $this->validate([
-                'password' => 'confirmed|min:8',
-            ]);
-            $abogado->update(['password' => Hash::make($this->password)]);
+            $data['password'] = Hash::make($this->password);
         }
+
+        $abogado->update($data);
 
         $this->showModal = false;
         $this->dispatch('notify', 'Abogado actualizado exitosamente');
