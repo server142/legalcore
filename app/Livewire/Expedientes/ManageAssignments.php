@@ -47,8 +47,8 @@ class ManageAssignments extends Component
             'ip_address' => request()->ip(),
         ]);
 
-        $this->dispatch('notify', 'Asignaciones actualizadas exitosamente');
-        $this->dispatch('assignments-updated');
+        session()->flash('message', 'Asignaciones actualizadas exitosamente.');
+        return redirect()->route('expedientes.index');
     }
 
     public function changeResponsible()
@@ -80,9 +80,8 @@ class ManageAssignments extends Component
             'ip_address' => request()->ip(),
         ]);
 
-        $this->dispatch('notify', 'Abogado responsable actualizado exitosamente');
-        $this->dispatch('responsible-changed');
-        $this->expediente->refresh();
+        session()->flash('message', 'Abogado responsable actualizado exitosamente.');
+        return redirect()->route('expedientes.index');
     }
 
     public function render()
