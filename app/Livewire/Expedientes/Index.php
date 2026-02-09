@@ -92,7 +92,7 @@ class Index extends Component
         $expediente = Expediente::findOrFail($id);
         
         // Permission Check
-        if (!auth()->user()->hasRole('super_admin') && !auth()->user()->can('manage expedientes')) {
+        if (!auth()->user()->hasRole('super_admin') && !auth()->user()->hasRole('admin') && !auth()->user()->can('manage expedientes')) {
              $this->dispatch('notify', ['type' => 'error', 'message' => 'No tienes permiso para eliminar expedientes.']);
              return;
         }
@@ -118,6 +118,7 @@ class Index extends Component
     public function restore($id)
     {
         if (!auth()->user()->can('manage expedientes') && !auth()->user()->hasRole(['super_admin', 'admin'])) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'No tienes permiso para restaurar expedientes.']);
             return;
         }
 

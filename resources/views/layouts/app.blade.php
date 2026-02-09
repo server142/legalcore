@@ -175,7 +175,12 @@
         </div>
         <!-- Notifications Toast -->
         <div x-data="{ show: false, message: '' }" 
-             x-on:notify.window="show = true; message = $event.detail; setTimeout(() => show = false, 3000)"
+             x-on:notify.window="
+                let detail = $event.detail;
+                message = (typeof detail === 'object' && detail !== null) ? (detail.message || JSON.stringify(detail)) : detail;
+                show = true; 
+                setTimeout(() => show = false, 3000)
+             "
              class="fixed bottom-5 right-5 z-50">
             <div x-show="show" x-transition.duration.300ms 
                  class="bg-gray-800 text-white px-6 py-3 rounded-lg shadow-xl flex items-center">
