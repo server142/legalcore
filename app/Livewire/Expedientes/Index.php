@@ -86,6 +86,28 @@ class Index extends Component
         }
     }
 
+    public function delete($id)
+    {
+        $expediente = Expediente::findOrFail($id);
+        
+        // Permission Check
+        if (!auth()->user()->hasRole('super_admin') && !auth()->user()->can('manage expedientes')) {
+             $this->dispatch('notify', ['type' => 'error', 'message' => 'No tienes permiso para eliminar expedientes.']);
+             return;
+        }
+
+        // Safety Check 1: Paid Invoices
+        if ($expediente->facturas()->where('estado', 'pagada')->exists()) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'No se puede eliminar: El expediente tiene facturas pagadas asociadas.']);
+            return;
+        }
+
+        // Perform Soft Delete
+        $expediente->delete();
+        
+        $this->dispatch('notify', 'Expediente eliminado (enviado a papelera) exitosamente.');
+    }
+
     public function render()
     {
         $user = auth()->user();
