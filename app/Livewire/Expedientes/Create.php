@@ -60,19 +60,30 @@ class Create extends Component
         }
     }
 
-    protected $rules = [
-        'numero' => 'required|unique:expedientes,numero',
-        'titulo' => 'required|string|max:255',
-        'materia' => 'required|string|max:255',
-        'juzgado' => 'nullable|string|max:255',
-        'cliente_id' => 'required|exists:clientes,id',
-        'abogado_responsable_id' => 'required|exists:users,id',
-        'estado_procesal_id' => 'nullable|exists:estados_procesales,id',
-        'fecha_inicio' => 'nullable|date',
-        'vencimiento_termino' => 'nullable|date',
-        'honorarios_totales' => 'nullable|numeric|min:0',
-        'anticipo_inicial' => 'nullable|numeric|min:0',
-    ];
+    protected function rules()
+    {
+        return [
+            'numero' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('expedientes')->where(function ($query) {
+                    return $query->where('juzgado', $this->juzgado)
+                                 ->where('tenant_id', auth()->user()->tenant_id);
+                }),
+            ],
+            'titulo' => 'required|string|max:255',
+            'materia' => 'required|string|max:255',
+            'juzgado' => 'nullable|string|max:255',
+            'cliente_id' => 'required|exists:clientes,id',
+            'abogado_responsable_id' => 'required|exists:users,id',
+            'estado_procesal_id' => 'nullable|exists:estados_procesales,id',
+            'fecha_inicio' => 'nullable|date',
+            'vencimiento_termino' => 'nullable|date',
+            'honorarios_totales' => 'nullable|numeric|min:0',
+            'anticipo_inicial' => 'nullable|numeric|min:0',
+        ];
+    }
 
     public function save()
     {
