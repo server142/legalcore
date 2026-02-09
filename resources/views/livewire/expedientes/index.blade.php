@@ -47,13 +47,18 @@
     </div>
 
     <div class="mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2 flex items-center gap-3">
-            <div class="flex-1 relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                </div>
-                <input wire:model.live="search" type="text" placeholder="Buscar expedientes por número, título o cliente..." class="block w-full pl-10 pr-3 py-2 border-none focus:ring-0 text-sm" />
+        <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
             </div>
+            <input 
+                wire:model.live="search" 
+                type="text" 
+                placeholder="Buscar expedientes por número, título o cliente..." 
+                class="block w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl leading-5 placeholder-gray-400 text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition duration-150 ease-in-out shadow-sm sm:text-sm" 
+            />
         </div>
     </div>
 
