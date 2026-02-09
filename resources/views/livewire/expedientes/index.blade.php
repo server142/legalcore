@@ -140,10 +140,7 @@
             @foreach($kanbanData as $col)
                 <div 
                     wire:key="col-{{ $col['estado']->id ?? 'null' }}"
-                    class="flex-shrink-0 w-80 bg-gray-100 rounded-xl flex flex-col max-h-full border border-gray-200 shadow-sm transition-colors duration-200"
-                    ondragover="event.preventDefault(); this.classList.add('bg-indigo-50', 'border-indigo-300'); return false;"
-                    ondragleave="this.classList.remove('bg-indigo-50', 'border-indigo-300')"
-                    ondrop="this.classList.remove('bg-indigo-50', 'border-indigo-300'); handleDrop(event, {{ $col['estado']->id ?? 'null' }})"
+                    class="flex-shrink-0 w-80 bg-gray-100 rounded-xl flex flex-col max-h-full border border-gray-200 shadow-sm"
                 >
                     {{-- Column Header --}}
                     <div class="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-xl sticky top-0 z-10">
@@ -155,14 +152,15 @@
                         </span>
                     </div>
 
-                    {{-- Cards Container --}}
-                    <div class="p-3 space-y-3 overflow-y-auto flex-1 custom-scrollbar">
+                    {{-- Cards Container (Sortable List) --}}
+                    <div 
+                        class="p-3 space-y-3 overflow-y-auto flex-1 custom-scrollbar kanban-list"
+                        data-status-id="{{ $col['estado']->id ?? 'null' }}"
+                    >
                         @forelse($col['expedientes'] as $exp)
                             <div 
                                 wire:key="card-{{ $exp->id }}"
-                                draggable="true"
-                                ondragstart="event.dataTransfer.setData('text/plain', '{{ $exp->id }}'); event.dataTransfer.setData('expId', '{{ $exp->id }}'); event.dataTransfer.effectAllowed = 'move'; this.classList.add('opacity-50')"
-                                ondragend="this.classList.remove('opacity-50')"
+                                data-id="{{ $exp->id }}"
                                 class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm cursor-move hover:shadow-md hover:border-indigo-300 transition group relative"
                             >
                                 <div class="flex justify-between items-start mb-2">
@@ -202,7 +200,7 @@
                                 </div>
                             </div>
                         @empty
-                            <div class="text-center py-6 text-gray-400 text-xs border-2 border-dashed border-gray-200 rounded-lg">
+                            <div class="no-drag text-center py-6 text-gray-400 text-xs border-2 border-dashed border-gray-200 rounded-lg">
                                 Sin expedientes
                             </div>
                         @endforelse
@@ -211,66 +209,58 @@
             @endforeach
         </div>
 
+        <!-- SortableJS -->
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
         <script>
-            // Ensure function is global
-            window.handleDrop = function(event, newStatusId) {
-                event.preventDefault();
-                event.stopPropagation();
-                
-                // Get ID from dataTransfer (support for different browser implementations)
-                const expId = event.dataTransfer.getData("text/plain") || event.dataTransfer.getData("expId");
-                
-                if (expId) {
-                    console.log('Moviendo expediente:', expId, 'a estado:', newStatusId);
-                    // Call Livewire component method safely
-                    @this.call('updateStatus', expId, newStatusId);
-                }
-            };
-
-            // Auto-scroll functionality for drag and drop
-            document.addEventListener('DOMContentLoaded', () => {
-                const container = document.getElementById('kanban-container');
-                if (!container) return;
-
-                let isDragging = false;
-                let scrollInterval;
-
-                // Detect drag start/end globally or on container
-                document.addEventListener('dragstart', () => { isDragging = true; });
-                document.addEventListener('dragend', () => { 
-                    isDragging = false; 
-                    clearInterval(scrollInterval);
-                });
-
-                // Monitor drag movement
-                container.addEventListener('dragover', (e) => {
-                    if (!isDragging) return;
-
-                    const threshold = 100; // Distance from edge to trigger scroll
-                    const speed = 10; // Scroll speed
-                    const rect = container.getBoundingClientRect();
-                    const x = e.clientX;
-
-                    clearInterval(scrollInterval);
-
-                    // Scroll Right
-                    if (x > rect.right - threshold) {
-                        scrollInterval = setInterval(() => {
-                            container.scrollLeft += speed;
-                        }, 16);
-                    }
-                    // Scroll Left
-                    else if (x < rect.left + threshold) {
-                        scrollInterval = setInterval(() => {
-                            container.scrollLeft -= speed;
-                        }, 16);
-                    }
-                });
-
-                container.addEventListener('dragleave', () => {
-                    clearInterval(scrollInterval);
-                });
+            document.addEventListener('livewire:initialized', () => {
+                initKanban();
             });
+
+            // Re-init on Livewire update (if DOM is replaced)
+            document.addEventListener('livewire:processed', () => {
+               // In some cases we might need to re-init if the list status changed
+            });
+
+            function initKanban() {
+                const lists = document.querySelectorAll('.kanban-list');
+                
+                lists.forEach(list => {
+                    new Sortable(list, {
+                        group: 'expedientes', // Allow dragging between lists
+                        animation: 150,
+                        ghostClass: 'bg-indigo-50', // Class for the placeholder
+                        dragClass: 'opacity-50',
+                        filter: '.no-drag', // Do not drag empty state
+                        onEnd: function (evt) {
+                            const itemEl = evt.item;
+                            const newStatusId = evt.to.getAttribute('data-status-id');
+                            const oldStatusId = evt.from.getAttribute('data-status-id');
+                            
+                            // Get ordered IDs of the target list
+                            const orderedIds = Array.from(evt.to.children)
+                                .map(el => el.getAttribute('data-id'))
+                                .filter(id => id); // Filter out nulls
+
+                            console.log('Moved to status:', newStatusId, 'Order:', orderedIds);
+
+                            // Call Livewire to update order and status
+                            @this.updateOrder(newStatusId, orderedIds);
+                        }
+                    });
+                });
+            }
+            
+            // Initial load
+            initKanban();
+
+            // Auto-scroll logic for board container (Horizontal)
+            const kanbanContainer = document.getElementById('kanban-container');
+            if(kanbanContainer) {
+                 kanbanContainer.addEventListener('wheel', (evt) => {
+                    if (evt.deltaY > 0) kanbanContainer.scrollLeft += 100;
+                    else kanbanContainer.scrollLeft -= 100;
+                }, { passive: true }); // Simple horizontal scroll with mouse wheel
+            }
         </script>
         
         <style>

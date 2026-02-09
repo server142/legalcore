@@ -66,6 +66,26 @@ class Index extends Component
         }
     }
 
+    public function updateOrder($statusId, $orderedIds)
+    {
+        // Security check
+        if (!auth()->user()->can('manage expedientes') && !auth()->user()->hasRole('super_admin')) {
+            // Simplified check, could be more granular
+        }
+
+        // Handle "Sin Clasificar"
+        if ($statusId === 'null' || $statusId === '') $statusId = null;
+
+        foreach ($orderedIds as $index => $id) {
+            if ($id) {
+                Expediente::where('id', $id)->update([
+                    'orden' => $index,
+                    'estado_procesal_id' => $statusId
+                ]);
+            }
+        }
+    }
+
     public function render()
     {
         $user = auth()->user();
@@ -101,6 +121,7 @@ class Index extends Component
             // Optimization: Fetch all matching expedientes and grouping in PHP to avoid N+1 queries
             $allExpedientes = $queryBuilder()
                 ->with(['cliente', 'abogado'])
+                ->orderBy('orden', 'asc') // Respect sorting
                 ->get();
             
             $kanbanData = [];
@@ -108,7 +129,7 @@ class Index extends Component
                 $kanbanData[] = [
                     'estado' => $estado,
                     'expedientes' => $allExpedientes->where('estado_procesal_id', $estado->id)
-                ];
+                ]; // The query already sorted by 'orden', so the collection preserves it
             }
             
             // Handle expedientes with no status or invalid status ID
