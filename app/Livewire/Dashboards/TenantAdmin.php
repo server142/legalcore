@@ -91,15 +91,19 @@ class TenantAdmin extends Component
             $docsCount = \App\Models\Documento::whereMonth('created_at', $monthDate->month)
                 ->whereYear('created_at', $monthDate->year)
                 ->whereIn('expediente_id', function($query) use ($isAbogado, $user) {
-                    $query->select('id')->from('expedientes')->whereNull('deleted_at');
+                    // Use Eloquent Model instead of plain table to support orWhereHas
+                    $expQuery = \App\Models\Expediente::select('id');
+                    
                     if ($isAbogado) {
-                        $query->where(function($q) use ($user) {
+                        $expQuery->where(function($q) use ($user) {
                             $q->where('abogado_responsable_id', $user->id)
                               ->orWhereHas('assignedUsers', function($q2) use ($user) {
                                   $q2->where('users.id', $user->id);
                               });
                         });
                     }
+                    
+                    return $query->from($expQuery);
                 })
                 ->count();
 
