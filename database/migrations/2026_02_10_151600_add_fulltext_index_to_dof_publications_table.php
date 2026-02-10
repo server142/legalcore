@@ -13,10 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('dof_publications', function (Blueprint $table) {
-            // Add fulltext index to titulo for fast searches
-            // Note: If using MySQL < 5.6 or MariaDB < 10.0.5, this might not support InnoDB.
-            // But modern versions do.
-            $table->fullText('titulo');
+            // Add fulltext index to titulo and resumen for fast searches
+            $table->fullText(['titulo', 'resumen']);
         });
     }
 
@@ -26,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('dof_publications', function (Blueprint $table) {
-            $table->dropFullText(['titulo']);
+            $table->dropFullText(['titulo', 'resumen']);
         });
     }
 };
