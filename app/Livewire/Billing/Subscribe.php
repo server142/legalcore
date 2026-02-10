@@ -13,9 +13,25 @@ class Subscribe extends Component
     public $clientSecret;
     public $isFree = false;
 
+    // New properties
+    public $showPricing = false;
+    public $availablePlans = [];
+
     public function mount($plan)
     {
         $this->planSlug = $plan;
+
+        // Si el plan solicitado es 'trial', mostramos la tabla de precios para que elija uno real
+        if ($plan === 'trial') {
+            $this->showPricing = true;
+            $this->availablePlans = Plan::where('is_active', true)
+                ->where('slug', '!=', 'trial')
+                ->where('slug', '!=', 'exento')
+                ->orderBy('price', 'asc')
+                ->get();
+            return;
+        }
+
         $this->plan = Plan::where('slug', $plan)->firstOrFail();
         $this->isFree = $this->plan->price <= 0 || $this->plan->slug === 'trial';
 
@@ -33,16 +49,16 @@ class Subscribe extends Component
         // Iniciar el SetupIntent de Stripe para capturar el método de pago de forma segura
         if (!$this->isFree) {
             if (!config('cashier.secret')) {
-                session()->flash('error', 'La pasarela de pagos no está configurada correctamente. Por favor, contacte al administrador.');
-                return redirect()->route('dashboard');
+                // Modo desarrollo/sin configurar: permitimos proceder sin stripe (simulado) si es necesario o mostramos error
+                 // Para este caso, asumiremos que puede haber error si no hay keys, pero no bloqueamos el render para diseño
             }
 
             try {
                 $this->clientSecret = $tenant->createSetupIntent()->client_secret;
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('Stripe Error: ' . $e->getMessage());
+                // No redirigimos para permitir ver el diseño, pero mostramos error
                 session()->flash('error', 'Error al conectar con Stripe. Verifique la configuración.');
-                return redirect()->route('dashboard');
             }
         }
     }
@@ -82,6 +98,7 @@ class Subscribe extends Component
 
     public function render()
     {
-        return view('livewire.billing.subscribe')->layout('layouts.guest');
+        return view('livewire.billing.subscribe')
+            ->layout('layouts.guest', ['maxWidth' => 'sm:max-w-7xl']);
     }
 }

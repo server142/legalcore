@@ -71,7 +71,7 @@
             <div class="absolute bottom-20 right-20 w-40 h-40 bg-white/10 rounded-full blur-3xl float-animation" style="animation-delay: 2s;"></div>
             <div class="absolute top-1/2 left-1/3 w-24 h-24 bg-white/10 rounded-full blur-2xl float-animation" style="animation-delay: 4s;"></div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg glass-effect fade-in-up relative z-10">
+            <div class="w-full {{ $maxWidth ?? 'sm:max-w-md' }} mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg glass-effect fade-in-up relative z-10">
                 <div class="flex justify-center mb-8">
                     <!-- Logo -->
                     <a href="/" class="text-3xl font-bold text-gray-900 tracking-wider hover:text-indigo-600 transition">

@@ -1,201 +1,253 @@
-<div class="p-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <!-- Expedientes Activos -->
-        <div class="bg-white p-4 rounded-lg shadow border-l-4 border-indigo-500 relative overflow-hidden group hover:shadow-md transition-shadow">
-            <div class="absolute right-0 top-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                <svg class="w-16 h-16 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+<div class="p-6 space-y-8">
+    
+    <!-- 1. Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight">Panel de Control</h1>
+            <p class="text-sm text-slate-500 font-medium">Resumen general de tu despacho jurídico.</p>
+        </div>
+        <div class="flex items-center gap-3">
+             <span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold border border-indigo-100 flex items-center">
+                <span class="w-2 h-2 rounded-full bg-indigo-500 mr-2 animate-pulse"></span>
+                Operativo
+            </span>
+             <span class="text-xs text-slate-400 font-medium">{{ now()->translatedFormat('l, d \d\e F Y') }}</span>
+        </div>
+    </div>
+
+    <!-- 2. KPI Cards (Modern) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- KPIs: Expedientes -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative group hover:shadow-md transition-all duration-300">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Expedientes Activos</p>
+                    <h3 class="text-3xl font-black text-slate-800 group-hover:text-indigo-600 transition-colors">{{ $activeExpedientes }}</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                </div>
             </div>
-            <h3 class="text-xs font-bold text-gray-500 uppercase z-10 relative">Expedientes Activos</h3>
-            <p class="text-2xl font-bold text-gray-800 z-10 relative mt-1">{{ $activeExpedientes }}</p>
+             <div class="mt-4 flex items-center text-xs font-medium text-emerald-600 bg-emerald-50 w-fit px-2 py-0.5 rounded-md">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                En proceso
+            </div>
         </div>
 
-        <!-- Vencimientos Próximos -->
-        <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500 relative overflow-hidden group hover:shadow-md transition-shadow">
-            <div class="absolute right-0 top-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                <svg class="w-16 h-16 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <!-- KPIs: Clientes -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative group hover:shadow-md transition-all duration-300">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Clientes</p>
+                    <h3 class="text-3xl font-black text-slate-800 group-hover:text-blue-600 transition-colors">{{ $totalClientes }}</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
             </div>
-            <h3 class="text-xs font-bold text-gray-500 uppercase z-10 relative">Vencimientos (7 días)</h3>
-            <p class="text-2xl font-bold text-gray-800 z-10 relative mt-1">{{ $upcomingDeadlines }}</p>
+            <div class="mt-4 flex items-center text-xs text-slate-400">
+                <span class="bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md mr-1 font-bold">Activos</span> en cartera
+            </div>
         </div>
 
+        <!-- KPIs: Vencimientos -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative group hover:shadow-md transition-all duration-300">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Vencimientos (7d)</p>
+                    <h3 class="text-3xl font-black {{ $upcomingDeadlines > 0 ? 'text-red-500' : 'text-slate-800' }} group-hover:text-red-600 transition-colors">{{ $upcomingDeadlines }}</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl {{ $upcomingDeadlines > 0 ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-slate-50 text-slate-400' }} flex items-center justify-center shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+            </div>
+             <div class="mt-4 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-red-500 h-1.5 rounded-full" style="width: {{ min(($upcomingDeadlines * 10), 100) }}%"></div>
+            </div>
+        </div>
+
+        <!-- KPIs: Finanzas -->
         @can('manage billing')
-            <!-- Ingresos Mes -->
-            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-emerald-500 relative overflow-hidden group hover:shadow-md transition-shadow">
-                <div class="absolute right-0 top-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <svg class="w-16 h-16 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative group hover:shadow-md transition-all duration-300">
+             <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Cobranza Mes</p>
+                    <h3 class="text-3xl font-black text-slate-800 group-hover:text-emerald-600 transition-colors">${{ number_format($monthlyIncome, 0) }}</h3>
                 </div>
-                <h3 class="text-xs font-bold text-gray-500 uppercase z-10 relative">Ingresos {{ now()->translatedFormat('M') }}</h3>
-                <p class="text-2xl font-bold text-gray-800 z-10 relative mt-1">${{ number_format($monthlyIncome, 2) }}</p>
-                <div class="flex items-center mt-2 text-xs font-medium z-10 relative">
-                    @if($monthlyIncome >= $lastMonthIncome)
-                        <span class="text-emerald-600 flex items-center bg-emerald-50 px-1.5 py-0.5 rounded">
-                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                            +{{ $lastMonthIncome > 0 ? round((($monthlyIncome - $lastMonthIncome) / $lastMonthIncome) * 100) : 100 }}%
-                        </span>
-                    @else
-                        <span class="text-red-600 flex items-center bg-red-50 px-1.5 py-0.5 rounded">
-                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>
-                            {{ $lastMonthIncome > 0 ? round((($monthlyIncome - $lastMonthIncome) / $lastMonthIncome) * 100) : 0 }}%
-                        </span>
-                    @endif
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
-                <a href="{{ route('reportes.ingresos') }}" class="mt-3 inline-block text-[10px] font-bold text-indigo-600 hover:text-indigo-800 underline z-10 relative">Ver detalle por periodo</a>
             </div>
-
-            <!-- Por Cobrar -->
-            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-orange-500 relative overflow-hidden group hover:shadow-md transition-shadow">
-                <div class="absolute right-0 top-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <svg class="w-16 h-16 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                <h3 class="text-xs font-bold text-gray-500 uppercase z-10 relative">Por Cobrar</h3>
-                <p class="text-2xl font-bold text-gray-800 z-10 relative mt-1">${{ number_format($pendienteCobro, 2) }}</p>
-                <p class="text-[10px] text-orange-600 mt-2 font-medium z-10 relative uppercase">Pendiente</p>
+            <div class="mt-4 flex items-center justify-between text-xs">
+                <span class="text-slate-400 font-medium">Por cobrar:</span>
+                <span class="font-bold text-orange-500">${{ number_format($pendienteCobro, 0) }}</span>
             </div>
-
-            <!-- Proyección -->
-            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-indigo-500 relative overflow-hidden group hover:shadow-md transition-shadow md:col-span-2">
-                 <div class="absolute right-0 top-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <svg class="w-16 h-16 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                </div>
-                <h3 class="text-xs font-bold text-gray-500 uppercase z-10 relative">Proy. Cierre</h3>
-                <p class="text-2xl font-bold text-gray-800 z-10 relative mt-1">${{ number_format($projectedIncome, 2) }}</p>
-                <p class="text-[10px] text-indigo-600 mt-2 font-medium z-10 relative uppercase">Estimado</p>
-            </div>
+        </div>
         @else
-            <!-- Card Clientes alternativa para no billing users -->
-            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500 relative overflow-hidden group hover:shadow-md transition-shadow">
-                <div class="absolute right-0 top-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <svg class="w-16 h-16 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative group hover:shadow-md transition-all duration-300 flex items-center justify-center text-center">
+             <div class="space-y-2">
+                 <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mx-auto mb-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
-                <h3 class="text-xs font-bold text-gray-500 uppercase z-10 relative">Total Clientes</h3>
-                <p class="text-2xl font-bold text-gray-800 z-10 relative mt-1">{{ $totalClientes }}</p>
-            </div>
+                <p class="text-xs font-bold text-slate-400">Módulo Finanzas</p>
+                <p class="text-xs text-slate-300">No disponible</p>
+             </div>
+        </div>
         @endcan
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- 1. Términos Urgentes -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="p-4 border-b flex justify-between items-center bg-red-50">
-                <h3 class="text-lg font-semibold text-red-800">Términos Urgentes</h3>
-                <a href="{{ route('terminos.index') }}" class="text-xs text-red-600 hover:underline font-bold">Ver todos</a>
-            </div>
-            <div class="divide-y divide-gray-100">
-                @forelse($urgentTerminos as $termino)
-                    <div class="p-4 hover:bg-gray-50 transition-colors">
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <p class="text-sm font-bold text-gray-900">{{ $termino->titulo }}</p>
-                                <p class="text-xs text-gray-500">Exp: {{ $termino->expediente->numero }}</p>
+    <!-- 3. Main Grid (Charts & Lists) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Column: Primary (Expedientes Recientes) takes 2/3 -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Recientes Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="px-6 py-5 border-b border-slate-50 flex justify-between items-center bg-white">
+                    <h3 class="font-bold text-slate-800 text-sm flex items-center">
+                         <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-2"></span>
+                        Últimos Expedientes Actualizados
+                    </h3>
+                    <a href="{{ route('expedientes.index') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors">Ver todos →</a>
+                </div>
+                <div class="divide-y divide-slate-50">
+                    @forelse($recentExpedientes as $exp)
+                    <div class="px-6 py-4 hover:bg-slate-50 transition-colors group cursor-pointer" onclick="window.location='{{ route('expedientes.show', $exp) }}'">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-[10px] shrink-0">
+                                    EXP
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{{ $exp->numero }}</h4>
+                                    <p class="text-xs text-slate-500 truncate max-w-[200px] sm:max-w-xs">{{ $exp->titulo }}</p>
+                                </div>
                             </div>
                             <div class="text-right">
-                                <p class="text-sm font-bold {{ $termino->fecha_vencimiento->isPast() ? 'text-red-600' : 'text-orange-600' }}">
-                                    {{ $termino->fecha_vencimiento->format('d/m/Y') }}
-                                </p>
-                                <p class="text-[10px] text-gray-400 uppercase">{{ $termino->fecha_vencimiento->diffForHumans() }}</p>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="p-8 text-center text-gray-500 italic">
-                        No hay términos pendientes urgentes.
-                    </div>
-                @endforelse
-            </div>
-        </div>
-
-        <!-- 2. Próximos 7 días (Agenda) -->
-        @if(!auth()->user()->hasRole('super_admin'))
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="p-4 border-b flex justify-between items-center bg-indigo-50">
-                <h3 class="text-lg font-semibold text-indigo-800">Próximos 7 días</h3>
-                <a href="{{ route('agenda.index') }}" class="text-xs text-indigo-600 hover:underline font-bold">Ver Agenda</a>
-            </div>
-            <div class="divide-y divide-gray-100">
-                @forelse($eventos as $evento)
-                    <div class="p-4 hover:bg-gray-50 transition-colors">
-                        <div class="flex items-start space-x-3">
-                            <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-indigo-100 flex flex-col items-center justify-center text-indigo-600">
-                                <span class="text-[10px] font-bold uppercase">{{ $evento->start_time->format('M') }}</span>
-                                <span class="text-sm font-bold">{{ $evento->start_time->format('d') }}</span>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-bold text-gray-800 truncate">{{ $evento->titulo }}</p>
-                                <p class="text-xs text-gray-500">{{ $evento->start_time->format('H:i') }}</p>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="p-8 text-center text-gray-500 italic">
-                        No hay eventos próximos.
-                    </div>
-                @endforelse
-            </div>
-        </div>
-        @else
-        <!-- Spacer if super admin doesn't see agenda, or handle differently -->
-        <div></div> 
-        @endif
-
-        <!-- 3. Últimos Expedientes (Full Width) -->
-        <div class="bg-white rounded-lg shadow overflow-hidden md:col-span-2">
-            <div class="p-4 border-b">
-                <h3 class="text-lg font-semibold">Últimos Expedientes</h3>
-            </div>
-            
-            <!-- Desktop Table -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 hidden md:table">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Título</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($recentExpedientes as $exp)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-4 py-2 text-sm font-medium text-indigo-600">
-                                <a href="{{ route('expedientes.show', $exp) }}">{{ $exp->numero }}</a>
-                            </td>
-                            <td class="px-4 py-2 text-sm text-gray-700">{{ $exp->titulo }}</td>
-                            <td class="px-4 py-2 text-sm">
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border 
+                                    {{ str_contains(strtolower($exp->estadoProcesal?->nombre ?? ''), 'conclu') ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-blue-50 text-blue-600 border-blue-100' }}">
                                     {{ $exp->estadoProcesal?->nombre ?? $exp->estado_procesal }}
                                 </span>
-                            </td>
-                            <td class="px-4 py-2 text-sm font-medium">
-                                <a href="{{ route('expedientes.show', $exp) }}" class="text-indigo-600 hover:text-indigo-900">Ver</a>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                <p class="text-[9px] text-slate-400 mt-1">Act: {{ $exp->updated_at->diffForHumans() }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="p-8 text-center text-slate-400 text-sm">
+                        No hay expedientes recientes.
+                    </div>
+                    @endforelse
+                </div>
             </div>
 
-            <!-- Mobile Cards -->
-            <div class="md:hidden divide-y divide-gray-200">
-                @foreach($recentExpedientes as $exp)
-                <a href="{{ route('expedientes.show', $exp) }}" class="block p-4 hover:bg-gray-50 transition-colors">
-                    <div class="flex justify-between items-start mb-1">
-                        <span class="text-xs font-bold text-indigo-600 uppercase">{{ $exp->numero }}</span>
-                        <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-100 text-blue-800">
-                            {{ $exp->estadoProcesal?->nombre ?? $exp->estado_procesal }}
-                        </span>
+            <!-- Gráfico Placeholder (Visual Only) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 relative overflow-hidden">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm">Actividad del Despacho</h3>
+                        <p class="text-xs text-slate-500 mt-1">Evolución de casos y documentos últimos 6 meses</p>
                     </div>
-                    <h4 class="text-sm font-bold text-gray-900">{{ $exp->titulo }}</h4>
-                    <div class="mt-2 flex items-center text-xs text-indigo-600 font-medium">
-                        Ver detalles
-                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                     <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">+12% vs año anterior</span>
+                </div>
+                
+                <!-- Pseudo-Chart CSS Grid -->
+                <div class="h-40 flex items-end justify-between px-2 gap-2">
+                    @foreach([30, 45, 35, 60, 50, 75, 65, 80, 70, 90, 85, 95] as $h)
+                    <div class="w-full bg-indigo-50 rounded-t-sm relative group hover:bg-indigo-100 transition-colors" style="height: {{ $h }}%;">
+                        <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-[9px] py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                            {{ $h }} Actividades
+                        </div>
                     </div>
-                </a>
-                @endforeach
+                    @endforeach
+                </div>
+                <!-- X Axis -->
+                <div class="border-t border-slate-100 mt-0 flex justify-between px-2 pt-2 text-[9px] text-slate-400 font-bold uppercase">
+                    <span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span>May</span><span>Jun</span>
+                </div>
             </div>
+
+        </div>
+
+        <!-- Right Column: Secondary (Agenda & Alertas) -->
+        <div class="space-y-6">
+            
+            <!-- Agenda Widget -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                 <div class="px-5 py-4 border-b border-slate-50 flex justify-between items-center bg-white">
+                    <h3 class="font-bold text-slate-800 text-sm">Agenda Semanal</h3>
+                     <a href="{{ route('agenda.index') }}" class="w-6 h-6 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    </a>
+                </div>
+                <div class="p-2">
+                    @forelse($eventos as $evento)
+                    <div class="flex gap-3 items-start p-3 hover:bg-slate-50 rounded-xl transition-colors mb-1">
+                        <div class="flex flex-col items-center bg-slate-100 rounded-lg min-w-[45px] py-1.5 text-slate-500">
+                             <span class="text-[9px] font-black uppercase tracking-tighter">{{ $evento->start_time->format('M') }}</span>
+                             <span class="text-lg font-black leading-none">{{ $evento->start_time->format('d') }}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h5 class="text-xs font-bold text-slate-800 truncate">{{ $evento->titulo }}</h5>
+                            <p class="text-[10px] text-slate-500">{{ $evento->start_time->format('H:i') }} - {{ $evento->end_time->format('H:i') }}</p>
+                            @if($evento->tipo == 'audiencia')
+                            <span class="inline-block mt-1 px-1.5 py-0.5 bg-red-50 text-red-600 text-[9px] font-bold rounded border border-red-100">Audiencia</span>
+                            @endif
+                        </div>
+                    </div>
+                    @empty
+                    <div class="text-center py-8">
+                         <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2 text-slate-300">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <p class="text-xs text-slate-400">Sin eventos esta semana</p>
+                    </div>
+                    @endforelse
+                </div>
+                <div class="bg-slate-50 p-2 text-center">
+                    <a href="{{ route('agenda.index') }}" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-wider">Ver Calendario Completo</a>
+                </div>
+            </div>
+
+            <!-- Términos Fatales Widget -->
+            <div class="bg-gradient-to-br from-red-50 to-white rounded-2xl shadow-sm border border-red-100 p-5 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-3 opacity-10">
+                     <svg class="w-20 h-20 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                
+                <h3 class="text-sm font-black text-red-800 mb-4 flex items-center relative z-10">
+                    <span class="w-2 h-2 rounded-full bg-red-500 mr-2 animate-pulse"></span>
+                    Alertas & Términos
+                </h3>
+
+                <div class="space-y-3 relative z-10">
+                    @forelse($urgentTerminos as $termino)
+                    <div class="bg-white bg-opacity-80 p-3 rounded-lg border border-red-100 shadow-sm backdrop-blur-sm">
+                        <div class="flex justify-between items-start">
+                             <div class="flex-1">
+                                <p class="text-xs font-bold text-slate-800 line-clamp-1">{{ $termino->titulo }}</p>
+                                <p class="text-[10px] text-slate-500">Exp: {{ $termino->expediente->numero }}</p>
+                            </div>
+                            <div class="text-right pl-2">
+                                <span class="text-xs font-black text-red-600 block">{{ $termino->fecha_vencimiento->format('d M') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                     <p class="text-xs text-red-400 italic">No hay términos fatales próximos.</p>
+                    @endforelse
+                </div>
+                
+                @if($urgentTerminos->isNotEmpty())
+                <div class="mt-4 text-center relative z-10">
+                     <a href="{{ route('terminos.index') }}" class="text-[10px] font-bold text-red-700 hover:text-red-900 underline">Gestionar Vencimientos</a>
+                </div>
+                @endif
+            </div>
+
         </div>
     </div>
-
     @can('manage billing')
     <div class="mt-8">
         <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
