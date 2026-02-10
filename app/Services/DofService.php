@@ -57,9 +57,14 @@ class DofService
                     $titulo = $this->cleanText($nota['titulo'] ?? 'Sin título');
                     $resumen = $this->cleanText($nota['resumen'] ?? strip_tags($nota['contenido'] ?? ''));
                     
-                    // Generate Embedding (Semantic Search)
-                    $textToEmbed = $titulo . "\n" . $resumen;
-                    $embedding = $aiService->getEmbeddings($textToEmbed);
+                    // Generate Embedding (Semantic Search) - Protected
+                    try {
+                        $textToEmbed = substr($titulo . "\n" . $resumen, 0, 8000); // Limit context length
+                        $embedding = $aiService->getEmbeddings($textToEmbed);
+                    } catch (\Exception $e) {
+                        Log::warning("Embedding failed for DOF Nota {$nota['codNota']}: " . $e->getMessage());
+                        $embedding = null;
+                    }
 
                     DofPublication::create([
                         'fecha_publicacion' => $date->format('Y-m-d'),
@@ -73,6 +78,9 @@ class DofService
                         'embedding_data' => $embedding ? json_encode($embedding) : null,
                     ]);
                     $count++;
+                    
+                    // Prevent rate limits
+                    usleep(rand(100000, 300000));
                 }
                 
                 return $count;
@@ -137,14 +145,15 @@ class DofService
                     ->pluck('id');
 
                 if ($candidateIds->isEmpty()) {
-                    $candidateIds = DofPublication::latest('fecha_publicacion')->take(500)->pluck('id');
+                    $candidateIds = DofPublication::latest('fecha_publicacion')->take(100)->pluck('id');
                 }
 
-                $candidates = DofPublication::whereIn('id', $candidateIds)->limit(300)->get();
+                $candidates = DofPublication::whereIn('id', $candidateIds)->limit(100)->get();
 
                 // Calculate similarity and FILTER by threshold to "reduce" results
                 $scoredCandidates = $candidates->map(function ($item) use ($vector) {
-                    $itemVec = $item->embedding_data; 
+                    $itemVec = is_string($item->embedding_data) ? json_decode($item->embedding_data, true) : $item->embedding_data;
+                     
                     if (!$itemVec || !is_array($itemVec)) {
                         $item->score = 0;
                         return $item;
