@@ -135,13 +135,15 @@ class DofService
             if ($vector) {
                 // CANDIDATE POOL: Get the most relevant candidates via FullText first to reduce vector calculations
                 // This prevents memory exhaustion and speed up the process significantly.
+                $searchTerms = collect(explode(' ', $queryRaw))->map(fn($term) => "+{$term}*")->implode(' ');
+                
                 $candidateIds = DofPublication::query()
                     ->select('id')
-                    ->whereRaw("MATCH(titulo, resumen) AGAINST(? IN NATURAL LANGUAGE MODE)", [$queryRaw])
+                    ->whereRaw("MATCH(titulo, resumen) AGAINST(? IN BOOLEAN MODE)", [$searchTerms])
                     ->when(isset($filters['date_from']), function($q) use ($filters) {
                         $q->whereDate('fecha_publicacion', '>=', $filters['date_from']);
                     })
-                    ->limit(1000) // Increase pool for better coverage
+                    ->limit(1000)
                     ->pluck('id');
 
                 if ($candidateIds->isEmpty()) {
@@ -179,8 +181,12 @@ class DofService
                 );
             } else {
                 // Fallback to FullText but with better ranking
-                 $query->whereRaw("MATCH(titulo, resumen) AGAINST(? IN NATURAL LANGUAGE MODE)", [$queryRaw])
-                       ->orderByRaw("MATCH(titulo, resumen) AGAINST(? IN NATURAL LANGUAGE MODE) DESC", [$queryRaw]);
+                $searchTerms = collect(explode(' ', $queryRaw))->map(fn($term) => "+{$term}*")->implode(' ');
+                
+                $query->where(function($q) use ($searchTerms, $queryRaw) {
+                    $q->whereRaw("MATCH(titulo, resumen) AGAINST(? IN BOOLEAN MODE)", [$searchTerms])
+                      ->orWhere('titulo', 'like', "%{$queryRaw}%");
+                });
             }
         }
 
