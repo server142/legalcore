@@ -204,7 +204,7 @@
                             iconColor: '#fa755a',
                         },
                     },
-                    hidePostalCode: true,
+                    // hidePostalCode: true, // Removed to improve AVS checks
                 });
                 cardElement.mount('#card-element');
 
