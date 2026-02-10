@@ -160,14 +160,16 @@ class DofService
                     $itemVec = is_string($item->embedding_data) ? json_decode($item->embedding_data, true) : $item->embedding_data;
                      
                     if (!$itemVec || !is_array($itemVec)) {
-                        $item->score = 0;
+                        // If no embedding, we still keep it if it matched keywords, 
+                        // but give it a neutral score below the high-relevance threshold
+                        $item->score = 0.50; 
                         return $item;
                     }
                     
                     $item->score = DofPublication::cosineSimilarity($vector, $itemVec);
                     return $item;
                 })
-                ->filter(fn($item) => $item->score > 0.55) // Refined threshold
+                ->filter(fn($item) => $item->score >= 0.40) // Lower threshold to allow keyword matches
                 ->sortByDesc('score');
 
                 // Pagination logic for collection
