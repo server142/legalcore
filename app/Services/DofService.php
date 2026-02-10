@@ -137,16 +137,18 @@ class DofService
                 // This prevents memory exhaustion and speed up the process significantly.
                 $searchTerms = collect(explode(' ', $queryRaw))
                     ->filter()
-                    ->map(fn($term) => "+{$term}*")
+                    ->map(fn($term) => "{$term}*") // Removed the strict '+' to allow flexible matching
                     ->implode(' ');
                 
                 $candidateIds = DofPublication::query()
                     ->select('id')
+                    ->selectRaw("MATCH(titulo, resumen) AGAINST(? IN BOOLEAN MODE) as score", [$searchTerms])
                     ->whereRaw("MATCH(titulo, resumen) AGAINST(? IN BOOLEAN MODE)", [$searchTerms])
                     ->when(isset($filters['date_from']), function($q) use ($filters) {
                         $q->whereDate('fecha_publicacion', '>=', $filters['date_from']);
                     })
-                    ->limit(1000)
+                    ->orderByDesc('score')
+                    ->limit(500)
                     ->pluck('id');
 
                 if ($candidateIds->isEmpty()) {
@@ -185,20 +187,20 @@ class DofService
                     ['path' => Paginator::resolveCurrentPath()]
                 );
             } else {
-                // Fallback to FullText but with better ranking
+                // Fallback to FullText with ranking
                 $searchTerms = collect(explode(' ', $queryRaw))
                     ->filter()
-                    ->map(fn($term) => "+{$term}*")
+                    ->map(fn($term) => "{$term}*")
                     ->implode(' ');
                 
-                $query->where(function($q) use ($searchTerms, $queryRaw) {
-                    $q->whereRaw("MATCH(titulo, resumen) AGAINST(? IN BOOLEAN MODE)", [$searchTerms])
-                      ->orWhere('titulo', 'like', "%{$queryRaw}%");
-                });
+                $query->select('*')
+                      ->selectRaw("MATCH(titulo, resumen) AGAINST(? IN BOOLEAN MODE) as score", [$searchTerms])
+                      ->whereRaw("MATCH(titulo, resumen) AGAINST(? IN BOOLEAN MODE)", [$searchTerms])
+                      ->orderByDesc('score');
             }
         }
 
-        return $query->orderBy('fecha_publicacion', 'desc')->paginate(20);
+        return $query->paginate(20);
     }
     protected function cleanText($text)
     {
