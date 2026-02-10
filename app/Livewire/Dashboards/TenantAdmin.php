@@ -30,6 +30,7 @@ class TenantAdmin extends Component
     public $incomeByMateria = ['labels' => [], 'values' => []];
     public $recentPayments = [];
     public $topDebtors = [];
+    public $activityHistory = [];
 
     public function mount()
     {
@@ -72,6 +73,53 @@ class TenantAdmin extends Component
             ->orderBy('fecha_vencimiento', 'asc')
             ->take(5)
             ->get();
+
+        // ---------------------------------------------------------
+        // Activity History (Last 6 Months) - Real Data
+        // ---------------------------------------------------------
+        $this->activityHistory = [];
+        $maxVal = 1;
+        
+        for ($i = 5; $i >= 0; $i--) {
+            $monthDate = now()->subMonths($i);
+            
+            $casosCount = (clone $expedienteQuery)
+                ->whereMonth('created_at', $monthDate->month)
+                ->whereYear('created_at', $monthDate->year)
+                ->count();
+                
+            $docsCount = \App\Models\Documento::whereMonth('created_at', $monthDate->month)
+                ->whereYear('created_at', $monthDate->year)
+                ->whereIn('expediente_id', function($query) use ($isAbogado, $user) {
+                    $query->select('id')->from('expedientes')->whereNull('deleted_at');
+                    if ($isAbogado) {
+                        $query->where(function($q) use ($user) {
+                            $q->where('abogado_responsable_id', $user->id)
+                              ->orWhereHas('assignedUsers', function($q2) use ($user) {
+                                  $q2->where('users.id', $user->id);
+                              });
+                        });
+                    }
+                })
+                ->count();
+
+            if ($casosCount > $maxVal) $maxVal = $casosCount;
+            if ($docsCount > $maxVal) $maxVal = $docsCount;
+
+            $this->activityHistory[] = [
+                'label' => $monthDate->translatedFormat('M'),
+                'casos' => $casosCount,
+                'docs' => $docsCount,
+                'casos_h' => 0, // Placeholder for normalization
+                'docs_h' => 0,
+            ];
+        }
+
+        // Normalize heights for display (min 5% for visibility if not zero)
+        foreach ($this->activityHistory as &$item) {
+            $item['casos_h'] = $item['casos'] > 0 ? max(($item['casos'] / $maxVal) * 100, 5) : 2;
+            $item['docs_h'] = $item['docs'] > 0 ? max(($item['docs'] / $maxVal) * 100, 5) : 2;
+        }
 
         // Agenda
         $agendaQuery = \App\Models\Evento::with('user');

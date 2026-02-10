@@ -182,18 +182,31 @@
                 </div>
                 
                 <!-- Pseudo-Chart CSS Grid -->
-                <div class="h-40 flex items-end justify-between px-2 gap-2">
-                    @foreach([30, 45, 35, 60, 50, 75, 65, 80, 70, 90, 85, 95] as $h)
-                    <div class="w-full bg-indigo-50 rounded-t-sm relative group hover:bg-indigo-100 transition-colors" style="height: {{ $h }}%;">
-                        <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-[9px] py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                            {{ $h }} Actividades
+                <div class="h-40 flex items-end justify-between px-1 sm:px-2 gap-2 sm:gap-4">
+                    @foreach($activityHistory as $month)
+                    <div class="flex-1 flex items-end gap-0.5 sm:gap-1 h-full">
+                        <!-- Casos Bar -->
+                        <div class="flex-1 bg-indigo-500 rounded-t-sm relative group hover:bg-indigo-600 transition-colors" 
+                             style="height: {{ $month['casos_h'] }}%;">
+                            <div class="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-xl pointer-events-none">
+                                {{ $month['casos'] }} <span class="hidden sm:inline">Expedientes</span><span class="sm:hidden">Exp.</span>
+                            </div>
+                        </div>
+                        <!-- Documentos Bar -->
+                        <div class="flex-1 bg-slate-300 rounded-t-sm relative group hover:bg-slate-400 transition-colors" 
+                             style="height: {{ $month['docs_h'] }}%;">
+                            <div class="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-xl pointer-events-none">
+                                {{ $month['docs'] }} <span class="hidden sm:inline">Documentos</span><span class="sm:hidden">Docs.</span>
+                            </div>
                         </div>
                     </div>
                     @endforeach
                 </div>
                 <!-- X Axis -->
-                <div class="border-t border-slate-100 mt-0 flex justify-between px-2 pt-2 text-[9px] text-slate-400 font-bold uppercase">
-                    <span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span>May</span><span>Jun</span>
+                <div class="border-t border-slate-100 mt-2 flex justify-between px-1 sm:px-2 pt-2 text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase overflow-hidden">
+                    @foreach($activityHistory as $month)
+                    <span class="flex-1 text-center truncate">{{ $month['label'] }}</span>
+                    @endforeach
                 </div>
             </div>
 
