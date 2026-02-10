@@ -135,7 +135,10 @@ class DofService
             if ($vector) {
                 // CANDIDATE POOL: Get the most relevant candidates via FullText first to reduce vector calculations
                 // This prevents memory exhaustion and speed up the process significantly.
-                $searchTerms = collect(explode(' ', $queryRaw))->map(fn($term) => "+{$term}*")->implode(' ');
+                $searchTerms = collect(explode(' ', $queryRaw))
+                    ->filter()
+                    ->map(fn($term) => "+{$term}*")
+                    ->implode(' ');
                 
                 $candidateIds = DofPublication::query()
                     ->select('id')
@@ -181,7 +184,10 @@ class DofService
                 );
             } else {
                 // Fallback to FullText but with better ranking
-                $searchTerms = collect(explode(' ', $queryRaw))->map(fn($term) => "+{$term}*")->implode(' ');
+                $searchTerms = collect(explode(' ', $queryRaw))
+                    ->filter()
+                    ->map(fn($term) => "+{$term}*")
+                    ->implode(' ');
                 
                 $query->where(function($q) use ($searchTerms, $queryRaw) {
                     $q->whereRaw("MATCH(titulo, resumen) AGAINST(? IN BOOLEAN MODE)", [$searchTerms])
