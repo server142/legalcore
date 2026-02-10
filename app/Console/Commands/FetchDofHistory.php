@@ -47,7 +47,9 @@ class FetchDofHistory extends Command
             $this->line("[{$currentDate->format('Y-m-d')}] Fetching index... ($url)");
 
             try {
-                $response = Http::withUserAgent('Mozilla/5.0 (compatible; LegalCoreBot/1.0)')->get($url);
+                $response = Http::withUserAgent('Mozilla/5.0 (compatible; LegalCoreBot/1.0)')
+                    ->withoutVerifying()
+                    ->get($url);
                 
                 if ($response->successful()) {
                     $this->parseAndStore($response->body(), $currentDate);
