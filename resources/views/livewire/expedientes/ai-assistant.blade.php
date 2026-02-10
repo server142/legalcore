@@ -35,7 +35,7 @@
                      x-transition:leave-start="translate-x-0"
                      x-transition:leave-end="translate-x-full"
                      class="w-full h-full sm:w-screen transition-all duration-300 ease-in-out"
-                     :class="isMaximized ? 'sm:max-w-5xl' : 'sm:max-w-md'">
+                     :class="isMaximized ? 'sm:max-w-none' : 'sm:max-w-md'">
                     
                     <div class="flex h-full flex-col bg-white shadow-xl relative" style="height: 100dvh;">
                         <!-- Header -->
@@ -155,8 +155,8 @@
                                     @endif
                                     
                                     <div class="flex flex-col max-w-[85%]">
-                                        <div class="rounded-lg px-4 py-2 text-sm shadow-sm relative text-message-content
-                                            {{ $msg['role'] === 'user' ? 'bg-indigo-600 text-white' : ($msg['role'] === 'system' ? 'bg-gray-200 text-gray-600 text-xs italic' : 'bg-white text-gray-800') }}">
+                                        <div class="rounded-lg px-4 py-2 text-sm shadow-sm relative text-message-content prose prose-sm prose-indigo max-w-none break-words
+                                            {{ $msg['role'] === 'user' ? 'bg-indigo-600 text-white prose-invert' : ($msg['role'] === 'system' ? 'bg-gray-200 text-gray-600 text-xs italic' : 'bg-white text-gray-800') }}">
                                             {!! \Illuminate\Support\Str::markdown($msg['content']) !!}
                                         </div>
 
