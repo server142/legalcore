@@ -45,16 +45,16 @@
         <!-- Sidebar Filters -->
         <aside class="w-full lg:w-64 space-y-6">
             <div>
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Categorías</h3>
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Materias</h3>
                 <div class="space-y-2">
                     <button wire:click="selectCategory('Todos')" 
                             class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all {{ $selectedCategory == 'Todos' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-100' }}">
-                        <span>Todos</span>
+                        <span>Todas</span>
                     </button>
-                    @foreach($categories as $category)
-                        <button wire:click="selectCategory('{{ $category }}')" 
-                                class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all {{ $selectedCategory == $category ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-100' }}">
-                            <span>{{ $category }}</span>
+                    @foreach($materias as $materia)
+                        <button wire:click="selectCategory('{{ $materia }}')" 
+                                class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all {{ $selectedCategory == $materia ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-100' }}">
+                            <span>{{ $materia }}</span>
                         </button>
                     @endforeach
                 </div>
@@ -126,15 +126,20 @@
                         <form wire:submit.prevent="saveTemplate" class="space-y-5">
                             <input type="text" wire:model="newTemplateName" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" placeholder="Nombre...">
                             <div class="grid grid-cols-2 gap-4">
-                                <select wire:model="newTemplateCategory" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
-                                    <option value="">Categoría...</option>
+                                <select wire:model="newTemplateCategory" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all font-medium">
+                                    <option value="">Tipo de Formato...</option>
                                     <option value="Contratos">Contratos</option>
-                                    <option value="Corporativo">Corporativo</option>
-                                    <option value="Familiar">Familiar</option>
-                                    <option value="Laboral">Laboral</option>
+                                    <option value="Demandas">Demandas</option>
+                                    <option value="Escritos">Escritos</option>
+                                    <option value="Sentencias">Sentencias</option>
                                     <option value="Otro">Otro</option>
                                 </select>
-                                <input type="text" wire:model="newTemplateMateria" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl" placeholder="Materia...">
+                                <select wire:model="newTemplateMateria" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all font-medium">
+                                    <option value="">Materia...</option>
+                                    @foreach($materias as $materia)
+                                        <option value="{{ $materia }}">{{ $materia }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                             <input type="file" wire:model="newTemplateFile" class="w-full">
                             <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl">Guardar</button>

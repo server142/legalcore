@@ -221,7 +221,7 @@ class TemplateLibrary extends Component
         $query = \App\Models\LegalTemplate::forTenant(auth()->user()->tenant_id);
 
         if ($this->selectedCategory !== 'Todos') {
-            $query->where('category', $this->selectedCategory);
+            $query->where('materia', $this->selectedCategory);
         }
 
         if (!empty($this->search)) {
@@ -240,14 +240,12 @@ class TemplateLibrary extends Component
             $query->latest();
         }
 
-        $categories = \App\Models\LegalTemplate::forTenant(auth()->user()->tenant_id)
-            ->select('category')
-            ->distinct()
-            ->pluck('category');
+        $tenantMaterias = \App\Models\Materia::where('tenant_id', auth()->user()->tenant_id)
+            ->pluck('nombre');
 
         return view('livewire.library.template-library', [
             'templates' => $query->paginate(12),
-            'categories' => $categories,
+            'materias' => $tenantMaterias,
             'selectedTemplate' => $this->selectedTemplate
         ])->layout('layouts.app');
     }
