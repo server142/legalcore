@@ -68,7 +68,8 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // MANUAL CONSTRUCTION PHASE 7: DEFENSIVE CODING & WORDWRAP
+                // MANUAL CONSTRUCTION PHASE 8: ZERO STYLES (PURE TEXT)
+                // Eliminating styles as a variable. Just raw content dump.
                 
                 // 1. Prepare Content
                 $cleanContent = str_replace(
@@ -84,9 +85,8 @@ class ContractController extends Controller
                 $asciiText = iconv('UTF-8', 'ASCII//TRANSLIT', $plainText);
                 
                 if ($asciiText === false) {
-                    // Fallback if iconv fails: just strip non-ascii manually
                     $finalText = preg_replace('/[^\x20-\x7E\n\r\t]/', '', $plainText);
-                    $section->addText("WARNING: iconv failed. Using regex fallback.", ['color' => 'red']);
+                    $section->addText("WARNING: iconv fallback used.");
                 } else {
                     $finalText = $asciiText;
                 }
@@ -97,27 +97,16 @@ class ContractController extends Controller
                 // 4. Split and Add
                 $lines = explode("\n", $finalText);
                 
-                $titleStyle = ['bold' => true, 'size' => 12];
-                $normalStyle = ['size' => 11];
-                $centeredParams = ['align' => 'center', 'spaceAfter' => 200];
-                $justifiedParams = ['align' => 'both', 'spaceAfter' => 100];
-                
                 foreach ($lines as $line) {
                     $trimLine = trim($line);
                     
                     if (!empty($trimLine)) {
-                        // Wordwrap to prevent huge lines breaking Word XML
-                        // Break at 150 chars, cut words if necessary = false
+                        // Still wrap long lines just in case
                         $wrappedLines = explode("\n", wordwrap($trimLine, 150, "\n", false));
                         
                         foreach($wrappedLines as $subLine) {
-                             $isTitle = (mb_strlen($subLine) > 5 && mb_strtoupper($subLine) === $subLine && !str_contains($subLine, '. '));
-                             
-                             if ($isTitle || str_starts_with($subLine, 'CONTRATO') || str_contains($subLine, 'CLAUSULAS')) {
-                                  $section->addText($subLine, $titleStyle, $centeredParams);
-                             } else {
-                                  $section->addText($subLine, $normalStyle, $justifiedParams);
-                             }
+                             // NO STYLES. Just text.
+                             $section->addText($subLine);
                         }
                     }
                 }
