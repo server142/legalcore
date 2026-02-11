@@ -45,7 +45,9 @@ class TemplateLibrary extends Component
 
         $extension = $this->newTemplateFile->getClientOriginalExtension();
         $path = $this->newTemplateFile->store('templates', 'public');
-        $fullPath = storage_path('app/public/' . $path);
+        
+        // Correct path for extraction
+        $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($path);
         
         $extractedText = '';
 
@@ -61,6 +63,7 @@ class TemplateLibrary extends Component
             }
         } catch (\Exception $e) {
             \Log::error("Template extraction failed: " . $e->getMessage());
+            $extractedText = "Error al extraer contenido: " . $e->getMessage();
         }
 
         // Simple placeholder detection
@@ -87,26 +90,26 @@ class TemplateLibrary extends Component
 
     private function readDocx($filePath) {
         $content = '';
-        $zip = new \ZipArchive();
-        if ($zip->open($filePath) === true) {
-            if (($index = $zip->locateName('word/document.xml')) !== false) {
-                $data = $zip->getFromIndex($index);
-                $content = strip_tags($data, '<w:p><w:t>');
-                $content = preg_replace('/<w:p.*?>/', "\n", $content);
-                $content = strip_tags($content);
+        try {
+            $zip = new \ZipArchive();
+            if ($zip->open($filePath) === true) {
+                if (($index = $zip->locateName('word/document.xml')) !== false) {
+                    $data = $zip->getFromIndex($index);
+                    $content = strip_tags($data, '<w:p><w:t>');
+                    $content = preg_replace('/<w:p.*?>/', "\n", $content);
+                    $content = strip_tags($content);
+                }
+                $zip->close();
             }
-            $zip->close();
+        } catch (\Exception $e) {
+            \Log::error("Docx parsing failed: " . $e->getMessage());
         }
         return $content;
     }
 
     public function personalizeTemplate($id)
     {
-        $this->dispatch('notify', [
-            'message' => 'El asistente de IA está preparando el editor para este formato...',
-            'type' => 'info'
-        ]);
-        // Future: Redirect to an editor or open a placeholder filling modal
+        $this->dispatch('notify', 'Próximamente: Editor de IA para personalizar marcadores automáticamente.');
     }
 
     public function updatedSearch()
