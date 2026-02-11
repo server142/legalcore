@@ -138,6 +138,26 @@ class TemplateLibrary extends Component
         $this->showPersonalizeModal = true;
     }
 
+    public function deleteTemplate($id)
+    {
+        $template = \App\Models\LegalTemplate::where('tenant_id', auth()->user()->tenant_id)
+            ->where('id', $id)
+            ->first();
+
+        if ($template) {
+            // Delete file from storage
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($template->file_path);
+            $template->delete();
+            $this->showPreview = false;
+            $this->dispatch('notify', 'Documento eliminado permanentemente.');
+        } else {
+            $this->dispatch('notify', [
+                'message' => 'No tienes permisos para eliminar este documento.',
+                'type' => 'error'
+            ]);
+        }
+    }
+
     public function closePreview()
     {
         $this->showPreview = false;

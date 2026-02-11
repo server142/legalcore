@@ -136,7 +136,7 @@
                     <div class="flex justify-between items-start mb-6">
                         <div>
                             <h3 class="text-2xl font-extrabold text-slate-900 tracking-tight">Subir Nuevo Formato</h3>
-                            <p class="text-slate-500 text-sm mt-1">Comparte contenido valioso con tu despacho.</p>
+                            <p class="text-slate-500 text-sm mt-1">Usa <span class="text-indigo-600 font-bold">[CORCHETES]</span> para crear variables autocompletables.</p>
                         </div>
                         <button @click="$wire.showUploadModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -291,14 +291,26 @@
                 <!-- Preview Footer -->
                 <div class="sticky bottom-0 p-6 lg:p-8 border-t border-slate-100 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.04)]">
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="{{ Storage::disk('public')->url($selectedTemplate->file_path) }}" 
-                           download
-                           class="flex items-center justify-center gap-2 py-4 px-6 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold rounded-2xl transition-all border border-slate-200">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            <span>Descargar</span>
-                        </a>
+                        <div class="flex flex-[1] gap-2">
+                            <a href="{{ Storage::disk('public')->url($selectedTemplate->file_path) }}" 
+                               download
+                               class="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold rounded-2xl transition-all border border-slate-200"
+                               title="Descargar Original">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            </a>
+                            
+                            @if($selectedTemplate->tenant_id === auth()->user()->tenant_id)
+                            <button wire:click="deleteTemplate({{ $selectedTemplate->id }})" 
+                                    wire:confirm="¿Estás seguro de eliminar este formato permanentemente?"
+                                    class="flex-1 flex items-center justify-center gap-2 py-4 bg-red-50 hover:bg-red-100 text-red-500 font-bold rounded-2xl transition-all border border-red-100"
+                                    title="Eliminar Formato">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                            @endif
+                        </div>
+
                         <button wire:click="personalizeTemplate({{ $selectedTemplate->id }})" 
-                                class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-3 group">
+                                class="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-3 group">
                             <span>Personalizar Formato</span>
                             <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                         </button>
