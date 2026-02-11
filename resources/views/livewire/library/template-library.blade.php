@@ -309,7 +309,7 @@
                             @endif
                         </div>
 
-                        <button wire:click="personalizeTemplate({{ $selectedTemplate->id }})" 
+                        <button wire:click.stop="personalizeTemplate({{ $selectedTemplate->id }})" 
                                 class="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-3 group">
                             <span>Personalizar Formato</span>
                             <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>

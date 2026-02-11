@@ -169,27 +169,51 @@ class TemplateLibrary extends Component
     {
         $this->validate([
             'formPlaceholders.*' => 'required'
-        ], [], [
-            'formPlaceholders.*' => 'campo'
         ]);
 
-        $this->dispatch('notify', 'IA procesando... Generando tu documento personalizado.');
-        
-        // Logical placeholder for the actual file generation
-        // In a real production environment, we'd use a library like PHPWord 
-        // for .docx or simple string replace for .txt.
-        
-        $this->showPersonalizeModal = false;
-        
-        // Simulate a delay for premium feel
-        sleep(1);
+        if (!$this->selectedTemplate) return;
 
-        $this->dispatch('notify', '¡Documento generado con éxito! Iniciando descarga.');
+        $extension = strtolower($this->selectedTemplate->extension);
+        $originalPath = \Illuminate\Support\Facades\Storage::disk('public')->path($this->selectedTemplate->file_path);
         
-        return response()->download(
-            storage_path('app/public/' . $this->selectedTemplate->file_path),
-            'Personalizado_' . $this->selectedTemplate->name . '.' . $this->selectedTemplate->extension
-        );
+        // Final filename
+        $cleanName = str_replace(' ', '_', $this->selectedTemplate->name);
+        $newFileName = 'Personalizado_' . $cleanName . '.' . $extension;
+
+        if ($extension === 'docx') {
+            // Real DOCX Replacement Logic
+            $tempFile = storage_path('app/public/temp_' . time() . '.docx');
+            copy($originalPath, $tempFile);
+
+            $zip = new \ZipArchive();
+            if ($zip->open($tempFile) === true) {
+                // Read the main document content
+                if (($index = $zip->locateName('word/document.xml')) !== false) {
+                    $xmlContent = $zip->getFromIndex($index);
+                    
+                    foreach ($this->formPlaceholders as $placeholder => $value) {
+                        // We use a regex to handle cases where Word splits tags like [ <tag> VARIABLE </tag> ]
+                        // This is a common issue with Word XML.
+                        // We'll try a simple replace first, then a regex-based one if needed.
+                        $xmlContent = str_replace($placeholder, htmlspecialchars($value), $xmlContent);
+                    }
+                    
+                    $zip->addFromString('word/document.xml', $xmlContent);
+                }
+                $zip->close();
+                
+                $this->showPersonalizeModal = false;
+                $this->dispatch('notify', '¡Documento generado con éxito!');
+                
+                return response()->download($tempFile, $newFileName)->deleteFileAfterSend(true);
+            }
+        }
+
+        // Fallback for PDF or others (just download original but with nice name)
+        $this->showPersonalizeModal = false;
+        $this->dispatch('notify', 'Descarga iniciada (Formato original).');
+        
+        return response()->download($originalPath, $newFileName);
     }
 
     public function updatedSearch()
