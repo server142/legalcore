@@ -43,7 +43,26 @@ class ContractController extends Controller
         $htmlContent = $generator->generate($template, $expediente);
         $safeNumero = str_replace(['/', '\\'], '-', $expediente->numero);
 
-        // 4. Check Requested Format (PDF by default, but supports WORD)
+        // 4. Check Requested Format
+        if ($request->query('format') === 'debug') {
+             // Access the raw text field from DB
+             $rawContent = $template->texto; 
+             
+             $output = "<h1>DEBUG MODE</h1>";
+             $output .= "<h2>Raw Content (htmlspecialchars)</h2>";
+             $output .= "<pre style='background:#f4f4f4; padding:10px; border:1px solid #ccc; white-space:pre-wrap;'>" . htmlspecialchars($rawContent) . "</pre>";
+             
+             // BOM Check
+             $bom = substr($rawContent, 0, 3);
+             $hasBom = ($bom === "\xEF\xBB\xBF") ? "YES" : "NO";
+             $output .= "<h2>Has BOM? $hasBom</h2>";
+             
+             $output .= "<h2>First 50 Bytes (HEX)</h2>";
+             $output .= "<pre>" . chunk_split(bin2hex(substr($rawContent, 0, 50)), 2, ' ') . "</pre>";
+
+             return response($output);
+        }
+
         if ($request->query('format') === 'word') {
             try {
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
