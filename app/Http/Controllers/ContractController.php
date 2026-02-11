@@ -49,51 +49,15 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // MANUAL CONSTRUCTION PHASE 4: DIAGNOSTIC (FIRST 5 LINES ONLY)
-                // If this works, the problem is deep in the document.
-                // If this fails, the problem is at the very beginning of the htmlContent.
+                // MANUAL CONSTRUCTION PHASE 5: STATIC TEXT TEST (SANITY CHECK)
+                // We are ignoring $htmlContent completely.
+                // If this works, $htmlContent is toxic.
                 
-                // 1. Convert structural tags to newlines
-                $processedContent = str_replace(
-                    ['<br>', '<br/>', '<br />', '</p>', '</h1>', '</h2>', '</h3>', '</h4>', '</li>', '</div>', '</tr>', '</table>'], 
-                    "\n", 
-                    $htmlContent
-                );
-                
-                // 2. Decode entities
-                $processedContent = html_entity_decode($processedContent, ENT_QUOTES | ENT_XML1, 'UTF-8');
-                
-                // 3. Strip tags
-                $plainText = strip_tags($processedContent);
-                
-                // 4. NUCLEAR OPTION: Whitelist valid characters only
-                $safeText = preg_replace('/[^\p{L}\p{N}\p{P}\p{Z}\n\r\t]+/u', '', $plainText);
-                
-                // 5. Split and Add ONLY FIRST 5 LINES
-                $lines = explode("\n", $safeText);
-                $lines = array_slice($lines, 0, 5); // LIMIT TO 5 LINES
-                
-                $titleStyle = ['bold' => true, 'size' => 12];
-                $normalStyle = ['size' => 11];
-                $centeredParams = ['align' => 'center', 'spaceAfter' => 200];
-                $justifiedParams = ['align' => 'both', 'spaceAfter' => 100];
-                
-                $section->addText("DEBUG: SOLO PRIMERAS 5 LINEAS DEL CONTRATO");
-                $section->addText("----------------------------------------");
-
-                foreach ($lines as $line) {
-                    $trimLine = trim($line);
-                    
-                    if (!empty($trimLine)) {
-                        $isTitle = (mb_strlen($trimLine) > 5 && mb_strtoupper($trimLine) === $trimLine && !str_contains($trimLine, '. '));
-                        
-                        if ($isTitle || str_starts_with($trimLine, 'CONTRATO') || str_contains($trimLine, 'CLÁUSULAS')) {
-                            $section->addText($trimLine, $titleStyle, $centeredParams);
-                        } else {
-                            $section->addText($trimLine, $normalStyle, $justifiedParams);
-                        }
-                    }
-                }
+                $section->addText("PRUEBA DE TEXTO ESTATICO - NO VIENE DE BD", ['bold' => true, 'size' => 14]);
+                $section->addTextBreak();
+                $section->addText("Este es un párrafo de prueba escrito directamente en el código PHP.");
+                $section->addText("Si esto se abre en Word 2016, significa que el mecanismo funciona y el problema es el contenido HTML que traemos de la base de datos.");
+                $section->addText("Caracteres especiales de prueba: áéíóú ñ Ñ ¿ ?");
                 
                 $filename = "Contrato-Servicios-Exp-{$safeNumero}.docx";
                 
