@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Library;
 
+use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 
