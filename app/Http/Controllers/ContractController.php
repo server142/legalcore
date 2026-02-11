@@ -68,37 +68,35 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // MANUAL CONSTRUCTION PHASE 6: ASCII TRANSLITERATION (SCORCHED EARTH)
-                // This converts "Café" to "Cafe", "España" to "Espana", "“Hola”" to ""Hola"".
-                // Goal: Eliminate ANY possibility of UTF-8 corruption.
+                // MANUAL CONSTRUCTION PHASE 7: DEFENSIVE CODING & WORDWRAP
                 
-                // 1. Convert structural tags to newlines
+                // 1. Prepare Content
                 $cleanContent = str_replace(
                     ['<br>', '<br/>', '<br />', '</p>', '</h1>', '</h2>', '</h3>', '</h4>', '</li>', '</div>', '</tr>', '</table>'], 
                     "\n", 
                     $htmlContent
                 );
-                
-                // 2. Decode entities twice
                 $cleanContent = html_entity_decode($cleanContent, ENT_QUOTES | ENT_XML1, 'UTF-8');
-                $cleanContent = html_entity_decode($cleanContent);
-                
-                // 3. Strip tags
                 $plainText = strip_tags($cleanContent);
                 
-                // 4. ASCII TRANSLITERATION
-                // This is the key step. Force it to 7-bit ASCII.
-                // setlocale is important for translit to work properly on some systems
+                // 2. Try ASCII Conversion with Fallback
                 setlocale(LC_ALL, 'en_US.UTF8'); 
                 $asciiText = iconv('UTF-8', 'ASCII//TRANSLIT', $plainText);
                 
-                // 5. Remove any remaining non-ascii chars just in case
-                $asciiText = preg_replace('/[\x80-\xFF]/', '', $asciiText);
+                if ($asciiText === false) {
+                    // Fallback if iconv fails: just strip non-ascii manually
+                    $finalText = preg_replace('/[^\x20-\x7E\n\r\t]/', '', $plainText);
+                    $section->addText("WARNING: iconv failed. Using regex fallback.", ['color' => 'red']);
+                } else {
+                    $finalText = $asciiText;
+                }
                 
-                // 6. Split into lines
-                $lines = explode("\n", $asciiText);
+                // 3. Ensure String type
+                $finalText = strval($finalText);
                 
-                // Styles
+                // 4. Split and Add
+                $lines = explode("\n", $finalText);
+                
                 $titleStyle = ['bold' => true, 'size' => 12];
                 $normalStyle = ['size' => 11];
                 $centeredParams = ['align' => 'center', 'spaceAfter' => 200];
@@ -108,13 +106,18 @@ class ContractController extends Controller
                     $trimLine = trim($line);
                     
                     if (!empty($trimLine)) {
-                        // Title Heuristic
-                        $isTitle = (mb_strlen($trimLine) > 5 && mb_strtoupper($trimLine) === $trimLine && !str_contains($trimLine, '. '));
+                        // Wordwrap to prevent huge lines breaking Word XML
+                        // Break at 150 chars, cut words if necessary = false
+                        $wrappedLines = explode("\n", wordwrap($trimLine, 150, "\n", false));
                         
-                        if ($isTitle || str_starts_with($trimLine, 'CONTRATO') || str_contains($trimLine, 'CLAUSULAS')) {
-                            $section->addText($trimLine, $titleStyle, $centeredParams);
-                        } else {
-                            $section->addText($trimLine, $normalStyle, $justifiedParams);
+                        foreach($wrappedLines as $subLine) {
+                             $isTitle = (mb_strlen($subLine) > 5 && mb_strtoupper($subLine) === $subLine && !str_contains($subLine, '. '));
+                             
+                             if ($isTitle || str_starts_with($subLine, 'CONTRATO') || str_contains($subLine, 'CLAUSULAS')) {
+                                  $section->addText($subLine, $titleStyle, $centeredParams);
+                             } else {
+                                  $section->addText($subLine, $normalStyle, $justifiedParams);
+                             }
                         }
                     }
                 }
