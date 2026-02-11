@@ -113,6 +113,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/billing/subscribe/{plan}', \App\Livewire\Billing\Subscribe::class)->name('billing.subscribe');
     Route::get('/subscription/expired', [\App\Http\Controllers\SubscriptionController::class, 'expired'])->name('subscription.expired');
     Route::view('/billing/profile', 'billing.profile')->name('billing.profile'); // New Billing Profile Route
+    Route::get('/library', \App\Livewire\Library\TemplateLibrary::class)->name('library.index');
 
     // Google Calendar Routes
     Route::get('auth/google', [\App\Http\Controllers\GoogleController::class, 'redirectToGoogle'])->name('auth.google');

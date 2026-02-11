@@ -163,15 +163,26 @@ class OcrService
 // Clase interna para mover el código viejo y no borrarlo del todo
 class LegacyTesseractService {
     public function extract($filePath) {
-        // Implementación simplificada del código anterior para mantener compatibilidad
         try {
-            // ... (Código Tesseract original reducido) ...
              $ocr = new \thiagoalessio\TesseractOCR\TesseractOCR($filePath);
-             $ocr->executable('/usr/bin/tesseract');
+             
+             // Detect OS and set path accordingly if needed, or rely on PATH
+             if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                 // Try common Windows paths or assume it's in PATH
+                 // Providing a specific path only if it exists, otherwise trust PATH
+                 if (file_exists('C:\\Program Files\\Tesseract-OCR\\tesseract.exe')) {
+                     $ocr->executable('C:\\Program Files\\Tesseract-OCR\\tesseract.exe');
+                 }
+                 // If not set, it uses default 'tesseract' command which works if in PATH
+             } else {
+                 $ocr->executable('/usr/bin/tesseract');
+             }
+             
              $ocr->lang('spa', 'eng');
              return $ocr->run();
         } catch (\Throwable $e) {
-            return "Error OCR Local: " . $e->getMessage();
+            Log::error("Tesseract Error: " . $e->getMessage());
+            return "Error OCR Local: No se pudo leer el documento. (Detalle: " . $e->getMessage() . ")";
         }
     }
 }
