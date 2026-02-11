@@ -49,19 +49,10 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // DIAGNOSTIC STEP: STRIP HTML TO TEXT TO ISOLATE THE ISSUE
-                // Replace breaks with newlines before stripping
-                $textOnly = str_replace(['<br>', '<br/>', '<br />'], "\n", $htmlContent);
-                $textOnly = strip_tags($textOnly);
-                
-                // Add text preserving line breaks
-                $lines = explode("\n", $textOnly);
-                foreach ($lines as $line) {
-                    $trimLine = trim($line);
-                    if (!empty($trimLine)) {
-                        $section->addText($trimLine);
-                    }
-                }
+                // DIAGNOSTIC STEP: MINIMAL "HELLO WORLD"
+                // If this fails, the issue is PhpWord installation or server config (zip/xml writer)
+                $section->addText("Prueba de Contrato - Hello World");
+                $section->addText("Si ves esto, PhpWord funciona y el problema era el contenido.");
 
                 $filename = "Contrato-Servicios-Exp-{$safeNumero}.docx";
                 
