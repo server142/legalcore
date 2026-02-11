@@ -49,20 +49,25 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // DIAGNOSTIC STEP: BINARY SEARCH - PART 1 (First 500 chars)
-                // 1. Strip tags and clean
-                $plainText = strip_tags($htmlContent);
-                $plainText = html_entity_decode($plainText);
-                $plainText = iconv('UTF-8', 'UTF-8//IGNORE', $plainText);
-                $plainText = preg_replace('/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/', '', $plainText);
+                // MANUAL CONSTRUCTION PHASE 1: VARIABLES & HEADERS ONLY
                 
-                // 2. Take first 500 characters only
-                $partialContent = mb_substr($plainText, 0, 500);
+                // Title
+                $section->addText("CONTRATO DE PRESTACIÓN DE SERVICIOS PROFESIONALES", ['bold' => true, 'size' => 14], ['align' => 'center']);
+                $section->addTextBreak(2);
                 
-                $section->addText("DEBUG: PRIMEROS 500 CARACTERES:");
-                $section->addText("--------------------------------------------------");
-                $section->addText($partialContent);
-                $section->addText("--------------------------------------------------");
+                // Expediente Info
+                $section->addText("Expediente: " . $expediente->numero);
+                $section->addText("Asunto: " . iconv('UTF-8', 'UTF-8//IGNORE', $expediente->titulo));
+                
+                // Client Info (Safe Access)
+                $clienteNombre = $expediente->cliente ? $expediente->cliente->nombre : 'N/A';
+                // Clean non-printable chars from DB data just in case
+                $clienteNombre = preg_replace('/[\x00-\x1F\x7F]/', '', $clienteNombre);
+                
+                $section->addText("Cliente: " . iconv('UTF-8', 'UTF-8//IGNORE', $clienteNombre));
+                
+                $section->addTextBreak(1);
+                $section->addText("Si puedes leer esto, los datos básicos del expediente y cliente son seguros.");
                 
                 $filename = "Contrato-Servicios-Exp-{$safeNumero}.docx";
                 
