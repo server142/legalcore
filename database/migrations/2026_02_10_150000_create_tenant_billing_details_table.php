@@ -11,23 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tenant_billing_details', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
-            
-            // Datos Fiscales Mexicanos (SAT)
-            $table->string('razon_social'); // Nombre o Razón Social
-            $table->string('rfc', 13); // RFC (Persona Física o Moral)
-            $table->string('regimen_fiscal'); // Clave del Régimen Fiscal (ej: 601, 626)
-            $table->string('codigo_postal', 5); // CP Fiscal
-            $table->string('direccion_fiscal')->nullable(); // Calle, No, Colonia, etc.
-            $table->string('uso_cfdi')->default('G03'); // Gastos en general
-            $table->string('email_facturacion')->nullable(); // Para envío de XML/PDF
-            
-            // Metadatos
-            $table->boolean('verified')->default(false); // Para lógica futura de validación
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('tenant_billing_details')) {
+            Schema::create('tenant_billing_details', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
+                
+                // Datos Fiscales Mexicanos (SAT)
+                $table->string('razon_social'); // Nombre o Razón Social
+                $table->string('rfc', 13); // RFC (Persona Física o Moral)
+                $table->string('regimen_fiscal'); // Clave del Régimen Fiscal (ej: 601, 626)
+                $table->string('codigo_postal', 5); // CP Fiscal
+                $table->string('direccion_fiscal')->nullable(); // Calle, No, Colonia, etc.
+                $table->string('uso_cfdi')->default('G03'); // Gastos en general
+                $table->string('email_facturacion')->nullable(); // Para envío de XML/PDF
+                
+                // Metadatos
+                $table->boolean('verified')->default(false); // Para lógica futura de validación
+                $table->timestamps();
+            });
+        }
     }
 
     /**
