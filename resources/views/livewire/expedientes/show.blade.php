@@ -35,10 +35,20 @@
                 <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                 Editar
             </button>
-            <a href="{{ route('expedientes.contract', $expediente) }}" target="_blank" class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none text-sm transition shadow-sm whitespace-nowrap">
-                <svg class="w-4 h-4 mr-1.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                Contrato
-            </a>
+            <div class="relative group">
+                <button class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none text-sm transition shadow-sm whitespace-nowrap">
+                    <svg class="w-4 h-4 mr-1.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Contrato
+                </button>
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden group-hover:block border border-gray-100">
+                    <a href="{{ route('expedientes.contract', $expediente) }}" target="_blank" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                        <span class="mr-2 text-red-600 font-bold">PDF</span> Ver PDF
+                    </a>
+                    <a href="{{ route('expedientes.contract', ['expediente' => $expediente, 'format' => 'word']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                        <span class="mr-2 text-blue-600 font-bold">DOCX</span> Descargar Word
+                    </a>
+                </div>
+            </div>
             <button type="button" wire:click="toggleAddActuacion" wire:key="btn-add-act" class="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 flex-1 md:flex-none whitespace-nowrap text-sm font-bold">
                 + Actuación
             </button>

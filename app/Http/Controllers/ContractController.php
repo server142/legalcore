@@ -38,50 +38,73 @@ class ContractController extends Controller
             return response('No se encontró la plantilla del contrato. Contacte a soporte.', 404);
         }
 
-        // 3. Generate HTML
-        try {
-            $generator = new ContractGenerationService();
-            $htmlContent = $generator->generate($template, $expediente);
+        // 3. Generate HTML Content using Service
+        $generator = new ContractGenerationService();
+        $htmlContent = $generator->generate($template, $expediente);
+        $safeNumero = str_replace(['/', '\\'], '-', $expediente->numero);
 
-            // Wrapper
-            $fullHtml = '
-            <html>
-            <head>
-                <style>
-                    body { font-family: "Times New Roman", serif; line-height: 1.5; color: #000; }
-                    /* Ensure tables and other elements respect PDF size */
-                </style>
-            </head>
-            <body>
-                ' . $htmlContent . '
-            </body>
-            </html>';
+        // 4. Check Requested Format (PDF by default, but supports WORD)
+        if ($request->query('format') === 'word') {
+            try {
+                $phpWord = new \PhpOffice\PhpWord\PhpWord();
+                $section = $phpWord->addSection();
+                
+                // Add HTML content to Word
+                \PhpOffice\PhpWord\Shared\Html::addHtml($section, $htmlContent, false, false);
 
-            // 4. PDF Generation
-            $options = new Options();
-            $options->set('isRemoteEnabled', true);
-            $options->set('defaultFont', 'serif');
+                $filename = "Contrato-Servicios-Exp-{$safeNumero}.docx";
+                
+                // Save to temporary file
+                $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+                $tempFile = tempnam(sys_get_temp_dir(), 'contract');
+                $objWriter->save($tempFile);
 
-            $dompdf = new Dompdf($options);
-            $dompdf->loadHtml($fullHtml);
-            $dompdf->setPaper('A4', 'portrait');
-            $dompdf->render();
+                return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
 
-            $safeNumero = str_replace(['/', '\\'], '-', $expediente->numero);
-            $filename = "Contrato-Servicios-Exp-{$safeNumero}.pdf";
+            } catch (\Exception $e) {
+                 \Log::error('Error generando contrato Word: ' . $e->getMessage());
+                 return response('Error generando el archivo Word: ' . $e->getMessage(), 500);
+            }
+        } else {
+            // PDF Generation (Default)
+            try {
+                // Wrapper for PDF styling
+                $fullHtml = '
+                <html>
+                <head>
+                    <style>
+                        body { font-family: "Times New Roman", serif; line-height: 1.5; color: #000; }
+                    </style>
+                </head>
+                <body>
+                    ' . $htmlContent . '
+                </body>
+                </html>';
 
-            return response()->stream(
-                fn () => print($dompdf->output()),
-                200,
-                [
-                    'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'inline; filename="' . $filename . '"',
-                ]
-            );
+                $options = new Options();
+                $options->set('isRemoteEnabled', true);
+                $options->set('defaultFont', 'serif');
 
-        } catch (\Exception $e) {
-             \Log::error('Error generando contrato PDF Controlado: ' . $e->getMessage());
-             return response('Error generando el PDF: ' . $e->getMessage(), 500);
+                $dompdf = new Dompdf($options);
+                $dompdf->loadHtml($fullHtml);
+                $dompdf->setPaper('A4', 'portrait');
+                $dompdf->render();
+
+                $filename = "Contrato-Servicios-Exp-{$safeNumero}.pdf";
+
+                return response()->stream(
+                    fn () => print($dompdf->output()),
+                    200,
+                    [
+                        'Content-Type' => 'application/pdf',
+                        'Content-Disposition' => 'inline; filename="' . $filename . '"',
+                    ]
+                );
+
+            } catch (\Exception $e) {
+                 \Log::error('Error generando contrato PDF Controlado: ' . $e->getMessage());
+                 return response('Error generando el PDF: ' . $e->getMessage(), 500);
+            }
         }
     }
 }
