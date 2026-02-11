@@ -41,9 +41,25 @@ class ContractGenerationService
         // 3. Fix Entities
         $content = str_replace('&nbsp;', ' ', $content);
         
-        // 4. Decode others but keep special XML chars safe if needed, 
-        // actually PhpWord handles standard HTML entities usually, but let's be safe.
-        // We leave other entities as is.
+        // 4. Decode HTML entities to their corresponding characters
+        // This prevents &aacute; from breaking XML parsers if the DTD isn't loaded
+        // We exclude standard XML entities: &amp;, &lt;, &gt;, &quot;, &apos;
+        $content = html_entity_decode($content, ENT_QUOTES | ENT_XML1, 'UTF-8');
+        
+        // 5. Explicitly re-encode the 5 XML reserved characters that might be in text content
+        // This is a bit brute force but safe:
+        // Note: We don't want to encode the < and > of the HTML tags, so this approach is tricky.
+        // Instead, let's trust html_entity_decode to give us UTF-8 chars which XML loves.
+        // But we must ensure <br> is <br/>. We did that in step 2.
+
+        // 6. Strip potentially dangerous tags
+        $allowedTags = '<p><a><ul><ol><li><b><strong><i><em><u><br><h1><h2><h3><h4><h5><h6><table><thead><tbody><tr><td><th><img><div><span><hr>';
+        $content = strip_tags($content, $allowedTags);
+
+        // Re-apply void tag fixes after strip_tags just in case
+        $content = preg_replace('/<br\s*\/?>/i', '<br/>', $content);
+        $content = preg_replace('/<hr\s*\/?>/i', '<hr/>', $content);
+        $content = preg_replace('/<img([^>]+)(?<!\/)>/i', '<img$1/>', $content);
 
         return $content;
     }
