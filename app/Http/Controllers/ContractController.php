@@ -52,33 +52,9 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // FINAL FIX: Aggressive cleaning of HTML
-                // 1. Convert <br> variants to unified <br/>
-                $cleanHtml = preg_replace('/<br\s*\/?>/i', '<br/>', $htmlContent);
-                $cleanHtml = preg_replace('/<hr\s*\/?>/i', '<hr/>', $cleanHtml);
-                $cleanHtml = preg_replace('/<img([^>]+)(?<!\/)>/i', '<img$1/>', $cleanHtml);
-                
-                // 2. Remove all attributes (style, class, id, etc.) from tags to prevent XML errors
-                // This regex matches <tag ...> and keeps <tag>
-                // It looks for tags with attributes and strips the attributes.
-                // Note: deeply nested matching is hard, but simple attribute stripping works.
-                // We do this by stripping tags but allowing them, which doesn't strip attributes unfortunately.
-                // So we use regex to strip content inside < > after the tag name.
-                
-                // Keep it simple: remove 'style="..."' specifically as we know that's the killer.
-                $cleanHtml = preg_replace('/\s+style="[^"]*"/', '', $cleanHtml);
-                $cleanHtml = preg_replace("/\s+style='[^']*'/", '', $cleanHtml);
-                
-                // 3. Encode special chars but keep tags
-                // Actually, PhpWord expects UTF-8 characters, not Entities.
-                // So we decode entities back to UTF-8
-                $cleanHtml = html_entity_decode($cleanHtml, ENT_QUOTES | ENT_XML1, 'UTF-8');
-                
-                // 4. Ensure no HTML head/body structure
-                $cleanHtml = strip_tags($cleanHtml, '<p><a><ul><ol><li><b><strong><i><em><u><br><h1><h2><h3><h4><h5><h6><table><thead><tbody><tr><td><th><img><div><span><hr>');
-
                 // Add HTML content to Word
-                \PhpOffice\PhpWord\Shared\Html::addHtml($section, $cleanHtml, false, false);
+                // The content is already cleaned and escaped by ContractGenerationService
+                \PhpOffice\PhpWord\Shared\Html::addHtml($section, $htmlContent, false, false);
 
                 $filename = "Contrato-Servicios-Exp-{$safeNumero}.docx";
                 

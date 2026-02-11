@@ -21,9 +21,14 @@ class ContractGenerationService
         $variables = $this->getVariables($expediente);
 
         foreach ($variables as $key => $value) {
+            // Escape values to prevent XML corruption (e.g. A&B -> A&amp;B)
+            // But we must NOT double escape if the value is already HTML (unlikely for these vars but possible)
+            // Assuming these are plain text variables:
+            $safeValue = htmlspecialchars((string)$value, ENT_QUOTES | ENT_XML1, 'UTF-8');
+            
             // Reemplazar {{VARIABLE}} y {{ VARIABLE }}
-            $content = str_replace('{{' . $key . '}}', $value, $content);
-            $content = str_replace('{{ ' . $key . ' }}', $value, $content);
+            $content = str_replace('{{' . $key . '}}', $safeValue, $content);
+            $content = str_replace('{{ ' . $key . ' }}', $safeValue, $content);
         }
 
         // Manual cleanup to avoid DOMDocument errors with malformed fragments
@@ -41,25 +46,21 @@ class ContractGenerationService
         // 3. Fix Entities
         $content = str_replace('&nbsp;', ' ', $content);
         
-        // 4. Decode HTML entities to their corresponding characters
-        // This prevents &aacute; from breaking XML parsers if the DTD isn't loaded
-        // We exclude standard XML entities: &amp;, &lt;, &gt;, &quot;, &apos;
-        $content = html_entity_decode($content, ENT_QUOTES | ENT_XML1, 'UTF-8');
+        // 4. (Removed html_entity_decode as it breaks XML structure by un-escaping &amp; etc)
         
         // 5. Remove 'style' attributes as PhpWord often fails to parse complex CSS inline
         // This is the #1 cause of "Word detected an error" with valid HTML structure
         $content = preg_replace('/\s+style="[^"]*"/', '', $content);
         $content = preg_replace("/\s+style='[^']*'/", '', $content);
-
+        
         // 6. Strip potentially dangerous tags
-        $allowedTags = '<p><a><ul><ol><li><b><strong><i><em><u><br><h1><h2><h3><h4><h5><h6><table><thead><tbody><tr><td><th><img><div><span><hr>';
+        // Removed <img> from allowed tags for now as it's a common failure point without valid src
+        $allowedTags = '<p><a><ul><ol><li><b><strong><i><em><u><br><h1><h2><h3><h4><h5><h6><table><thead><tbody><tr><td><th><div><span><hr>';
         $content = strip_tags($content, $allowedTags);
 
         // Re-apply void tag fixes after strip_tags just in case
         $content = preg_replace('/<br\s*\/?>/i', '<br/>', $content);
         $content = preg_replace('/<hr\s*\/?>/i', '<hr/>', $content);
-        // Simple img fix - ensure it ends with />
-        $content = preg_replace('/<img([^>]+)(?<!\/)>/i', '<img$1/>', $content);
 
         return $content;
     }
