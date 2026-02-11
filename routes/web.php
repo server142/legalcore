@@ -118,6 +118,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Google Calendar Routes
     Route::get('auth/google', [\App\Http\Controllers\GoogleController::class, 'redirectToGoogle'])->name('auth.google');
     Route::get('auth/google/callback', [\App\Http\Controllers\GoogleController::class, 'handleGoogleCallback']);
+    Route::post('auth/google/disconnect', [\App\Http\Controllers\GoogleController::class, 'disconnect'])->name('auth.google.disconnect');
 });
 
 Route::view('profile', 'profile')

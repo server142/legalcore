@@ -44,6 +44,11 @@ class Index extends Component
     public function edit($id)
     {
         $user = User::findOrFail($id);
+
+        if (!auth()->user()->hasRole('super_admin') && $user->tenant_id !== auth()->user()->tenant_id) {
+            abort(403, 'No tienes permiso para editar este usuario.');
+        }
+
         $this->userId = $user->id;
         $this->name = $user->name;
         $this->email = $user->email;
@@ -106,6 +111,11 @@ class Index extends Component
         }
 
         $user = User::findOrFail($this->userId);
+
+        if (!auth()->user()->hasRole('super_admin') && $user->tenant_id !== auth()->user()->tenant_id) {
+            abort(403, 'No tienes permiso para actualizar este usuario.');
+        }
+
         $oldData = $user->only(['name', 'email', 'role']);
 
         $user->update([
@@ -149,6 +159,11 @@ class Index extends Component
     public function deleteUser()
     {
         $user = User::findOrFail($this->userToDeleteId);
+
+        if (!auth()->user()->hasRole('super_admin') && $user->tenant_id !== auth()->user()->tenant_id) {
+            abort(403, 'No tienes permiso para eliminar este usuario.');
+        }
+
         $userName = $user->name;
         $userEmail = $user->email;
         
@@ -167,6 +182,10 @@ class Index extends Component
     public function resendInvitation($id)
     {
         $user = User::findOrFail($id);
+
+        if (!auth()->user()->hasRole('super_admin') && $user->tenant_id !== auth()->user()->tenant_id) {
+            abort(403, 'No tienes permiso para realizar esta acción.');
+        }
         
         // Generamos una contraseña temporal nueva para el reenvío
         $newPassword = \Illuminate\Support\Str::random(10);
@@ -182,8 +201,17 @@ class Index extends Component
 
     public function render()
     {
-        $users = User::where('name', 'like', '%'.$this->search.'%')
-            ->orWhere('email', 'like', '%'.$this->search.'%')
+        $query = User::query();
+
+        // Filter by tenant restriction if not super admin
+        if (!auth()->user()->hasRole('super_admin')) {
+            $query->where('tenant_id', auth()->user()->tenant_id);
+        }
+
+        $users = $query->where(function($q) {
+                $q->where('name', 'like', '%'.$this->search.'%')
+                  ->orWhere('email', 'like', '%'.$this->search.'%');
+            })
             ->paginate(10);
 
         return view('livewire.admin.users.index', [
