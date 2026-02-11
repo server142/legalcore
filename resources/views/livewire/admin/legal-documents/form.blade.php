@@ -7,6 +7,7 @@
                 toolbar: [
                     [{ 'header': [1, 2, 3, false] }],
                     ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'align': [] }],
                     [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                     ['link', 'clean']
                 ]
@@ -104,7 +105,7 @@
                             <x-input-error :messages="$errors->get('texto')" class="mt-2" />
                         </div>
 
-                        <div class="mt-6 flex justify-end space-x-3">
+                        <div class="mt-6 flex justify-end space-x-3 relative z-50">
                             <a href="{{ route('admin.legal-documents.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg font-bold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
                                 Cancelar
                             </a>

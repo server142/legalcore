@@ -178,41 +178,71 @@ class LegalContentService
 
     private static function getTenantServiceContractTemplate()
     {
-        return '<h1>Contrato de Prestación de Servicios Profesionales</h1>
-<p><strong>Conste por el presente documento, el Contrato de Prestación de Servicios Profesionales que celebran, por una parte, {{ABOGADO_RESPONSABLE}} (en adelante "EL PRESTADOR") y por la otra {{CLIENTE_NOMBRE}} (en adelante "EL CLIENTE"), al tenor de las siguientes cláusulas:</strong></p>
+        return '<h2 align="center"><strong>CONTRATO DE PRESTACIÓN DE SERVICIOS PROFESIONALES</strong></h2>
 
-<h2>1. Objeto del Contrato</h2>
-<p>EL PRESTADOR se obliga a brindar asesoría y representación legal a EL CLIENTE en relación con el asunto identificado como <strong>{{EXPEDIENTE_TITULO}}</strong>, con número de expediente <strong>{{EXPEDIENTE_FOLIO}}</strong>, radicado en {{EXPEDIENTE_JUZGADO}}.</p>
+<p><strong>CONTRATO DE PRESTACIÓN DE SERVICIOS PROFESIONALES</strong> QUE CELEBRAN, POR UNA PARTE, <strong>{{ DESPACHO_NOMBRE }}</strong>, REPRESENTADO EN ESTE ACTO POR EL LICENCIADO <strong>{{ DESPACHO_TITULAR }}</strong>, A QUIEN EN LO SUCESIVO SE LE DENOMINARÁ "EL PROFESIONISTA", Y POR LA OTRA PARTE, <strong>{{ CLIENTE_NOMBRE }}</strong>, A QUIEN EN LO SUCESIVO SE LE DENOMINARÁ "EL CLIENTE", AL TENOR DE LAS SIGUIENTES DECLARACIONES Y CLÁUSULAS:</p>
 
-<h2>2. Alcance de los Servicios</h2>
-<p>Los servicios incluyen la elaboración de demandas, contestaciones, ofrecimiento de pruebas, asistencia a audiencias y todas las gestiones necesarias hasta la conclusión del asunto en primera instancia.</p>
+<h3><strong>D E C L A R A C I O N E S</strong></h3>
 
-<h2>3. Honorarios Profesionales</h2>
-<p>Las partes acuerdan que los honorarios por los servicios descritos ascenderán a la cantidad total de <strong>${{HONORARIOS_TOTALES}} MXN</strong>.</p>
-<p>Dichos honorarios no incluyen gastos de juicio, peritajes, fianzas, ni copias certificadas, los cuales serán cubiertos directamente por EL CLIENTE.</p>
+<p><strong>I. DECLARA "EL PROFESIONISTA":</strong><br>
+a) Ser una entidad dedicada a la prestación de servicios jurídicos, legalmente constituida y representada, contando con la capacidad e infraestructura necesarias para el objeto de este contrato.<br>
+b) Que su Registro Federal de Contribuyentes es <strong>{{ DESPACHO_RFC }}</strong>.<br>
+c) Que para efectos del presente contrato señala como domicilio el ubicado en: <strong>{{ DESPACHO_DIRECCION }}</strong>, y como medio de contacto oficial el correo electrónico: <strong>{{ DESPACHO_EMAIL }}</strong>.</p>
 
-<h2>4. Vigencia</h2>
-<p>Este contrato entra en vigor a partir del día <strong>{{FECHA_INICIO}}</strong> y concluirá al emitirse la sentencia definitiva o convenio que ponga fin al asunto.</p>
+<p><strong>II. DECLARA "EL CLIENTE":</strong><br>
+a) Ser una persona con plena capacidad legal para obligarse en los términos del presente instrumento.<br>
+b) Que es su voluntad contratar los servicios de "EL PROFESIONISTA" para la atención del asunto legal descrito más adelante.<br>
+c) Que su Registro Federal de Contribuyentes es <strong>{{ CLIENTE_RFC }}</strong>.<br>
+d) Que señala como domicilio para recibir notificaciones: <strong>{{ CLIENTE_DIRECCION }}</strong>, y correo electrónico: <strong>{{ CLIENTE_EMAIL }}</strong>.</p>
 
-<h2>5. Confidencialidad</h2>
-<p>Ambas partes se obligan a guardar estricta confidencialidad sobre la información compartida durante la vigencia de este contrato.</p>
+<p>Expuesto lo anterior, las partes otorgan las siguientes:</p>
 
-<p><br><br></p>
-<p style="text-align: center;">Firmado en <strong>Xalapa, Veracruz</strong> a los {{FECHA_ACTUAL}}.</p>
+<h3><strong>C L Á U S U L A S</strong></h3>
 
-<table style="width: 100%; margin-top: 50px;">
+<p><strong>PRIMERA. OBJETO.</strong><br>
+"EL PROFESIONISTA" se obliga a prestar sus servicios profesionales de asesoría y representación legal en relación con el asunto:</p>
+
+<ul>
+<li><strong>Asunto:</strong> {{ EXPEDIENTE_TITULO }}</li>
+<li><strong>Expediente:</strong> {{ EXPEDIENTE_FOLIO }}</li>
+<li><strong>Materia:</strong> {{ EXPEDIENTE_MATERIA }}</li>
+<li><strong>Autoridad:</strong> {{ EXPEDIENTE_JUZGADO }}</li>
+</ul>
+
+<p>Los servicios comprenden la atención diligente y profesional en todas las etapas procesales del juicio <strong>{{ EXPEDIENTE_JUICIO }}</strong>, hasta su conclusión en primera instancia.</p>
+
+<p><strong>SEGUNDA. HONORARIOS.</strong><br>
+"EL CLIENTE" pagará a "EL PROFESIONISTA" la cantidad de <strong>${{ HONORARIOS_TOTALES }} (M.N.)</strong> por concepto de honorarios profesionales. Esta suma no incluye gastos, costas, peritajes, ni viáticos.</p>
+
+<p><strong>TERCERA. CONFIDENCIALIDAD.</strong><br>
+Ambas partes acuerdan mantener estricta confidencialidad sobre la información intercambiada. "EL PROFESIONISTA" protegerá los datos personales y sensibles de "EL CLIENTE" conforme a la legislación aplicable.</p>
+
+<p><strong>CUARTA. VIGENCIA Y TERMINACIÓN.</strong><br>
+Este contrato inicia el <strong>{{ FECHA_INICIO }}</strong> y concluirá al finalizar el asunto encargado o por acuerdo escrito entre las partes.</p>
+
+<p><strong>QUINTA. JURISDICCIÓN.</strong><br>
+Para la interpretación y cumplimiento de este contrato, las partes se someten a los tribunales competentes de <strong>{{ CIUDAD_FIRMA }}</strong>, renunciando a cualquier otro fuero.</p>
+
+<p>Leído que fue el presente contrato, lo firman en <strong>{{ CIUDAD_FIRMA }}</strong>, a los <strong>{{ FECHA_ACTUAL }}</strong>.</p>
+
+<p><br><br><br></p>
+
+<table style="width: 100%; border-collapse: collapse; border: none;">
+<tbody>
 <tr>
-    <td style="width: 50%; text-align: center;">
-        __________________________<br>
-        <strong>{{ABOGADO_RESPONSABLE}}</strong><br>
-        EL PRESTADOR
-    </td>
-    <td style="width: 50%; text-align: center;">
-        __________________________<br>
-        <strong>{{CLIENTE_NOMBRE}}</strong><br>
-        EL CLIENTE
-    </td>
+<td style="width: 50%; text-align: center; border: none;">
+__________________________<br>
+<strong>"EL PROFESIONISTA"</strong><br>
+LIC. {{ DESPACHO_TITULAR }}<br>
+{{ DESPACHO_NOMBRE }}
+</td>
+<td style="width: 50%; text-align: center; border: none;">
+__________________________<br>
+<strong>"EL CLIENTE"</strong><br>
+{{ CLIENTE_NOMBRE }}
+</td>
 </tr>
+</tbody>
 </table>';
     }
 

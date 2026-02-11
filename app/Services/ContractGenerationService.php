@@ -58,7 +58,25 @@ class ContractGenerationService
             // Datos del Despacho/Abogado
             'ABOGADO_RESPONSABLE' => $abogado ? $abogado->name : 'El Despacho',
             'FECHA_ACTUAL' => date('d/m/Y'),
-            'CIUDAD_FIRMA' => 'Ciudad de México', // Podría ser una configuración del tenant
+            
+            // Datos Institucionales del Despacho (Tenant)
+            'DESPACHO_NOMBRE' => $expediente->tenant && $expediente->tenant->settings ? 
+                ($expediente->tenant->settings['nombre_comercial'] ?? $expediente->tenant->name) : 'El Despacho',
+            
+            'DESPACHO_TITULAR' => $expediente->tenant && $expediente->tenant->settings ? 
+                ($expediente->tenant->settings['representante_legal'] ?? 'Representante Legal') : 'Representante Legal',
+
+            'DESPACHO_RFC' => $expediente->tenant && $expediente->tenant->settings ? 
+                ($expediente->tenant->settings['rfc'] ?? '') : '',
+
+            'DESPACHO_DIRECCION' => $expediente->tenant && $expediente->tenant->settings ? 
+                ($expediente->tenant->settings['direccion_fiscal'] ?? 'Domicilio del Despacho') : 'Domicilio del Despacho',
+                
+            'DESPACHO_EMAIL' => $expediente->tenant && $expediente->tenant->settings ? 
+                ($expediente->tenant->settings['email_contacto'] ?? '') : '',
+                
+            'CIUDAD_FIRMA' => $expediente->tenant && $expediente->tenant->settings ? 
+                ($expediente->tenant->settings['ciudad'] ?? 'Ciudad de México') : 'Ciudad de México',
         ];
     }
 
@@ -81,7 +99,12 @@ class ContractGenerationService
             'FECHA_INICIO',
             'ABOGADO_RESPONSABLE',
             'FECHA_ACTUAL',
-            'CIUDAD_FIRMA'
+            'CIUDAD_FIRMA',
+            'DESPACHO_NOMBRE',
+            'DESPACHO_TITULAR',
+            'DESPACHO_RFC',
+            'DESPACHO_DIRECCION',
+            'DESPACHO_EMAIL'
         ];
     }
 }
