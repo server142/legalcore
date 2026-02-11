@@ -26,34 +26,24 @@ class ContractGenerationService
             $content = str_replace('{{ ' . $key . ' }}', $value, $content);
         }
 
-        // Use DOMDocument to ensure valid XHTML for PhpWord
-        if (!empty($content)) {
-            $dom = new \DOMDocument();
-             // Suppress warnings for HTML5 tags or minor errors
-            libxml_use_internal_errors(true);
-            
-            // Load HTML with UTF-8 encoding hack
-            // We strip any existing html/body tags to avoid duplication before loading if needed,
-            // but DOMDocument handles it well if we just search for body.
-            // Using mb_convert_encoding is safer for special chars.
-            $dom->loadHTML(mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-            libxml_clear_errors();
-
-            // We need the content INSIDE the body, compatible with XML (e.g. <br/> not <br>)
-            $body = $dom->getElementsByTagName('body')->item(0);
-            
-            if ($body) {
-                $xmlContent = '';
-                foreach ($body->childNodes as $child) {
-                    // saveXML creates valid XHTML (self-closing tags)
-                    $xmlContent .= $dom->saveXML($child);
-                }
-                $content = $xmlContent;
-            } else {
-                // If no body tag found (fragment), save the whole thing as XML
-                $content = $dom->saveXML();
-            }
+        // Manual cleanup to avoid DOMDocument errors with malformed fragments
+        // 1. Extract body content if present
+        if (preg_match('/<body[^>]*>(.*?)<\/body>/is', $content, $matches)) {
+            $content = $matches[1];
         }
+
+        // 2. Fix common void tags for XML compatibility (XHTML)
+        // PhpWord requires <br/>, <hr/>, <img> to be closed.
+        $content = preg_replace('/<br\s*\/?>/i', '<br/>', $content);
+        $content = preg_replace('/<hr\s*\/?>/i', '<hr/>', $content);
+        $content = preg_replace('/<img([^>]+)(?<!\/)>/i', '<img$1/>', $content);
+
+        // 3. Fix Entities
+        $content = str_replace('&nbsp;', ' ', $content);
+        
+        // 4. Decode others but keep special XML chars safe if needed, 
+        // actually PhpWord handles standard HTML entities usually, but let's be safe.
+        // We leave other entities as is.
 
         return $content;
     }
