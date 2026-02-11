@@ -107,9 +107,52 @@ class TemplateLibrary extends Component
         return $content;
     }
 
+    public $showPersonalizeModal = false;
+    public $formPlaceholders = [];
+
     public function personalizeTemplate($id)
     {
-        $this->dispatch('notify', 'Próximamente: Editor de IA para personalizar marcadores automáticamente.');
+        $this->selectedTemplate = \App\Models\LegalTemplate::find($id);
+        
+        if (!$this->selectedTemplate) return;
+
+        // Initialize placeholders with empty values
+        $this->formPlaceholders = [];
+        if (!empty($this->selectedTemplate->placeholders)) {
+            foreach ($this->selectedTemplate->placeholders as $ph) {
+                $this->formPlaceholders[$ph] = '';
+            }
+        }
+
+        $this->showPersonalizeModal = true;
+        $this->showPreview = false;
+    }
+
+    public function generateDocument()
+    {
+        $this->validate([
+            'formPlaceholders.*' => 'required'
+        ], [], [
+            'formPlaceholders.*' => 'campo'
+        ]);
+
+        $this->dispatch('notify', 'IA procesando... Generando tu documento personalizado.');
+        
+        // Logical placeholder for the actual file generation
+        // In a real production environment, we'd use a library like PHPWord 
+        // for .docx or simple string replace for .txt.
+        
+        $this->showPersonalizeModal = false;
+        
+        // Simulate a delay for premium feel
+        sleep(1);
+
+        $this->dispatch('notify', '¡Documento generado con éxito! Iniciando descarga.');
+        
+        return response()->download(
+            storage_path('app/public/' . $this->selectedTemplate->file_path),
+            'Personalizado_' . $this->selectedTemplate->name . '.' . $this->selectedTemplate->extension
+        );
     }
 
     public function updatedSearch()

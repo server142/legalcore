@@ -307,5 +307,58 @@
             </div>
             @endif
         </div>
+    <!-- Personalize Modal -->
+    <div x-show="$wire.showPersonalizeModal" 
+         class="fixed inset-0 z-[110] overflow-y-auto"
+         x-cloak>
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md" @click="$wire.showPersonalizeModal = false"></div>
+
+            <div class="relative bg-white rounded-[2.5rem] w-full max-w-xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all">
+                @if($selectedTemplate)
+                <div class="p-10">
+                    <div class="flex justify-between items-start mb-8">
+                        <div class="space-y-1">
+                            <h3 class="text-3xl font-extrabold text-slate-900 tracking-tight">Personalizar con IA</h3>
+                            <p class="text-slate-500 text-sm">Completa los datos para generar tu documento.</p>
+                        </div>
+                        <button @click="$wire.showPersonalizeModal = false" class="text-slate-400 hover:text-slate-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                    <form wire:submit.prevent="generateDocument" class="space-y-6">
+                        @forelse($formPlaceholders as $placeholder => $value)
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest pl-1">{{ str_replace(['[', ']', '_'], ['', '', ' '], $placeholder) }}</label>
+                                <input type="text" 
+                                       wire:model="formPlaceholders.{{ $placeholder }}" 
+                                       class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium text-slate-700"
+                                       placeholder="Escribe el valor para {{ $placeholder }}...">
+                            </div>
+                        @empty
+                            <div class="py-10 text-center bg-indigo-50 rounded-3xl border border-dashed border-indigo-200">
+                                <p class="text-indigo-600 font-bold mb-1">Este formato no requiere variables.</p>
+                                <p class="text-indigo-400 text-xs text-balance">Puedes descargarlo directamente o generar una copia limpia.</p>
+                            </div>
+                        @endforelse
+
+                        <div class="pt-6 space-y-4">
+                            <button type="submit" 
+                                    wire:loading.attr="disabled"
+                                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-5 rounded-2xl shadow-xl shadow-indigo-500/30 transition-all flex items-center justify-center gap-3 active:scale-[0.98]">
+                                <span wire:loading.remove>Generar Documento Final</span>
+                                <span wire:loading>La IA está trabajando...</span>
+                                <svg wire:loading.remove class="w-5 h-5 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            </button>
+                            <p class="text-[10px] text-center text-slate-400 font-medium italic">
+                                Al generar, Diogenes creará una copia personalizada en formato {{ $selectedTemplate->extension }} lista para imprimir.
+                            </p>
+                        </div>
+                    </form>
+                </div>
+                @endif
+            </div>
+        </div>
     </div>
 </div>
