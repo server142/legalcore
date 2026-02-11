@@ -23,7 +23,7 @@ return new class extends Migration
                 $table->string('extension', 10); // docx, pdf, txt
                 $table->longText('extracted_text')->nullable();
                 $table->json('placeholders')->nullable(); // Detected keys like [NOMBRE_CLIENTE]
-                $table->vector('embedding', 1536)->nullable(); // For future semantic search
+                $table->json('embedding')->nullable(); // Changed from vector to json for compatibility
                 $table->boolean('is_global')->default(false); // If true, visible to everyone
                 $table->unsignedInteger('download_count')->default(0);
                 $table->softDeletes();
