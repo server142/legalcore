@@ -36,15 +36,21 @@ class ContractGenerationService
             $dom->loadHTML('<?xml encoding="utf-8" ?>' . $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
             libxml_clear_errors();
 
-            // Save as XML (XHTML) which PhpWord expects
-            $content = $dom->saveXML($dom->documentElement);
-            
-            // Remove the XML declaration added by saveXML if present
-            // (Only keeping the inner content if possible, or full root if needed)
-            // But PhpWord often takes the body content. Let's return the full valid XML string.
+            // Save as HTML to respect tags, but PhpWord needs it clean.
+            // saveHTML covers the loaded nodes.
+            // We want the inner body if it exists, or the content itself.
+            $body = $dom->getElementsByTagName('body')->item(0);
+            if ($body) {
+                // If there's a body, get its inner HTML
+                $content = '';
+                foreach ($body->childNodes as $child) {
+                    $content .= $dom->saveHTML($child);
+                }
+            } else {
+                // Fallback to full dump if no body found (unlikely with loadHTML)
+                $content = $dom->saveHTML();
+            }
         }
-
-        return $content;
 
         return $content;
     }
