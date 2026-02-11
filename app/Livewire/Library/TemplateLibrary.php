@@ -12,6 +12,7 @@ class TemplateLibrary extends Component
 
     public $search = '';
     public $selectedCategory = 'Todos';
+    public $selectedTemplate;
     public $showPreview = false;
     public $showUploadModal = false;
 
