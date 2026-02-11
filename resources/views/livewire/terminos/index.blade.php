@@ -44,7 +44,7 @@
                                 {{ $termino->fecha_vencimiento->format('d/m/Y') }}
                             </div>
                             <div class="text-xs text-gray-500">
-                                {{ $termino->fecha_vencimiento->diffForHumans() }}
+                                {{ $termino->fecha_vencimiento->endOfDay()->diffForHumans() }}
                             </div>
                         </td>
                         <td class="px-6 py-4">
@@ -141,7 +141,7 @@
                             <div class="mt-2 py-2 px-3 rounded-xl {{ $isVencido ? 'bg-red-50 text-red-700' : ($isProximo ? 'bg-orange-50 text-orange-700' : 'bg-blue-50 text-blue-700') }} text-center">
                                 <p class="text-[10px] font-bold flex items-center justify-center gap-1.5 uppercase">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    {{ $termino->fecha_vencimiento->diffForHumans() }}
+                                    {{ $termino->fecha_vencimiento->endOfDay()->diffForHumans() }}
                                 </p>
                             </div>
                         @else
