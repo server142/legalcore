@@ -49,15 +49,26 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // Add HTML content to Word
-                \PhpOffice\PhpWord\Shared\Html::addHtml($section, $htmlContent, false, false);
+                // DIAGNOSTIC STEP: STRIP HTML TO TEXT TO ISOLATE THE ISSUE
+                // Replace breaks with newlines before stripping
+                $textOnly = str_replace(['<br>', '<br/>', '<br />'], "\n", $htmlContent);
+                $textOnly = strip_tags($textOnly);
+                
+                // Add text preserving line breaks
+                $lines = explode("\n", $textOnly);
+                foreach ($lines as $line) {
+                    $trimLine = trim($line);
+                    if (!empty($trimLine)) {
+                        $section->addText($trimLine);
+                    }
+                }
 
                 $filename = "Contrato-Servicios-Exp-{$safeNumero}.docx";
                 
                 // Save to temporary file
-                $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+                $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
                 $tempFile = tempnam(sys_get_temp_dir(), 'contract');
-                $objWriter->save($tempFile);
+                $writer->save($tempFile);
 
                 return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
 
