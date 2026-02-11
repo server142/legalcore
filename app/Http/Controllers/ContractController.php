@@ -49,25 +49,52 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // MANUAL CONSTRUCTION PHASE 1: VARIABLES & HEADERS ONLY
+                // MANUAL CONSTRUCTION PHASE 2: FULL CONTENT (SAFE MODE)
                 
-                // Title
-                $section->addText("CONTRATO DE PRESTACIÓN DE SERVICIOS PROFESIONALES", ['bold' => true, 'size' => 14], ['align' => 'center']);
-                $section->addTextBreak(2);
+                // 1. Prepare Content: Convert HTML structure to Text structure
+                // Replace block/break tags with newlines
+                $processedContent = str_replace(
+                    ['<br>', '<br/>', '<br />', '</p>', '</h1>', '</h2>', '</h3>', '</h4>', '</li>', '</div>', '</tr>', '</table>'], 
+                    "\n", 
+                    $htmlContent
+                );
                 
-                // Expediente Info
-                $section->addText("Expediente: " . $expediente->numero);
-                $section->addText("Asunto: " . iconv('UTF-8', 'UTF-8//IGNORE', $expediente->titulo));
+                // 2. Decode HTML Entities (e.g. &nbsp; -> space, &quot; -> ")
+                $processedContent = html_entity_decode($processedContent, ENT_QUOTES | ENT_XML1, 'UTF-8');
                 
-                // Client Info (Safe Access)
-                $clienteNombre = $expediente->cliente ? $expediente->cliente->nombre : 'N/A';
-                // Clean non-printable chars from DB data just in case
-                $clienteNombre = preg_replace('/[\x00-\x1F\x7F]/', '', $clienteNombre);
+                // 3. Strip all remaining tags
+                $plainText = strip_tags($processedContent);
                 
-                $section->addText("Cliente: " . iconv('UTF-8', 'UTF-8//IGNORE', $clienteNombre));
+                // 4. Sanitize Characters (Crucial for Word 2016 compatibility)
+                // Force UTF-8 and discard invalid sequences
+                $plainText = iconv('UTF-8', 'UTF-8//IGNORE', $plainText);
+                // Remove invisible control characters (ASCII 0-31) except newlines (10) and CR (13)
+                $plainText = preg_replace('/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/', '', $plainText);
                 
-                $section->addTextBreak(1);
-                $section->addText("Si puedes leer esto, los datos básicos del expediente y cliente son seguros.");
+                // 5. Split into lines
+                $lines = explode("\n", $plainText);
+                
+                // Styles
+                $titleStyle = ['bold' => true, 'size' => 12];
+                $normalStyle = ['size' => 11];
+                $centeredParams = ['align' => 'center', 'spaceAfter' => 200];
+                $justifiedParams = ['align' => 'both', 'spaceAfter' => 100];
+                
+                foreach ($lines as $line) {
+                    $trimLine = trim($line);
+                    
+                    if (!empty($trimLine)) {
+                        // Heuristic: Detect Uppercase Titles (longer than 5 chars, no dots at end usually)
+                        $isTitle = (mb_strlen($trimLine) > 5 && mb_strtoupper($trimLine) === $trimLine && !str_contains($trimLine, '. '));
+                        
+                        // Special check for "CONTRATO" or "CLÁUSULAS"
+                        if ($isTitle || str_starts_with($trimLine, 'CONTRATO') || str_contains($trimLine, 'CLÁUSULAS')) {
+                            $section->addText($trimLine, $titleStyle, $centeredParams);
+                        } else {
+                            $section->addText($trimLine, $normalStyle, $justifiedParams);
+                        }
+                    }
+                }
                 
                 $filename = "Contrato-Servicios-Exp-{$safeNumero}.docx";
                 
