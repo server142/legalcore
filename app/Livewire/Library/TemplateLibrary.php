@@ -12,7 +12,7 @@ class TemplateLibrary extends Component
 
     public $search = '';
     public $selectedCategory = 'Todos';
-    public $selectedTemplate;
+    public $selectedTemplate = null;
     public $showPreview = false;
     public $showUploadModal = false;
 
@@ -116,7 +116,8 @@ class TemplateLibrary extends Component
 
         return view('livewire.library.template-library', [
             'templates' => $query->paginate(12),
-            'categories' => $categories
+            'categories' => $categories,
+            'selectedTemplate' => $this->selectedTemplate
         ])->layout('layouts.app');
     }
 }
