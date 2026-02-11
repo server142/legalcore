@@ -49,31 +49,10 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // ULTRA SAFE MODE: Pure Text Only
-                // 1. Strip all tags
-                $plainText = strip_tags($htmlContent);
-                
-                // 2. Decode entities twice just in case (&amp;amp;)
-                $plainText = html_entity_decode($plainText);
-                $plainText = html_entity_decode($plainText);
-                
-                // 3. Clean up non-printable characters that break XML (Control chars < 32 except newline/return/tab)
-                // Filter everything except standard unicode printable chars
-                // Use iconv to discard invalid UTF-8 sequences
-                $plainText = iconv('UTF-8', 'UTF-8//IGNORE', $plainText);
-                
-                // Remove control characters (ASCII 0-31) except newlines (10, 13)
-                $plainText = preg_replace('/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/', '', $plainText);
-
-                $lines = explode("\n", $plainText);
-                
-                foreach ($lines as $line) {
-                    $trimLine = trim($line);
-                    if (!empty($trimLine)) {
-                        // Just add text, no fancy styling to rule out style issues
-                        $section->addText($trimLine);
-                    }
-                }
+                // Confirm "Hello World" capability again.
+                // If this works, then $plainText definitely contains something toxic.
+                $section->addText("Hello World - Intento 2");
+                $section->addText("Si lees esto, el mecanismo funciona y el texto del contrato tiene un caracter corrupto.");
                 
                 $filename = "Contrato-Servicios-Exp-{$safeNumero}.docx";
                 
