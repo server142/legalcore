@@ -13,8 +13,7 @@ class TemplateLibrary extends Component
     public $search = '';
     public $selectedCategory = 'Todos';
     public $selectedTemplate = null;
-    public $showPreview = false;
-    public $showUploadModal = false;
+    public $activePanel = null; // 'preview', 'personalize', 'upload'
 
     // Upload Fields
     public $newTemplateName;
@@ -31,7 +30,7 @@ class TemplateLibrary extends Component
     public function openUploadModal()
     {
         $this->reset(['newTemplateName', 'newTemplateDescription', 'newTemplateCategory', 'newTemplateMateria', 'newTemplateFile']);
-        $this->showUploadModal = true;
+        $this->activePanel = 'upload';
     }
 
     public function saveTemplate()
@@ -83,7 +82,7 @@ class TemplateLibrary extends Component
             'placeholders' => $placeholders,
         ]);
 
-        $this->showUploadModal = false;
+        $this->activePanel = null;
         $this->dispatch('notify', 'Formato subido y procesado exitosamente.');
         $this->resetPage();
     }
@@ -107,35 +106,26 @@ class TemplateLibrary extends Component
         return $content;
     }
 
-    public $showPersonalizeModal = false;
     public $formPlaceholders = [];
 
     public function personalizeTemplate($id)
     {
-        // 1. First, clear any previous preview state to avoid conflicts
-        $this->showPreview = false;
-        
         $this->selectedTemplate = \App\Models\LegalTemplate::find($id);
-        
         if (!$this->selectedTemplate) return;
 
-        // 2. Clear and initialize placeholders
+        // Reset and init placeholders
         $this->formPlaceholders = [];
         if (!empty($this->selectedTemplate->placeholders)) {
-            // Ensure we handle both JSON strings and arrays
             $placeholders = is_string($this->selectedTemplate->placeholders) 
                 ? json_decode($this->selectedTemplate->placeholders, true) 
                 : $this->selectedTemplate->placeholders;
 
             foreach ($placeholders as $ph) {
-                // Remove brackets for the form key
-                $cleanKey = str_replace(['[', ']'], '', $ph);
                 $this->formPlaceholders[$ph] = ''; 
             }
         }
 
-        // 3. Open the modal explicitly
-        $this->showPersonalizeModal = true;
+        $this->activePanel = 'personalize';
     }
 
     public function deleteTemplate($id)
@@ -145,23 +135,16 @@ class TemplateLibrary extends Component
             ->first();
 
         if ($template) {
-            // Delete file from storage
             \Illuminate\Support\Facades\Storage::disk('public')->delete($template->file_path);
             $template->delete();
-            $this->showPreview = false;
+            $this->activePanel = null;
             $this->dispatch('notify', 'Documento eliminado permanentemente.');
-        } else {
-            $this->dispatch('notify', [
-                'message' => 'No tienes permisos para eliminar este documento.',
-                'type' => 'error'
-            ]);
         }
     }
 
     public function closePreview()
     {
-        $this->showPreview = false;
-        $this->showPersonalizeModal = false; // Ensure both are closed
+        $this->activePanel = null;
         $this->selectedTemplate = null;
     }
 
@@ -230,7 +213,7 @@ class TemplateLibrary extends Component
     public function selectTemplate($id)
     {
         $this->selectedTemplate = \App\Models\LegalTemplate::find($id);
-        $this->showPreview = true;
+        $this->activePanel = 'preview';
     }
 
     public function render()
