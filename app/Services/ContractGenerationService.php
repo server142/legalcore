@@ -26,9 +26,25 @@ class ContractGenerationService
             $content = str_replace('{{ ' . $key . ' }}', $value, $content);
         }
 
-        // Clean up HTML for PhpWord XML compatibility
-        $content = str_replace('<br>', '<br/>', $content);
-        $content = str_replace('&nbsp;', ' ', $content);
+        // Use DOMDocument to ensure valid XHTML for PhpWord
+        if (!empty($content)) {
+            $dom = new \DOMDocument();
+             // Suppress warnings for HTML5 tags or minor errors
+            libxml_use_internal_errors(true);
+            
+            // Load HTML with UTF-8 encoding hack
+            $dom->loadHTML('<?xml encoding="utf-8" ?>' . $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+            libxml_clear_errors();
+
+            // Save as XML (XHTML) which PhpWord expects
+            $content = $dom->saveXML($dom->documentElement);
+            
+            // Remove the XML declaration added by saveXML if present
+            // (Only keeping the inner content if possible, or full root if needed)
+            // But PhpWord often takes the body content. Let's return the full valid XML string.
+        }
+
+        return $content;
 
         return $content;
     }
