@@ -56,6 +56,10 @@ class CheckUpcomingEvents extends Command
         }
 
         $this->info('Proceso de recordatorios finalizado.');
+        \Illuminate\Support\Facades\Log::info('Agenda Reminder Check Completed', [
+            'server_time_now' => Carbon::now()->toDateTimeString(),
+            'timezone' => config('app.timezone'),
+        ]);
         return 0;
     }
 
@@ -63,6 +67,12 @@ class CheckUpcomingEvents extends Command
     {
         $start = Carbon::now()->addHours($hours);
         $end = Carbon::now()->addHours($hours)->addHour();
+
+        \Illuminate\Support\Facades\Log::debug("Checking Expedientes for Tenant {$tenant->id}", [
+            'label' => $label,
+            'start_window' => $start->toDateTimeString(),
+            'end_window' => $end->toDateTimeString()
+        ]);
 
         $expedientes = \App\Models\Expediente::with(['assignedUsers', 'abogado'])
             ->where('tenant_id', $tenant->id)
