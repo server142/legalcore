@@ -110,9 +110,11 @@
         <x-sidebar-link :href="route('admin.users.calendar-status')" :active="request()->routeIs('admin.users.calendar-status')" icon="calendar">
             {{ __('Estado Calendarios') }}
         </x-sidebar-link>
+        @if(auth()->user()->hasRole('super_admin'))
         <x-sidebar-link :href="route('admin.roles.index')" :active="request()->routeIs('admin.roles.*')" icon="user-group">
             {{ __('Roles') }}
         </x-sidebar-link>
+        @endif
         <x-sidebar-link :href="route('admin.abogados.index')" :active="request()->routeIs('admin.abogados.*')" icon="briefcase">
             {{ __('Abogados') }}
         </x-sidebar-link>
