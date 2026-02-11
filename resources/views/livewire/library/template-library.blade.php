@@ -22,7 +22,7 @@
         <div class="relative z-10 max-w-2xl mx-auto text-center space-y-6">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-indigo-300 text-[10px] font-bold uppercase tracking-[0.2em] backdrop-blur-sm mx-auto">
                 <span class="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                Powered by Legal AI
+                Powered by Diogenes AI
             </div>
             <h2 class="text-white text-xl md:text-2xl font-bold">¿Qué documento necesitas hoy?</h2>
             
