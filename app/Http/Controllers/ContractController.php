@@ -49,7 +49,9 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // MANUAL CONSTRUCTION PHASE 3: ULTRA AGGRESSIVE FILTERING
+                // MANUAL CONSTRUCTION PHASE 4: DIAGNOSTIC (FIRST 5 LINES ONLY)
+                // If this works, the problem is deep in the document.
+                // If this fails, the problem is at the very beginning of the htmlContent.
                 
                 // 1. Convert structural tags to newlines
                 $processedContent = str_replace(
@@ -60,26 +62,25 @@ class ContractController extends Controller
                 
                 // 2. Decode entities
                 $processedContent = html_entity_decode($processedContent, ENT_QUOTES | ENT_XML1, 'UTF-8');
-                $processedContent = html_entity_decode($processedContent); // Double decode for safety
                 
                 // 3. Strip tags
                 $plainText = strip_tags($processedContent);
                 
                 // 4. NUCLEAR OPTION: Whitelist valid characters only
-                // Allow: Letters (L), Numbers (N), Punctuation (P), Separators/Spaces (Z), and Control (C) but restrict control to \n
-                // Actually simpler: remove anything that is NOT (Letter, Number, Punctuation, Whitespace)
-                // We must be careful not to kill spanish accents, so we use unicode properties \p{L}
-                
                 $safeText = preg_replace('/[^\p{L}\p{N}\p{P}\p{Z}\n\r\t]+/u', '', $plainText);
                 
-                // 5. Split and Add
+                // 5. Split and Add ONLY FIRST 5 LINES
                 $lines = explode("\n", $safeText);
+                $lines = array_slice($lines, 0, 5); // LIMIT TO 5 LINES
                 
                 $titleStyle = ['bold' => true, 'size' => 12];
                 $normalStyle = ['size' => 11];
                 $centeredParams = ['align' => 'center', 'spaceAfter' => 200];
                 $justifiedParams = ['align' => 'both', 'spaceAfter' => 100];
                 
+                $section->addText("DEBUG: SOLO PRIMERAS 5 LINEAS DEL CONTRATO");
+                $section->addText("----------------------------------------");
+
                 foreach ($lines as $line) {
                     $trimLine = trim($line);
                     
