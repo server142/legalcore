@@ -68,34 +68,35 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // FINAL PRODUCTION BUILD: ROBUST CONTENT CLEANING & BOM REMOVAL
+                // MANUAL CONSTRUCTION PHASE 6: ASCII TRANSLITERATION (SCORCHED EARTH)
+                // This converts "Café" to "Cafe", "España" to "Espana", "“Hola”" to ""Hola"".
+                // Goal: Eliminate ANY possibility of UTF-8 corruption.
                 
-                // 1. BOM REMOVAL (The likely culprit for Word 2016 crashes)
-                $cleanContent = preg_replace('/^\xEF\xBB\xBF/', '', $htmlContent);
-                
-                // 2. Convert structural tags to newlines to preserve layout
+                // 1. Convert structural tags to newlines
                 $cleanContent = str_replace(
                     ['<br>', '<br/>', '<br />', '</p>', '</h1>', '</h2>', '</h3>', '</h4>', '</li>', '</div>', '</tr>', '</table>'], 
                     "\n", 
-                    $cleanContent
+                    $htmlContent
                 );
                 
-                // 3. Decode entities (twice to be safe)
+                // 2. Decode entities twice
                 $cleanContent = html_entity_decode($cleanContent, ENT_QUOTES | ENT_XML1, 'UTF-8');
                 $cleanContent = html_entity_decode($cleanContent);
                 
-                // 4. Strip tags
+                // 3. Strip tags
                 $plainText = strip_tags($cleanContent);
                 
-                // 5. Force UTF-8 and ignore invalid bytes
-                $plainText = iconv('UTF-8', 'UTF-8//IGNORE', $plainText);
+                // 4. ASCII TRANSLITERATION
+                // This is the key step. Force it to 7-bit ASCII.
+                // setlocale is important for translit to work properly on some systems
+                setlocale(LC_ALL, 'en_US.UTF8'); 
+                $asciiText = iconv('UTF-8', 'ASCII//TRANSLIT', $plainText);
                 
-                // 6. NUCLEAR REGEX: Whitelist valid Unicode characters only
-                // Allow: Letters, Numbers, Punctuation, Separators (spaces), Newlines
-                $safeText = preg_replace('/[^\p{L}\p{N}\p{P}\p{Z}\n\r\t]+/u', '', $plainText);
+                // 5. Remove any remaining non-ascii chars just in case
+                $asciiText = preg_replace('/[\x80-\xFF]/', '', $asciiText);
                 
-                // 7. Split into lines
-                $lines = explode("\n", $safeText);
+                // 6. Split into lines
+                $lines = explode("\n", $asciiText);
                 
                 // Styles
                 $titleStyle = ['bold' => true, 'size' => 12];
@@ -110,7 +111,7 @@ class ContractController extends Controller
                         // Title Heuristic
                         $isTitle = (mb_strlen($trimLine) > 5 && mb_strtoupper($trimLine) === $trimLine && !str_contains($trimLine, '. '));
                         
-                        if ($isTitle || str_starts_with($trimLine, 'CONTRATO') || str_contains($trimLine, 'CLÁUSULAS')) {
+                        if ($isTitle || str_starts_with($trimLine, 'CONTRATO') || str_contains($trimLine, 'CLAUSULAS')) {
                             $section->addText($trimLine, $titleStyle, $centeredParams);
                         } else {
                             $section->addText($trimLine, $normalStyle, $justifiedParams);
