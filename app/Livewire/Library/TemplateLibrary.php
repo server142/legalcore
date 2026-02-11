@@ -2,22 +2,63 @@
 
 namespace App\Livewire\Library;
 
-use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 
 class TemplateLibrary extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public $search = '';
     public $selectedCategory = 'Todos';
-    public $selectedTemplate = null;
     public $showPreview = false;
+    public $showUploadModal = false;
+
+    // Upload Fields
+    public $newTemplateName;
+    public $newTemplateDescription;
+    public $newTemplateCategory;
+    public $newTemplateMateria;
+    public $newTemplateFile;
 
     protected $queryString = [
         'search' => ['except' => ''],
         'selectedCategory' => ['except' => 'Todos'],
     ];
+
+    public function openUploadModal()
+    {
+        $this->reset(['newTemplateName', 'newTemplateDescription', 'newTemplateCategory', 'newTemplateMateria', 'newTemplateFile']);
+        $this->showUploadModal = true;
+    }
+
+    public function saveTemplate()
+    {
+        $this->validate([
+            'newTemplateName' => 'required|min:3',
+            'newTemplateCategory' => 'required',
+            'newTemplateMateria' => 'required',
+            'newTemplateFile' => 'required|max:10240', // 10MB max
+        ]);
+
+        $path = $this->newTemplateFile->store('templates', 'public');
+
+        $template = \App\Models\LegalTemplate::create([
+            'tenant_id' => auth()->user()->tenant_id,
+            'name' => $this->newTemplateName,
+            'description' => $this->newTemplateDescription,
+            'category' => $this->newTemplateCategory,
+            'materia' => $this->newTemplateMateria,
+            'file_path' => $path,
+            'extension' => $this->newTemplateFile->getClientOriginalExtension(),
+            'is_global' => false,
+            'extracted_text' => '', // Placeholder for future processing
+        ]);
+
+        $this->showUploadModal = false;
+        $this->dispatch('notify', 'Formato subido exitosamente.');
+        $this->resetPage();
+    }
 
     public function updatedSearch()
     {
