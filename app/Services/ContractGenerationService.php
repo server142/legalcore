@@ -26,19 +26,34 @@ class ContractGenerationService
             $content = str_replace('{{ ' . $key . ' }}', $value, $content);
         }
 
-        // Simpler, more robust cleanup for PhpWord
-        // Remove full HTML structure if present to just get the body content
-        if (preg_match('/<body[^>]*>(.*?)<\/body>/is', $content, $matches)) {
-            $content = $matches[1];
-        }
+        // Use DOMDocument to ensure valid XHTML for PhpWord
+        if (!empty($content)) {
+            $dom = new \DOMDocument();
+             // Suppress warnings for HTML5 tags or minor errors
+            libxml_use_internal_errors(true);
+            
+            // Load HTML with UTF-8 encoding hack
+            // We strip any existing html/body tags to avoid duplication before loading if needed,
+            // but DOMDocument handles it well if we just search for body.
+            // Using mb_convert_encoding is safer for special chars.
+            $dom->loadHTML(mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+            libxml_clear_errors();
 
-        // Clean up common tags for XML compatibility (XHTML)
-        $content = str_replace(['<br>', '<hr>'], ['<br/>', '<hr/>'], $content);
-        $content = str_replace('&nbsp;', ' ', $content);
-        
-        // Ensure no unclosed tags or weird encoding issues by converting common entities
-        // But do NOT double encode.
-        // This is usually enough for PhpWord to process standard HTML templates.
+            // We need the content INSIDE the body, compatible with XML (e.g. <br/> not <br>)
+            $body = $dom->getElementsByTagName('body')->item(0);
+            
+            if ($body) {
+                $xmlContent = '';
+                foreach ($body->childNodes as $child) {
+                    // saveXML creates valid XHTML (self-closing tags)
+                    $xmlContent .= $dom->saveXML($child);
+                }
+                $content = $xmlContent;
+            } else {
+                // If no body tag found (fragment), save the whole thing as XML
+                $content = $dom->saveXML();
+            }
+        }
 
         return $content;
     }
