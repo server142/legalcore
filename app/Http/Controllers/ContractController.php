@@ -49,13 +49,38 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                $phpWord = new \PhpOffice\PhpWord\PhpWord();
-                $section = $phpWord->addSection();
+                // MANUAL PARSING: Convert HTML to Text structure to ensure valid .docx
+                // 1. Replace block elements with newlines to preserve structure
+                $tempContent = str_replace(['<br>', '<br/>', '<br />', '</p>', '</h1>', '</h2>', '</h3>', '</h4>', '</li>', '</div>', '</tr>', '</table>'], "\n", $htmlContent);
                 
-                // Add HTML content to Word
-                // The content is already cleaned and escaped by ContractGenerationService
-                \PhpOffice\PhpWord\Shared\Html::addHtml($section, $htmlContent, false, false);
-
+                // 2. Decode entities (so &quot; becomes " in the Word doc)
+                $tempContent = html_entity_decode($tempContent, ENT_QUOTES | ENT_XML1, 'UTF-8');
+                
+                // 3. Strip tags to get clean text
+                $plainText = strip_tags($tempContent);
+                
+                // 4. Split into lines
+                $lines = explode("\n", $plainText);
+                
+                $titleStyle = ['bold' => true, 'size' => 12];
+                $normalStyle = ['size' => 11];
+                $paragraphStyle = ['align' => 'both', 'spaceAfter' => 100];
+                
+                foreach ($lines as $line) {
+                    $trimLine = trim($line);
+                    if (!empty($trimLine)) {
+                        // Basic heuristic: logic to detect titles (e.g. all caps > 10 chars)
+                        // or if it matches standard contract headers like "CLÁUSULAS"
+                        $isTitle = (mb_strlen($trimLine) > 5 && mb_strtoupper($trimLine) === $trimLine && !str_contains($trimLine, '. '));
+                        
+                        if ($isTitle || str_starts_with($trimLine, 'CONTRATO')) {
+                            $section->addText($trimLine, $titleStyle, ['align' => 'center', 'spaceAfter' => 200]);
+                        } else {
+                            $section->addText($trimLine, $normalStyle, $paragraphStyle);
+                        }
+                    }
+                }
+                
                 $filename = "Contrato-Servicios-Exp-{$safeNumero}.docx";
                 
                 // Save to temporary file
