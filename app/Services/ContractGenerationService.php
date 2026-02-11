@@ -26,6 +26,10 @@ class ContractGenerationService
             $content = str_replace('{{ ' . $key . ' }}', $value, $content);
         }
 
+        // Clean up HTML for PhpWord XML compatibility
+        $content = str_replace('<br>', '<br/>', $content);
+        $content = str_replace('&nbsp;', ' ', $content);
+
         return $content;
     }
 
