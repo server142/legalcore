@@ -210,46 +210,56 @@
         </div>
     </div>
 
-    <!-- Preview Panel (Premium Sidebar Overlay) -->
+    <!-- Preview Panel (Integrated Drawer) -->
     <div x-show="$wire.showPreview" 
-         class="fixed inset-0 z-50 flex justify-end transition-opacity bg-slate-900/40 backdrop-blur-sm"
-         x-transition:enter="transition-opacity ease-out duration-300"
-         x-transition:leave="transition-opacity ease-in duration-200"
+         class="fixed inset-0 z-[100] flex justify-end"
          x-cloak>
-        <div class="fixed inset-0" @click="$wire.closePreview()"></div>
         
-        <div class="relative w-full max-w-xl bg-white h-full shadow-2xl flex flex-col"
+        <!-- Backdrop -->
+        <div x-show="$wire.showPreview" 
+             x-transition:enter="transition-opacity ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="$wire.closePreview()"
+             class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+        
+        <!-- Panel -->
+        <div class="relative w-full max-w-full lg:max-w-2xl bg-white h-full shadow-2xl flex flex-col overflow-hidden"
+             x-show="$wire.showPreview"
              x-transition:enter="transition-transform ease-out duration-500"
-             x-transition:enter-start="translate-x-full"
-             x-transition:enter-end="translate-x-0"
+             x-transition:enter-start="translate-y-full lg:translate-y-0 lg:translate-x-full"
+             x-transition:enter-end="translate-y-0 lg:translate-x-0"
              x-transition:leave="transition-transform ease-in duration-500"
-             x-transition:leave-start="translate-x-0"
-             x-transition:leave-end="translate-x-full">
+             x-transition:leave-start="translate-y-0 lg:translate-x-0"
+             x-transition:leave-end="translate-y-full lg:translate-y-0 lg:translate-x-full">
             
             @if($selectedTemplate)
             <div class="flex flex-col h-full">
                 <!-- Preview Header -->
-                <div class="p-8 border-b border-slate-100 flex justify-between items-start bg-slate-50/50">
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
+                <div class="sticky top-0 z-20 p-6 lg:p-8 border-b border-slate-100 flex justify-between items-start bg-white/90 backdrop-blur-md">
+                    <div class="pr-8">
+                        <div class="flex flex-wrap items-center gap-2 mb-2">
                             <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-600 text-[9px] font-extrabold uppercase tracking-widest">{{ $selectedTemplate->category }}</span>
                             <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-600 text-[9px] font-extrabold uppercase tracking-widest">{{ $selectedTemplate->materia }}</span>
                         </div>
-                        <h2 class="text-2xl font-extrabold text-slate-900 leading-tight">{{ $selectedTemplate->name }}</h2>
+                        <h2 class="text-xl lg:text-2xl font-extrabold text-slate-900 leading-tight">{{ $selectedTemplate->name }}</h2>
                     </div>
-                    <button wire:click="closePreview" class="p-2.5 hover:bg-slate-200 rounded-full transition-colors">
-                        <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <button wire:click="closePreview" class="p-2 hover:bg-slate-100 rounded-full transition-colors shrink-0">
+                        <svg class="w-6 h-6 text-slate-400 hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
 
                 <!-- Preview Body -->
-                <div class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                <div class="flex-1 overflow-y-auto p-6 lg:p-8 space-y-8 custom-scrollbar">
                     <div class="space-y-3">
                         <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.2em]">Descripción</h3>
                         <p class="text-sm text-slate-600 leading-relaxed">{{ $selectedTemplate->description }}</p>
                     </div>
 
-                    @if(!empty($selectedTemplate->placeholders))
+                    @if(!empty($selectedTemplate->placeholders) && count($selectedTemplate->placeholders) > 0)
                     <div class="space-y-4">
                         <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.2em]">Variables Detectadas</h3>
                         <div class="flex flex-wrap gap-2">
@@ -257,17 +267,19 @@
                                 <span class="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[11px] font-bold rounded-xl border border-indigo-100 shadow-sm">{{ $ph }}</span>
                             @endforeach
                         </div>
-                        <p class="text-[10px] text-slate-400 font-medium italic">* Estas variables serán completadas automáticamente por la IA.</p>
+                        <p class="text-[10px] text-slate-400 font-medium italic">* Estas variables serán completadas por la IA al generar el documento.</p>
                     </div>
                     @endif
 
                     <div class="space-y-4">
-                        <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.2em]">Contenido del Formato</h3>
-                        <div class="p-6 bg-slate-950 rounded-2xl text-[12px] font-mono text-indigo-200/70 leading-relaxed whitespace-pre-wrap select-none shadow-inner min-h-[400px]">
+                        <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.2em]">Vista Previa del Contenido</h3>
+                        <div class="p-5 lg:p-8 bg-slate-950 rounded-2xl text-[12px] font-mono text-indigo-200/80 leading-relaxed whitespace-pre-wrap select-none shadow-inner min-h-[500px] border border-slate-800">
                             @if(empty($selectedTemplate->extracted_text))
-                                <div class="flex flex-col items-center justify-center py-20 text-center space-y-4 opacity-40">
-                                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    <p>Texto en proceso de extracción...</p>
+                                <div class="flex flex-col items-center justify-center py-32 text-center space-y-4">
+                                    <div class="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center animate-pulse">
+                                        <svg class="w-8 h-8 text-indigo-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    </div>
+                                    <p class="text-slate-500 max-w-[200px] mx-auto">No se detectó contenido de texto en este archivo.</p>
                                 </div>
                             @else
                                 {{ $selectedTemplate->extracted_text }}
@@ -277,16 +289,16 @@
                 </div>
 
                 <!-- Preview Footer -->
-                <div class="p-8 border-t border-slate-100 bg-white">
-                    <div class="flex gap-4">
-                        <a href="{{ Storage::url($selectedTemplate->file_path) }}" 
+                <div class="sticky bottom-0 p-6 lg:p-8 border-t border-slate-100 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.04)]">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="{{ Storage::disk('public')->url($selectedTemplate->file_path) }}" 
                            download
-                           class="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-all">
+                           class="flex items-center justify-center gap-2 py-4 px-6 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold rounded-2xl transition-all border border-slate-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            Descargar Base
+                            <span>Descargar</span>
                         </a>
                         <button wire:click="personalizeTemplate({{ $selectedTemplate->id }})" 
-                                class="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-xl shadow-indigo-500/30 transition-all flex items-center justify-center gap-2 group">
+                                class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-3 group">
                             <span>Personalizar Formato</span>
                             <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                         </button>
