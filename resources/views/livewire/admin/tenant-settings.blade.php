@@ -182,6 +182,27 @@
                                 <x-input-error :messages="$errors->get('titular')" class="mt-2" />
                             </div>
 
+                            <!-- RFC -->
+                            <div>
+                                <x-input-label for="rfc" :value="__('RFC del Despacho')" />
+                                <x-text-input wire:model="rfc" id="rfc" class="block mt-1 w-full" type="text" placeholder="ABCD123456XYZ" oninput="this.value = this.value.toUpperCase()" />
+                                <x-input-error :messages="$errors->get('rfc')" class="mt-2" />
+                            </div>
+
+                            <!-- Ciudad -->
+                            <div>
+                                <x-input-label for="ciudad" :value="__('Ciudad de Firma (para Contratos)')" />
+                                <x-text-input wire:model="ciudad" id="ciudad" class="block mt-1 w-full" type="text" placeholder="Ej: Xalapa, Veracruz" />
+                                <x-input-error :messages="$errors->get('ciudad')" class="mt-2" />
+                            </div>
+
+                            <!-- Email Contacto -->
+                            <div>
+                                <x-input-label for="email_contacto" :value="__('Email de Contacto Oficial')" />
+                                <x-text-input wire:model="email_contacto" id="email_contacto" class="block mt-1 w-full" type="email" placeholder="contacto@midominio.com" />
+                                <x-input-error :messages="$errors->get('email_contacto')" class="mt-2" />
+                            </div>
+
                             <!-- Dirección -->
                             <div class="md:col-span-2">
                                 <x-input-label for="direccion" :value="__('Dirección Física')" />

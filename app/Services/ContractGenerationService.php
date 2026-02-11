@@ -60,17 +60,17 @@ class ContractGenerationService
             'FECHA_ACTUAL' => date('d/m/Y'),
             
             // Datos Institucionales del Despacho (Tenant)
-            'DESPACHO_NOMBRE' => $expediente->tenant && $expediente->tenant->settings ? 
-                ($expediente->tenant->settings['nombre_comercial'] ?? $expediente->tenant->name) : 'El Despacho',
+            'DESPACHO_NOMBRE' => $expediente->tenant ? 
+                ($expediente->tenant->name) : 'El Despacho',
             
             'DESPACHO_TITULAR' => $expediente->tenant && $expediente->tenant->settings ? 
-                ($expediente->tenant->settings['representante_legal'] ?? 'Representante Legal') : 'Representante Legal',
+                ($expediente->tenant->settings['titular'] ?? 'Representante Legal') : 'Representante Legal',
 
             'DESPACHO_RFC' => $expediente->tenant && $expediente->tenant->settings ? 
-                ($expediente->tenant->settings['rfc'] ?? '') : '',
+                ($expediente->tenant->settings['rfc'] ?? 'RFC No Definido') : 'RFC No Definido',
 
             'DESPACHO_DIRECCION' => $expediente->tenant && $expediente->tenant->settings ? 
-                ($expediente->tenant->settings['direccion_fiscal'] ?? 'Domicilio del Despacho') : 'Domicilio del Despacho',
+                ($expediente->tenant->settings['direccion'] ?? 'Domicilio del Despacho') : 'Domicilio del Despacho',
                 
             'DESPACHO_EMAIL' => $expediente->tenant && $expediente->tenant->settings ? 
                 ($expediente->tenant->settings['email_contacto'] ?? '') : '',

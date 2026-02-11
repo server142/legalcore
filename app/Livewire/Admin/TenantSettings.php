@@ -13,6 +13,9 @@ class TenantSettings extends Component
     public $name;
     public $direccion;
     public $titular;
+    public $rfc; // Added
+    public $ciudad; // Added
+    public $email_contacto; // Added
     public $titulares_adjuntos;
     public $datos_generales;
     public $logo;
@@ -69,6 +72,9 @@ class TenantSettings extends Component
         $settings = $tenant->settings ?? [];
         $this->direccion = $settings['direccion'] ?? '';
         $this->titular = $settings['titular'] ?? '';
+        $this->rfc = $settings['rfc'] ?? ''; // Added
+        $this->ciudad = $settings['ciudad'] ?? ''; // Added
+        $this->email_contacto = $settings['email_contacto'] ?? ''; // Added
         $this->titulares_adjuntos = $settings['titulares_adjuntos'] ?? '';
         $this->datos_generales = $settings['datos_generales'] ?? '';
         $this->logo_path = $settings['logo_path'] ?? '';
@@ -132,6 +138,9 @@ class TenantSettings extends Component
             'name' => 'required|string|max:255',
             'direccion' => 'nullable|string',
             'titular' => 'nullable|string',
+            'rfc' => 'nullable|string|max:13',
+            'ciudad' => 'nullable|string|max:255',
+            'email_contacto' => 'nullable|email|max:255',
             'titulares_adjuntos' => 'nullable|string',
             'datos_generales' => 'nullable|string',
             'logo' => 'nullable|image|max:5120', // 5MB Max
@@ -178,6 +187,9 @@ class TenantSettings extends Component
         $settings = $tenant->settings ?? [];
         $settings['direccion'] = $this->direccion;
         $settings['titular'] = $this->titular;
+        $settings['rfc'] = $this->rfc;
+        $settings['ciudad'] = $this->ciudad;
+        $settings['email_contacto'] = $this->email_contacto;
         $settings['titulares_adjuntos'] = $this->titulares_adjuntos;
         $settings['datos_generales'] = $this->datos_generales;
         $settings['logo_path'] = $this->logo_path;
