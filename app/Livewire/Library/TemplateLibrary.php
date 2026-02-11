@@ -112,20 +112,37 @@ class TemplateLibrary extends Component
 
     public function personalizeTemplate($id)
     {
+        // 1. First, clear any previous preview state to avoid conflicts
+        $this->showPreview = false;
+        
         $this->selectedTemplate = \App\Models\LegalTemplate::find($id);
         
         if (!$this->selectedTemplate) return;
 
-        // Initialize placeholders with empty values
+        // 2. Clear and initialize placeholders
         $this->formPlaceholders = [];
         if (!empty($this->selectedTemplate->placeholders)) {
-            foreach ($this->selectedTemplate->placeholders as $ph) {
-                $this->formPlaceholders[$ph] = '';
+            // Ensure we handle both JSON strings and arrays
+            $placeholders = is_string($this->selectedTemplate->placeholders) 
+                ? json_decode($this->selectedTemplate->placeholders, true) 
+                : $this->selectedTemplate->placeholders;
+
+            foreach ($placeholders as $ph) {
+                // Remove brackets for the form key
+                $cleanKey = str_replace(['[', ']'], '', $ph);
+                $this->formPlaceholders[$ph] = ''; 
             }
         }
 
+        // 3. Open the modal explicitly
         $this->showPersonalizeModal = true;
+    }
+
+    public function closePreview()
+    {
         $this->showPreview = false;
+        $this->showPersonalizeModal = false; // Ensure both are closed
+        $this->selectedTemplate = null;
     }
 
     public function generateDocument()
@@ -170,12 +187,6 @@ class TemplateLibrary extends Component
     {
         $this->selectedTemplate = \App\Models\LegalTemplate::find($id);
         $this->showPreview = true;
-    }
-
-    public function closePreview()
-    {
-        $this->showPreview = false;
-        $this->selectedTemplate = null;
     }
 
     public function render()
