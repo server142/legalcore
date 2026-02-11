@@ -49,15 +49,55 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // MANUAL CONSTRUCTION PHASE 5: STATIC TEXT TEST (SANITY CHECK)
-                // We are ignoring $htmlContent completely.
-                // If this works, $htmlContent is toxic.
+                // FINAL PRODUCTION BUILD: ROBUST CONTENT CLEANING & BOM REMOVAL
                 
-                $section->addText("PRUEBA DE TEXTO ESTATICO - NO VIENE DE BD", ['bold' => true, 'size' => 14]);
-                $section->addTextBreak();
-                $section->addText("Este es un párrafo de prueba escrito directamente en el código PHP.");
-                $section->addText("Si esto se abre en Word 2016, significa que el mecanismo funciona y el problema es el contenido HTML que traemos de la base de datos.");
-                $section->addText("Caracteres especiales de prueba: áéíóú ñ Ñ ¿ ?");
+                // 1. BOM REMOVAL (The likely culprit for Word 2016 crashes)
+                $cleanContent = preg_replace('/^\xEF\xBB\xBF/', '', $htmlContent);
+                
+                // 2. Convert structural tags to newlines to preserve layout
+                $cleanContent = str_replace(
+                    ['<br>', '<br/>', '<br />', '</p>', '</h1>', '</h2>', '</h3>', '</h4>', '</li>', '</div>', '</tr>', '</table>'], 
+                    "\n", 
+                    $cleanContent
+                );
+                
+                // 3. Decode entities (twice to be safe)
+                $cleanContent = html_entity_decode($cleanContent, ENT_QUOTES | ENT_XML1, 'UTF-8');
+                $cleanContent = html_entity_decode($cleanContent);
+                
+                // 4. Strip tags
+                $plainText = strip_tags($cleanContent);
+                
+                // 5. Force UTF-8 and ignore invalid bytes
+                $plainText = iconv('UTF-8', 'UTF-8//IGNORE', $plainText);
+                
+                // 6. NUCLEAR REGEX: Whitelist valid Unicode characters only
+                // Allow: Letters, Numbers, Punctuation, Separators (spaces), Newlines
+                $safeText = preg_replace('/[^\p{L}\p{N}\p{P}\p{Z}\n\r\t]+/u', '', $plainText);
+                
+                // 7. Split into lines
+                $lines = explode("\n", $safeText);
+                
+                // Styles
+                $titleStyle = ['bold' => true, 'size' => 12];
+                $normalStyle = ['size' => 11];
+                $centeredParams = ['align' => 'center', 'spaceAfter' => 200];
+                $justifiedParams = ['align' => 'both', 'spaceAfter' => 100];
+                
+                foreach ($lines as $line) {
+                    $trimLine = trim($line);
+                    
+                    if (!empty($trimLine)) {
+                        // Title Heuristic
+                        $isTitle = (mb_strlen($trimLine) > 5 && mb_strtoupper($trimLine) === $trimLine && !str_contains($trimLine, '. '));
+                        
+                        if ($isTitle || str_starts_with($trimLine, 'CONTRATO') || str_contains($trimLine, 'CLÁUSULAS')) {
+                            $section->addText($trimLine, $titleStyle, $centeredParams);
+                        } else {
+                            $section->addText($trimLine, $normalStyle, $justifiedParams);
+                        }
+                    }
+                }
                 
                 $filename = "Contrato-Servicios-Exp-{$safeNumero}.docx";
                 
