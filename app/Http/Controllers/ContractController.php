@@ -49,35 +49,29 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // MANUAL PARSING: Convert HTML to Text structure to ensure valid .docx
-                // 1. Replace block elements with newlines to preserve structure
-                $tempContent = str_replace(['<br>', '<br/>', '<br />', '</p>', '</h1>', '</h2>', '</h3>', '</h4>', '</li>', '</div>', '</tr>', '</table>'], "\n", $htmlContent);
+                // ULTRA SAFE MODE: Pure Text Only
+                // 1. Strip all tags
+                $plainText = strip_tags($htmlContent);
                 
-                // 2. Decode entities (so &quot; becomes " in the Word doc)
-                $tempContent = html_entity_decode($tempContent, ENT_QUOTES | ENT_XML1, 'UTF-8');
+                // 2. Decode entities twice just in case (&amp;amp;)
+                $plainText = html_entity_decode($plainText);
+                $plainText = html_entity_decode($plainText);
                 
-                // 3. Strip tags to get clean text
-                $plainText = strip_tags($tempContent);
+                // 3. Clean up non-printable characters that break XML (Control chars < 32 except newline/return/tab)
+                // Filter everything except standard unicode printable chars
+                // Use iconv to discard invalid UTF-8 sequences
+                $plainText = iconv('UTF-8', 'UTF-8//IGNORE', $plainText);
                 
-                // 4. Split into lines
+                // Remove control characters (ASCII 0-31) except newlines (10, 13)
+                $plainText = preg_replace('/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/', '', $plainText);
+
                 $lines = explode("\n", $plainText);
-                
-                $titleStyle = ['bold' => true, 'size' => 12];
-                $normalStyle = ['size' => 11];
-                $paragraphStyle = ['align' => 'both', 'spaceAfter' => 100];
                 
                 foreach ($lines as $line) {
                     $trimLine = trim($line);
                     if (!empty($trimLine)) {
-                        // Basic heuristic: logic to detect titles (e.g. all caps > 10 chars)
-                        // or if it matches standard contract headers like "CLÁUSULAS"
-                        $isTitle = (mb_strlen($trimLine) > 5 && mb_strtoupper($trimLine) === $trimLine && !str_contains($trimLine, '. '));
-                        
-                        if ($isTitle || str_starts_with($trimLine, 'CONTRATO')) {
-                            $section->addText($trimLine, $titleStyle, ['align' => 'center', 'spaceAfter' => 200]);
-                        } else {
-                            $section->addText($trimLine, $normalStyle, $paragraphStyle);
-                        }
+                        // Just add text, no fancy styling to rule out style issues
+                        $section->addText($trimLine);
                     }
                 }
                 
