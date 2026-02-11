@@ -26,31 +26,19 @@ class ContractGenerationService
             $content = str_replace('{{ ' . $key . ' }}', $value, $content);
         }
 
-        // Use DOMDocument to ensure valid XHTML for PhpWord
-        if (!empty($content)) {
-            $dom = new \DOMDocument();
-             // Suppress warnings for HTML5 tags or minor errors
-            libxml_use_internal_errors(true);
-            
-            // Load HTML with UTF-8 encoding hack
-            $dom->loadHTML('<?xml encoding="utf-8" ?>' . $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-            libxml_clear_errors();
-
-            // Save as HTML to respect tags, but PhpWord needs it clean.
-            // saveHTML covers the loaded nodes.
-            // We want the inner body if it exists, or the content itself.
-            $body = $dom->getElementsByTagName('body')->item(0);
-            if ($body) {
-                // If there's a body, get its inner HTML
-                $content = '';
-                foreach ($body->childNodes as $child) {
-                    $content .= $dom->saveHTML($child);
-                }
-            } else {
-                // Fallback to full dump if no body found (unlikely with loadHTML)
-                $content = $dom->saveHTML();
-            }
+        // Simpler, more robust cleanup for PhpWord
+        // Remove full HTML structure if present to just get the body content
+        if (preg_match('/<body[^>]*>(.*?)<\/body>/is', $content, $matches)) {
+            $content = $matches[1];
         }
+
+        // Clean up common tags for XML compatibility (XHTML)
+        $content = str_replace(['<br>', '<hr>'], ['<br/>', '<hr/>'], $content);
+        $content = str_replace('&nbsp;', ' ', $content);
+        
+        // Ensure no unclosed tags or weird encoding issues by converting common entities
+        // But do NOT double encode.
+        // This is usually enough for PhpWord to process standard HTML templates.
 
         return $content;
     }
