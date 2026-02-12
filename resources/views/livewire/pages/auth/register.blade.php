@@ -58,7 +58,7 @@ new #[Layout('layouts.guest')] class extends Component
                 'slug' => Str::slug($validated['company_name']) . '-' . Str::random(6),
                 'plan' => $selectedPlan->slug,
                 'plan_id' => $selectedPlan->id,
-                'trial_ends_at' => now()->addDays($selectedPlan->slug === 'trial' ? 15 : 0),
+                'trial_ends_at' => $selectedPlan->slug === 'trial' ? now()->addDays($selectedPlan->duration_in_days ?? 15) : null,
                 'subscription_status' => $subscriptionStatus,
                 'is_active' => true,
             ]);
