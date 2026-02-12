@@ -43,70 +43,53 @@ class ContractController extends Controller
         $htmlContent = $generator->generate($template, $expediente);
         $safeNumero = str_replace(['/', '\\'], '-', $expediente->numero);
 
-        // 4. Check Requested Format
-        if ($request->query('format') === 'debug') {
-             // Access the raw text field from DB
-             $rawContent = $template->texto; 
-             
-             $output = "<h1>DEBUG MODE</h1>";
-             $output .= "<h2>Raw Content (htmlspecialchars)</h2>";
-             $output .= "<pre style='background:#f4f4f4; padding:10px; border:1px solid #ccc; white-space:pre-wrap;'>" . htmlspecialchars($rawContent) . "</pre>";
-             
-             // BOM Check
-             $bom = substr($rawContent, 0, 3);
-             $hasBom = ($bom === "\xEF\xBB\xBF") ? "YES" : "NO";
-             $output .= "<h2>Has BOM? $hasBom</h2>";
-             
-             $output .= "<h2>First 50 Bytes (HEX)</h2>";
-             $output .= "<pre>" . chunk_split(bin2hex(substr($rawContent, 0, 50)), 2, ' ') . "</pre>";
-
-             return response($output);
-        }
-
         if ($request->query('format') === 'word') {
             try {
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // MANUAL CONSTRUCTION PHASE 9: RESTORATION (STYLES + UTF-8)
-                // Goal: Professional looking document (Justified, Bold headers, Spanish chars)
-                
-                // 1. Prepare Content
+                // 1. Prepare Content: Convert HTML structure to Text structure
+                // Replace block/break tags with newlines to preserve structure
                 $cleanContent = str_replace(
                     ['<br>', '<br/>', '<br />', '</p>', '</h1>', '</h2>', '</h3>', '</h4>', '</li>', '</div>', '</tr>', '</table>'], 
                     "\n", 
                     $htmlContent
                 );
+                
                 // Double decode to handle &amp;nbsp; etc
                 $cleanContent = html_entity_decode($cleanContent, ENT_QUOTES | ENT_XML1, 'UTF-8');
                 $cleanContent = html_entity_decode($cleanContent);
+                
+                // Strip all remaining tags
                 $plainText = strip_tags($cleanContent);
                 
                 // 2. Safe UTF-8 Cleaning (Allow Spanish, Kill Gremlins)
                 // Allow Letters (L), Numbers (N), Punctuation (P), Separators (Z), Newline (\n\r)
+                // This regex removes emojis and binary garbage while keeping legal text intact.
                 $finalText = preg_replace('/[^\p{L}\p{N}\p{P}\p{Z}\n\r]/u', '', $plainText);
                 
                 // 3. Split into lines
                 $lines = explode("\n", $finalText);
                 
-                // 4. Define Styles
+                // 4. Define Styles for professional document appearance
                 $baseFont = 'Arial';
                 $baseSize = 11;
                 
                 // Style Arrays
                 $titleFontStyle = ['name' => $baseFont, 'size' => 12, 'bold' => true, 'color' => '000000'];
-                $titleParaStyle = ['align' => 'center', 'spaceAfter' => 240]; // 12pt approx
+                $titleParaStyle = ['align' => 'center', 'spaceAfter' => 240]; // 12pt approx spacing after title
                 
                 $bodyFontStyle = ['name' => $baseFont, 'size' => 11, 'color' => '000000'];
-                $bodyParaStyle = ['align' => 'both', 'spaceAfter' => 120];  // 6pt approx
+                $bodyParaStyle = ['align' => 'both', 'spaceAfter' => 120];  // 6pt approx spacing after paragraph
                 
                 foreach ($lines as $line) {
                     $trimLine = trim($line);
                     
                     if (!empty($trimLine)) {
-                         // Heuristic for Titles
+                         // Heuristic for Title Detection: Uppercase line longer than 5 chars, no ending period
                          $isTitle = (mb_strlen($trimLine) > 5 && mb_strtoupper($trimLine) === $trimLine && !str_contains($trimLine, '. '));
                          
+                         // Apply title style if detected or explicit keywords found
                          if ($isTitle || str_starts_with($trimLine, 'CONTRATO') || str_contains($trimLine, 'CLAUSULAS')) {
                               $section->addText($trimLine, $titleFontStyle, $titleParaStyle);
                          } else {
