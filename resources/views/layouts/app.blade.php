@@ -96,20 +96,26 @@
                     $warningType = 'warning'; // warning, danger
 
                     if ($tenant && !auth()->user()->hasRole('super_admin')) {
-                        if ($tenant->isOnTrial()) {
+                        // Priority 1: Trial Plan Logic (regardless of active status)
+                        if ($tenant->plan === 'trial') {
                             $daysLeft = ceil($tenant->daysLeftInTrial());
+                            // Show warning if 3 days or less remain
                             if ($daysLeft <= 3) {
                                 $showWarning = true;
                                 $warningMessage = "Tu periodo de prueba termina en {$daysLeft} días. ¡Suscríbete ahora para no perder acceso!";
                             }
-                        } elseif ($tenant->subscription_status === 'active' && $tenant->subscription_ends_at) {
+                        } 
+                        // Priority 2: Active Subscription Logic (non-trial plans)
+                        elseif ($tenant->subscription_status === 'active' && $tenant->subscription_ends_at) {
                             $daysLeft = now()->diffInDays($tenant->subscription_ends_at, false);
                             if ($daysLeft <= 3 && $daysLeft >= 0) {
                                 $showWarning = true;
                                 $daysLeft = ceil($daysLeft);
                                 $warningMessage = "Tu suscripción vence en {$daysLeft} días. Renueva pronto.";
                             }
-                        } elseif (session()->has('warning')) {
+                        } 
+                        // Priority 3: Custom Session Warnings
+                        elseif (session()->has('warning')) {
                             $showWarning = true;
                             $warningMessage = session('warning');
                             $warningType = 'danger';
