@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class TenantSettings extends Component
 {
@@ -67,6 +68,7 @@ class TenantSettings extends Component
     public function mount()
     {
         $tenant = auth()->user()->tenant;
+        Log::info("TenantSettings Debug: Tenant ID {$tenant->id}, Plan: {$tenant->plan}, TrialEnds: {$tenant->trial_ends_at}, SubEnds: {$tenant->subscription_ends_at}");
         $this->name = $tenant->name;
         
         $settings = $tenant->settings ?? [];
@@ -122,10 +124,13 @@ class TenantSettings extends Component
         $this->subscriptionStatus = $tenant->subscription_status;
         
         // Correct date display logic
-        if ($tenant->plan === 'trial') {
-             $this->subscriptionEndsAt = $tenant->trial_ends_at;
+        $date = $tenant->plan === 'trial' ? $tenant->trial_ends_at : $tenant->subscription_ends_at;
+        
+        if ($date) {
+            // Ensure we handle both Carbon objects and string dates
+            $this->subscriptionEndsAt = \Carbon\Carbon::parse($date)->format('Y-m-d'); 
         } else {
-             $this->subscriptionEndsAt = $tenant->subscription_ends_at;
+            $this->subscriptionEndsAt = null;
         }
 
         // Available Upgrades (Only higher price)
