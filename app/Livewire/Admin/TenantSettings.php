@@ -127,7 +127,12 @@ class TenantSettings extends Component
         $this->subscriptionStatus = $tenant->subscription_status;
         
         // Correct date display logic
-        $date = $tenant->plan === 'trial' ? $tenant->trial_ends_at : $tenant->subscription_ends_at;
+        if ($tenant->plan === 'trial') {
+             // Fallback to subscription_ends_at if trial_ends_at is missing (legacy/migration issue)
+             $date = $tenant->trial_ends_at ?? $tenant->subscription_ends_at;
+        } else {
+             $date = $tenant->subscription_ends_at;
+        }
         
         if ($date) {
             // Ensure we handle both Carbon objects and string dates
@@ -142,15 +147,6 @@ class TenantSettings extends Component
             ->where('is_active', true)
             ->orderBy('price', 'asc')
             ->get();
-            
-        $this->debug_info = [
-            'id' => $tenant->id,
-            'plan' => $tenant->plan,
-            'trial_ends_at' => $tenant->trial_ends_at,
-            'trial_ends_at_raw' => $tenant->getAttributes()['trial_ends_at'] ?? 'KEY_NOT_FOUND',
-            'sub_ends_at' => $tenant->subscription_ends_at,
-            'sub_status' => $tenant->subscription_status
-        ];
     }
 
     public function save()
