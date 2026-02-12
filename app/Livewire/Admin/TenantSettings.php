@@ -120,7 +120,13 @@ class TenantSettings extends Component
         // Plan Info
         $this->currentPlanDetails = $tenant->planRelation;
         $this->subscriptionStatus = $tenant->subscription_status;
-        $this->subscriptionEndsAt = $tenant->subscription_ends_at;
+        
+        // Correct date display logic
+        if ($tenant->plan === 'trial') {
+             $this->subscriptionEndsAt = $tenant->trial_ends_at;
+        } else {
+             $this->subscriptionEndsAt = $tenant->subscription_ends_at;
+        }
 
         // Available Upgrades (Only higher price)
         $currentPrice = $this->currentPlanDetails ? $this->currentPlanDetails->price : 0;
