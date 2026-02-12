@@ -68,8 +68,8 @@ class ContractController extends Controller
                 $phpWord = new \PhpOffice\PhpWord\PhpWord();
                 $section = $phpWord->addSection();
                 
-                // MANUAL CONSTRUCTION PHASE 8: ZERO STYLES (PURE TEXT)
-                // Eliminating styles as a variable. Just raw content dump.
+                // MANUAL CONSTRUCTION PHASE 9: RESTORATION (STYLES + UTF-8)
+                // Goal: Professional looking document (Justified, Bold headers, Spanish chars)
                 
                 // 1. Prepare Content
                 $cleanContent = str_replace(
@@ -77,37 +77,41 @@ class ContractController extends Controller
                     "\n", 
                     $htmlContent
                 );
+                // Double decode to handle &amp;nbsp; etc
                 $cleanContent = html_entity_decode($cleanContent, ENT_QUOTES | ENT_XML1, 'UTF-8');
+                $cleanContent = html_entity_decode($cleanContent);
                 $plainText = strip_tags($cleanContent);
                 
-                // 2. Try ASCII Conversion with Fallback
-                setlocale(LC_ALL, 'en_US.UTF8'); 
-                $asciiText = iconv('UTF-8', 'ASCII//TRANSLIT', $plainText);
+                // 2. Safe UTF-8 Cleaning (Allow Spanish, Kill Gremlins)
+                // Allow Letters (L), Numbers (N), Punctuation (P), Separators (Z), Newline (\n\r)
+                $finalText = preg_replace('/[^\p{L}\p{N}\p{P}\p{Z}\n\r]/u', '', $plainText);
                 
-                if ($asciiText === false) {
-                    $finalText = preg_replace('/[^\x20-\x7E\n\r\t]/', '', $plainText);
-                    $section->addText("WARNING: iconv fallback used.");
-                } else {
-                    $finalText = $asciiText;
-                }
-                
-                // 3. Ensure String type
-                $finalText = strval($finalText);
-                
-                // 4. Split and Add
+                // 3. Split into lines
                 $lines = explode("\n", $finalText);
+                
+                // 4. Define Styles
+                $baseFont = 'Arial';
+                $baseSize = 11;
+                
+                // Style Arrays
+                $titleFontStyle = ['name' => $baseFont, 'size' => 12, 'bold' => true, 'color' => '000000'];
+                $titleParaStyle = ['align' => 'center', 'spaceAfter' => 240]; // 12pt approx
+                
+                $bodyFontStyle = ['name' => $baseFont, 'size' => 11, 'color' => '000000'];
+                $bodyParaStyle = ['align' => 'both', 'spaceAfter' => 120];  // 6pt approx
                 
                 foreach ($lines as $line) {
                     $trimLine = trim($line);
                     
                     if (!empty($trimLine)) {
-                        // Still wrap long lines just in case
-                        $wrappedLines = explode("\n", wordwrap($trimLine, 150, "\n", false));
-                        
-                        foreach($wrappedLines as $subLine) {
-                             // NO STYLES. Just text.
-                             $section->addText($subLine);
-                        }
+                         // Heuristic for Titles
+                         $isTitle = (mb_strlen($trimLine) > 5 && mb_strtoupper($trimLine) === $trimLine && !str_contains($trimLine, '. '));
+                         
+                         if ($isTitle || str_starts_with($trimLine, 'CONTRATO') || str_contains($trimLine, 'CLAUSULAS')) {
+                              $section->addText($trimLine, $titleFontStyle, $titleParaStyle);
+                         } else {
+                              $section->addText($trimLine, $bodyFontStyle, $bodyParaStyle);
+                         }
                     }
                 }
                 
