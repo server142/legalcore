@@ -65,13 +65,18 @@ class CheckUpcomingEvents extends Command
 
     protected function checkExpedienteDeadlinesForTenant(Tenant $tenant, int $hours, string $label)
     {
-        $start = Carbon::now()->addHours($hours);
-        $end = Carbon::now()->addHours($hours)->addHour();
+        // Calcular el día objetivo basado en las horas de anticipación
+        // Ejemplo: Si hours=24, target es mañana. Si hours=72, target es en 3 días.
+        $targetDate = Carbon::now()->addHours($hours);
+        
+        // Ventana de todo el día (00:00:00 a 23:59:59)
+        $start = $targetDate->copy()->startOfDay();
+        $end = $targetDate->copy()->endOfDay();
 
-        \Illuminate\Support\Facades\Log::debug("Checking Expedientes for Tenant {$tenant->id}", [
-            'label' => $label,
-            'start_window' => $start->toDateTimeString(),
-            'end_window' => $end->toDateTimeString()
+        \Illuminate\Support\Facades\Log::debug("Checking Expedientes for Tenant {$tenant->id} ({$label})", [
+            'target_date' => $targetDate->toDateString(),
+            'window_start' => $start->toDateTimeString(),
+            'window_end' => $end->toDateTimeString()
         ]);
 
         $expedientes = \App\Models\Expediente::with(['assignedUsers', 'abogado'])
@@ -98,8 +103,18 @@ class CheckUpcomingEvents extends Command
             $recipients = $recipients->unique('id')->filter();
 
             foreach ($recipients as $recipient) {
-                Mail::to($recipient->email)->queue(new \App\Mail\ExpedienteDeadlineReminder($expediente, $recipient, $label));
-                $this->info("Notificación FATAL de {$label} enviada a [{$tenant->name}] {$recipient->email} para Exp: {$expediente->numero}");
+                // Evitar duplicados diarios: Podrías usar cache key aquí, pero por ahora confiamos en que el schedule corre 1 vez/día o el usuario sabe que puede recibir doble si corre manual.
+                // Idealmente: Cache::add("reminder_{$expediente->id}_{$label}_{$targetDate->toDateString()}", true, 86400)
+                
+                $cacheKey = "expediente_reminder_{$expediente->id}_{$label}_{$targetDate->toDateString()}_{$recipient->id}";
+                
+                if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+                    Mail::to($recipient->email)->queue(new \App\Mail\ExpedienteDeadlineReminder($expediente, $recipient, $label));
+                    \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->addHours(24)); // Evitar re-envío por 24h
+                    $this->info("Notificación FATAL de {$label} enviada a [{$tenant->name}] {$recipient->email} para Exp: {$expediente->numero}");
+                } else {
+                     $this->info("Skipping {$label} for Exp: {$expediente->numero} (Already sent today)");
+                }
             }
         }
     }
