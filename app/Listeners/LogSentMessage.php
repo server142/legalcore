@@ -29,8 +29,9 @@ class LogSentMessage
 
         // Create log entry
         AuditLog::create([
-            'tenant_id' => Auth::user()?->tenant_id ?? null,
-            'user_id' => Auth::id() ?? null,
+            // Fallback to ID 1 (System Admin) when running from console/scheduler
+            'tenant_id' => Auth::user()?->tenant_id ?? 1,
+            'user_id' => Auth::id() ?? 1,
             'accion' => 'email_sent',
             'modulo' => 'system',
             'descripcion' => "Correo enviado a: {$to}. Asunto: {$subject}",

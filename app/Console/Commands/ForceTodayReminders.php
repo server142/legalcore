@@ -135,20 +135,12 @@ class ForceTodayReminders extends Command
             $this->info("   - SMTP Host: " . config('mail.mailers.smtp.host'));
             
             try {
-                // Force synchronous sending using raw method to isolate Mailable issues
-                // We use Mail::mailer(config('mail.default')) to ensure we use the configured driver (resend/smtp)
-                $driver = config('mail.default');
+                // Force synchronous sending to debug SMTP errors immediately
+                Mail::to($recipient->email)->send(new ExpedienteDeadlineReminder($expediente, $recipient, $subject));
+                $this->info("   -> Enviado (SYNC) a: {$recipient->email}");
                 
-                \Illuminate\Support\Facades\Mail::mailer($driver)->raw(
-                    "RECORDATORIO URGENTE (DEBUG):\n\nEl expediente {$expediente->numero} tiene un término ($subject) que vence HOY.\n\nFavor de atender de inmediato.", 
-                    function ($message) use ($recipient, $subject) {
-                        $message->to($recipient->email)
-                                ->subject($subject);
-                                // From address is automatically taken from global config if not set here
-                    }
-                );
-
-                $this->info("   -> Enviado (RAW) a: {$recipient->email}");
+                // Rate Limit Protection for Resend (Free Tier: 2 req/sec)
+                sleep(1); 
             } catch (\Exception $e) {
                 $this->error("   -> ERROR SMTP enviando a {$recipient->email}: " . $e->getMessage());
                 \Illuminate\Support\Facades\Log::error("Mail Send Error: " . $e->getMessage());
