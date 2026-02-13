@@ -27,8 +27,9 @@ class LogSendingMessage
         $subject = $message->getSubject();
 
         AuditLog::create([
-            'tenant_id' => Auth::user()?->tenant_id ?? null,
-            'user_id' => Auth::id() ?? null,
+            // Fallback to ID 1 (System Admin) when running from console/scheduler
+            'tenant_id' => Auth::user()?->tenant_id ?? 1,
+            'user_id' => Auth::id() ?? 1,
             'accion' => 'email_attempt',
             'modulo' => 'system',
             'descripcion' => "Intento de envío de correo a: {$to}. Asunto: {$subject}",
