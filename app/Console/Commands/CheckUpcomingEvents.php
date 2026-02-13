@@ -31,6 +31,9 @@ class CheckUpcomingEvents extends Command
      */
     public function handle()
     {
+        // Load custom mail settings from DB (Global Settings)
+        \App\Services\MailSettingsService::applySettings();
+
         $this->info('Consultando eventos próximos a vencer por Tenant...');
 
         // Defaults if no settings are present

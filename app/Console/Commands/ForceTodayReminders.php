@@ -31,6 +31,9 @@ class ForceTodayReminders extends Command
      */
     public function handle()
     {
+        // Load custom mail settings from DB (Global Settings)
+        \App\Services\MailSettingsService::applySettings();
+
         $this->info('Iniciando búsqueda de vencimientos para HOY (' . date('Y-m-d') . ')...');
 
         $tenants = Tenant::where('is_active', true)->get();
