@@ -132,6 +132,15 @@ class ForceTodayReminders extends Command
             $this->info("   - Driver: " . config('mail.default'));
             $this->info("   - From: " . config('mail.from.address'));
             $this->info("   - Resend Key: " . substr(config('services.resend.key'), 0, 5) . '...');
+            
+            // DEEP DEBUG: Check the actual transport instance
+            try {
+                $transport = \Illuminate\Support\Facades\Mail::mailer(config('mail.default'))->getSymfonyTransport();
+                $this->info("   - Transport Class: " . get_class($transport));
+            } catch (\Exception $e) {
+                $this->info("   - Transport Debug Error: " . $e->getMessage());
+            }
+
             $this->info("   - SMTP Host: " . config('mail.mailers.smtp.host'));
             
             try {
