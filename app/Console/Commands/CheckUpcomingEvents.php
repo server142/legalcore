@@ -55,6 +55,7 @@ class CheckUpcomingEvents extends Command
             foreach ($reminders as $reminder) {
                 $this->checkThresholdForTenant($tenant, $reminder['hours'], $reminder['label']);
                 $this->checkExpedienteDeadlinesForTenant($tenant, $reminder['hours'], $reminder['label']);
+                $this->checkActuacionDeadlinesForTenant($tenant, $reminder['hours'], $reminder['label']);
             }
         }
 
@@ -64,6 +65,68 @@ class CheckUpcomingEvents extends Command
             'timezone' => config('app.timezone'),
         ]);
         return 0;
+    }
+
+    protected function checkActuacionDeadlinesForTenant(Tenant $tenant, int $hours, string $label)
+    {
+        // Calcular el día objetivo
+        $targetDate = Carbon::now()->addHours($hours);
+        $start = $targetDate->copy()->startOfDay();
+        $end = $targetDate->copy()->endOfDay();
+
+        \Illuminate\Support\Facades\Log::debug("Checking Actuaciones (Terms) for Tenant {$tenant->id} ({$label})", [
+            'target_day' => $targetDate->toDateString()
+        ]);
+
+        // Buscar actuaciones que sean plazos y venzan en ese día
+        $actuaciones = \App\Models\Actuacion::with(['expediente.assignedUsers', 'expediente.abogado'])
+            ->where('tenant_id', $tenant->id)
+            ->where('es_plazo', true)
+            ->whereBetween('fecha_vencimiento', [$start, $end])
+            ->get();
+
+        foreach ($actuaciones as $actuacion) {
+            $expediente = $actuacion->expediente;
+            if (!$expediente) continue;
+
+            $recipients = collect();
+            
+            if ($expediente->abogado_responsable_id) {
+                $responsible = User::find($expediente->abogado_responsable_id);
+                if ($responsible && $responsible->tenant_id === $tenant->id) {
+                    $recipients->push($responsible);
+                }
+            }
+
+            foreach ($expediente->assignedUsers as $user) {
+                if ($user->tenant_id === $tenant->id) {
+                    $recipients->push($user);
+                }
+            }
+
+            $recipients = $recipients->unique('id')->filter();
+
+            foreach ($recipients as $recipient) {
+                $cacheKey = "actuacion_reminder_{$actuacion->id}_{$label}_{$targetDate->toDateString()}_{$recipient->id}";
+                
+                if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+                    // Usamos el mismo Mailable pero adaptando el asunto/mensaje
+                    // O creamos uno nuevo. Por simplicidad, reusamos ExpedienteDeadlineReminder
+                    // pasando un Label modificado para que se entienda que es un TÉRMINO específico.
+                    
+                    $customLabel = "TÉRMINO: '{$actuacion->titulo}' ({$label})";
+                    
+                    Mail::to($recipient->email)->queue(new \App\Mail\ExpedienteDeadlineReminder($expediente, $recipient, $customLabel));
+                    
+                    \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->addHours(24));
+                    $this->info("   [DEBUG] Notificación de TÉRMINO {$label} enviada a {$recipient->email} (Exp: {$expediente->numero})");
+                    
+                    sleep(1); // Rate Limit
+                } else {
+                     $this->info("   [DEBUG] Skipping Term {$label} (Already sent)");
+                }
+            }
+        }
     }
 
     protected function checkExpedienteDeadlinesForTenant(Tenant $tenant, int $hours, string $label)
@@ -114,9 +177,12 @@ class CheckUpcomingEvents extends Command
                 if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
                     Mail::to($recipient->email)->queue(new \App\Mail\ExpedienteDeadlineReminder($expediente, $recipient, $label));
                     \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->addHours(24)); // Evitar re-envío por 24h
-                    $this->info("Notificación FATAL de {$label} enviada a [{$tenant->name}] {$recipient->email} para Exp: {$expediente->numero}");
+                    $this->info("   [DEBUG] Notificación de {$label} enviada a [{$tenant->name}] {$recipient->email} para Exp: {$expediente->numero}");
+                    
+                    // Rate Limit Protection for Resend (Free Tier: 2 req/sec)
+                    sleep(1);
                 } else {
-                     $this->info("Skipping {$label} for Exp: {$expediente->numero} (Already sent today)");
+                     $this->info("   [DEBUG] Skipping {$label} for Exp: {$expediente->numero} (Already sent today)");
                 }
             }
         }
@@ -166,6 +232,7 @@ class CheckUpcomingEvents extends Command
                 foreach ($recipients as $recipient) {
                     Mail::to($recipient->email)->queue(new AgendaReminder($event, $recipient, $label));
                     $this->info("Notificación de {$label} enviada a [{$tenant->name}] {$recipient->email} para: {$event->titulo}");
+                    sleep(1);
                 }
             } 
             // CASO 2: Evento de Asesoría (Sin Expediente aún) o Evento Personal
@@ -178,6 +245,7 @@ class CheckUpcomingEvents extends Command
                  if ($recipient && $recipient->tenant_id === $tenant->id) {
                     Mail::to($recipient->email)->queue(new AgendaReminder($event, $recipient, $label));
                     $this->info("Notificación de {$label} enviada a [{$tenant->name}] {$recipient->email} para: {$event->titulo}");
+                    sleep(1);
                  }
             }
         }
