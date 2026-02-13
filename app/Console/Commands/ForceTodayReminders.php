@@ -129,8 +129,46 @@ class ForceTodayReminders extends Command
 
         foreach ($recipients as $recipient) {
             try {
-                // Use the working Mailable class approach
-                Mail::to($recipient->email)->send(new ExpedienteDeadlineReminder($expediente, $recipient, $subject));
+                // Use the EXACT same approach as GlobalSettings::testMail (which works)
+                $fromAddress = config('mail.from.address');
+                $fromName = config('mail.from.name');
+                $mailer = config('mail.default'); // Should be 'resend' after MailSettingsService::applySettings()
+                
+                $emailBody = "
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                    <div style='background-color: #c53030; color: white; padding: 20px; text-align: center;'>
+                        <h1 style='margin: 0;'>⚠️ TÉRMINO LEGAL POR VENCER</h1>
+                    </div>
+                    <div style='padding: 20px; background-color: #f7fafc;'>
+                        <p>Hola, <strong>{$recipient->name}</strong>.</p>
+                        <p>Este es un aviso automático de <strong>máxima prioridad</strong>. El plazo fatal para el siguiente expediente está próximo a cumplirse:</p>
+                        
+                        <div style='background-color: white; padding: 15px; border-left: 4px solid #c53030; margin: 20px 0;'>
+                            <h3 style='margin-top: 0;'>Expediente: {$expediente->numero}</h3>
+                            <p><strong>Título:</strong> {$expediente->titulo}</p>
+                            <p><strong>Vence en:</strong> <span style='color: #c53030; font-weight: bold; font-size: 1.2em;'>{$subject}</span></p>
+                        </div>
+                        
+                        <p>Es imperativo que se realicen las acciones necesarias antes de que concluya este término.</p>
+                        
+                        <div style='text-align: center; margin-top: 30px;'>
+                            <a href='" . config('app.url') . "/expedientes/{$expediente->id}' 
+                               style='background-color: #c53030; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;'>
+                                Ver Expediente Ahora
+                            </a>
+                        </div>
+                    </div>
+                    <div style='padding: 10px; text-align: center; color: #718096; font-size: 12px;'>
+                        Sistema de Alertas Diogenes
+                    </div>
+                </div>";
+                
+                \Illuminate\Support\Facades\Mail::mailer($mailer)->raw($emailBody, function ($message) use ($recipient, $subject, $fromAddress, $fromName) {
+                    $message->to($recipient->email)
+                        ->from($fromAddress, $fromName)
+                        ->subject($subject);
+                });
+                
                 $this->info("   -> Enviado a: {$recipient->email}");
                 
                 // Rate Limit Protection for Resend (Free Tier: 2 req/sec)
