@@ -128,25 +128,13 @@ class ForceTodayReminders extends Command
         }
 
         foreach ($recipients as $recipient) {
-            $this->info("   [DEBUG] Configuración actual:");
-            $this->info("   - Driver: " . config('mail.default'));
-            $this->info("   - From: " . config('mail.from.address'));
-            $this->info("   - Resend Key: " . substr(config('services.resend.key'), 0, 5) . '...');
-            
-            // DEEP DEBUG: Check the actual transport instance
             try {
-                $transport = \Illuminate\Support\Facades\Mail::mailer(config('mail.default'))->getSymfonyTransport();
-                $this->info("   - Transport Class: " . get_class($transport));
-            } catch (\Exception $e) {
-                $this->info("   - Transport Debug Error: " . $e->getMessage());
-            }
-
-            $this->info("   - SMTP Host: " . config('mail.mailers.smtp.host'));
-            
-            try {
-                // Force synchronous sending to debug SMTP errors immediately
-                Mail::to($recipient->email)->send(new ExpedienteDeadlineReminder($expediente, $recipient, $subject));
-                $this->info("   -> Enviado (SYNC) a: {$recipient->email}");
+                // FORCE RESEND DRIVER
+                Mail::mailer('resend')
+                    ->to($recipient->email)
+                    ->send(new ExpedienteDeadlineReminder($expediente, $recipient, $subject));
+                
+                $this->info("   -> Enviado (Resend) a: {$recipient->email}");
                 
                 // Rate Limit Protection for Resend (Free Tier: 2 req/sec)
                 sleep(1); 
