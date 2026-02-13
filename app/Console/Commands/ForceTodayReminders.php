@@ -52,51 +52,80 @@ class ForceTodayReminders extends Command
                 });
             }
 
+            // 1. Check Expedientes (Existing Logic)
             $expedientes = $query->get();
 
-            if ($expedientes->isEmpty()) {
-                continue;
+            if ($expedientes->isNotEmpty()) {
+                $this->info(" --- Tenant: {$tenant->name} ({$expedientes->count()} expedientes) ---");
+
+                foreach ($expedientes as $expediente) {
+                    $this->info("Procesando Exp: {$expediente->numero} - Vence: {$expediente->vencimiento_termino}");
+                    $this->sendReminder($expediente, $tenant, 'URGENTE: EXPEDIENTE VENCE HOY');
+                }
             }
 
-            $this->info(" --- Tenant: {$tenant->name} ({$expedientes->count()} expedientes) ---");
+            // 2. Check Actuaciones (Legal Terms) - NEW LOGIC
+            $actuacionesQuery = \App\Models\Actuacion::with(['expediente.assignedUsers', 'expediente.abogado'])
+                ->where('tenant_id', $tenant->id)
+                ->where('es_plazo', true) // Only terms
+                ->whereDate('fecha_vencimiento', $todayStart->toDateString()); // Only today
 
-            foreach ($expedientes as $expediente) {
-                $this->info("Procesando Exp: {$expediente->numero} - Vence: {$expediente->vencimiento_termino}");
+            // Filter specific ID if passed (searches related expediente number)
+            if ($this->option('id')) {
+                $filter = $this->option('id');
+                $actuacionesQuery->whereHas('expediente', function ($q) use ($filter) {
+                    $q->where('id', $filter)
+                      ->orWhere('numero', 'like', "%{$filter}%");
+                });
+            }
 
-                $recipients = collect();
+            $actuaciones = $actuacionesQuery->get();
+
+            if ($actuaciones->isNotEmpty()) {
+                $this->info(" --- Tenant: {$tenant->name} ({$actuaciones->count()} actuaciones/términos) ---");
                 
-                if ($expediente->abogado_responsable_id) {
-                    $responsible = User::find($expediente->abogado_responsable_id);
-                    if ($responsible && $responsible->tenant_id === $tenant->id) {
-                        $recipients->push($responsible);
-                    }
-                }
-
-                foreach ($expediente->assignedUsers as $user) {
-                    if ($user->tenant_id === $tenant->id) {
-                        $recipients->push($user);
-                    }
-                }
-
-                $recipients = $recipients->unique('id')->filter();
-                
-                if ($recipients->isEmpty()) {
-                    $this->warn("   -> Sin destinatarios válidos.");
-                    continue;
-                }
-
-                foreach ($recipients as $recipient) {
-                    // Force send "URGENTE: Vence Hoy"
-                    try {
-                        Mail::to($recipient->email)->queue(new ExpedienteDeadlineReminder($expediente, $recipient, 'URGENTE: VENCE HOY'));
-                        $this->info("   -> Enviado a: {$recipient->email}");
-                    } catch (\Exception $e) {
-                        $this->error("   -> Error enviando a {$recipient->email}: " . $e->getMessage());
-                    }
+                foreach ($actuaciones as $actuacion) {
+                    $this->info("Procesando Término: '{$actuacion->titulo}' (Exp: {$actuacion->expediente->numero}) - Vence: {$actuacion->fecha_vencimiento->format('Y-m-d')}");
+                    // Reusing the same mail logic, passing the actuacion context
+                    $this->sendReminder($actuacion->expediente, $tenant, "URGENTE: TÉRMINO '{$actuacion->titulo}' VENCE HOY");
                 }
             }
         }
 
         $this->info('Proceso forzado completado.');
+    }
+
+    protected function sendReminder($expediente, $tenant, $subject)
+    {
+        $recipients = collect();
+        
+        if ($expediente->abogado_responsable_id) {
+            $responsible = User::find($expediente->abogado_responsable_id);
+            if ($responsible && $responsible->tenant_id === $tenant->id) {
+                $recipients->push($responsible);
+            }
+        }
+
+        foreach ($expediente->assignedUsers as $user) {
+            if ($user->tenant_id === $tenant->id) {
+                $recipients->push($user);
+            }
+        }
+
+        $recipients = $recipients->unique('id')->filter();
+        
+        if ($recipients->isEmpty()) {
+            $this->warn("   -> Sin destinatarios válidos.");
+            return;
+        }
+
+        foreach ($recipients as $recipient) {
+            try {
+                Mail::to($recipient->email)->queue(new ExpedienteDeadlineReminder($expediente, $recipient, $subject));
+                $this->info("   -> Enviado a: {$recipient->email}");
+            } catch (\Exception $e) {
+                $this->error("   -> Error enviando a {$recipient->email}: " . $e->getMessage());
+            }
+        }
     }
 }
