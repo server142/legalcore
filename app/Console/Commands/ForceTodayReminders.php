@@ -128,6 +128,12 @@ class ForceTodayReminders extends Command
         }
 
         foreach ($recipients as $recipient) {
+            $this->info("   [DEBUG] Configuración actual:");
+            $this->info("   - Driver: " . config('mail.default'));
+            $this->info("   - From: " . config('mail.from.address'));
+            $this->info("   - Resend Key: " . substr(config('services.resend.key'), 0, 5) . '...');
+            $this->info("   - SMTP Host: " . config('mail.mailers.smtp.host'));
+            
             try {
                 // Force synchronous sending to debug SMTP errors immediately
                 Mail::to($recipient->email)->send(new ExpedienteDeadlineReminder($expediente, $recipient, $subject));
