@@ -15,13 +15,11 @@ El sistema **Diogenes AI** ha detectado un término legal con vencimiento inmine
 <x-mail::panel>
 ### Expediente: **{{ $expediente->numero }}**
 
-| Datos Clave | Detalle |
-|:--- |:--- |
-| **Título** | {{ $expediente->titulo }} |
-| **Vence en** | <span style="color: #e53e3e; font-weight: bold; font-size: 1.2em;">{{ $timeLabel }}</span> |
-| **Fecha Límite** | {{ $expediente->vencimiento_termino ? $expediente->vencimiento_termino->format('d/m/Y') : 'N/A' }} |
-| **Juzgado** | {{ $expediente->juzgado }} |
-| **Cliente** | {{ $expediente->cliente ? $expediente->cliente->nombre : 'N/A' }} |
+- **Título:** {{ $expediente->titulo }}
+- **Vence en:** <span style="color: #e53e3e; font-weight: bold; font-size: 1.2em;">{{ $timeLabel }}</span>
+- **Fecha Límite:** {{ $expediente->vencimiento_termino ? $expediente->vencimiento_termino->format('d/m/Y') : 'N/A' }}
+- **Juzgado:** {{ $expediente->juzgado }}
+- **Cliente:** {{ $expediente->cliente ? $expediente->cliente->nombre : 'N/A' }}
 </x-mail::panel>
 
 ---
