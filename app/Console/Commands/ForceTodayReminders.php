@@ -122,12 +122,19 @@ class ForceTodayReminders extends Command
             return;
         }
 
+        if ($recipients->isEmpty()) {
+            $this->warn("   -> Sin destinatarios válidos.");
+            return;
+        }
+
         foreach ($recipients as $recipient) {
             try {
-                Mail::to($recipient->email)->queue(new ExpedienteDeadlineReminder($expediente, $recipient, $subject));
-                $this->info("   -> Enviado a: {$recipient->email}");
+                // Force synchronous sending to debug SMTP errors immediately
+                Mail::to($recipient->email)->send(new ExpedienteDeadlineReminder($expediente, $recipient, $subject));
+                $this->info("   -> Enviado (SYNC) a: {$recipient->email}");
             } catch (\Exception $e) {
-                $this->error("   -> Error enviando a {$recipient->email}: " . $e->getMessage());
+                $this->error("   -> ERROR SMTP enviando a {$recipient->email}: " . $e->getMessage());
+                \Illuminate\Support\Facades\Log::error("Mail Send Error: " . $e->getMessage());
             }
         }
     }
