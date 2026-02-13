@@ -129,12 +129,31 @@ class ForceTodayReminders extends Command
 
         foreach ($recipients as $recipient) {
             try {
-                // FORCE RESEND DRIVER
+                // FORCE RESEND DRIVER + RAW HTML (Same logic as Test Mail)
+                $htmlContent = "
+                <div style='font-family: sans-serif; padding: 20px;'>
+                    <div style='text-align: center; margin-bottom: 20px;'>
+                        <h1 style='color: #c53030; text-transform: uppercase;'>Notificación Urgente</h1>
+                        <p style='font-size: 16px; color: #4a5568;'>Vencimiento de Término Legal</p>
+                    </div>
+                    <div style='background: #f7fafc; padding: 15px; border-left: 4px solid #c53030; margin-bottom: 20px;'>
+                        <p><strong>Expediente:</strong> {$expediente->numero}</p>
+                        <p><strong>Título:</strong> {$expediente->titulo}</p>
+                        <p><strong>Vence:</strong> <span style='color: #c53030; font-weight: bold;'>HOY ({$subject})</span></p>
+                    </div>
+                    <p>Es imperativo atender este asunto de inmediato.</p>
+                    <div style='text-align: center; margin-top: 30px;'>
+                        <a href='" . config('app.url') . "/expedientes/{$expediente->id}' style='background-color: #c53030; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Ver Expediente</a>
+                    </div>
+                </div>";
+
                 Mail::mailer('resend')
                     ->to($recipient->email)
-                    ->send(new ExpedienteDeadlineReminder($expediente, $recipient, $subject));
+                    ->html($htmlContent, function ($message) use ($subject) {
+                        $message->subject($subject);
+                    });
                 
-                $this->info("   -> Enviado (Resend) a: {$recipient->email}");
+                $this->info("   -> Enviado (HTML Directo) a: {$recipient->email}");
                 
                 // Rate Limit Protection for Resend (Free Tier: 2 req/sec)
                 sleep(1); 
