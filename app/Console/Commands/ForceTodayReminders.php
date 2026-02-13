@@ -163,10 +163,11 @@ class ForceTodayReminders extends Command
                     </div>
                 </div>";
                 
-                \Illuminate\Support\Facades\Mail::mailer($mailer)->raw($emailBody, function ($message) use ($recipient, $subject, $fromAddress, $fromName) {
+                \Illuminate\Support\Facades\Mail::mailer($mailer)->send([], [], function ($message) use ($recipient, $subject, $fromAddress, $fromName, $emailBody, $expediente) {
                     $message->to($recipient->email)
                         ->from($fromAddress, $fromName)
-                        ->subject($subject);
+                        ->subject($subject)
+                        ->html($emailBody);
                 });
                 
                 $this->info("   -> Enviado a: {$recipient->email}");
