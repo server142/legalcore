@@ -14,11 +14,21 @@ class AIService
 
     public function __construct()
     {
-        $settings = DB::table('global_settings')->whereIn('key', ['ai_provider', 'ai_api_key', 'ai_model'])->pluck('value', 'key');
+        // Try to get active provider from new system
+        $activeProvider = \App\Models\AiProvider::getActive();
         
-        $this->provider = $settings['ai_provider'] ?? 'openai';
-        $this->apiKey = $settings['ai_api_key'] ?? '';
-        $this->model = $settings['ai_model'] ?? 'gpt-4o-mini';
+        if ($activeProvider) {
+            $this->provider = $activeProvider->slug;
+            $this->apiKey = $activeProvider->api_key; // Will be decrypted automatically
+            $this->model = $activeProvider->default_model;
+        } else {
+            // Fallback to old global_settings system for backward compatibility
+            $settings = DB::table('global_settings')->whereIn('key', ['ai_provider', 'ai_api_key', 'ai_model'])->pluck('value', 'key');
+            
+            $this->provider = $settings['ai_provider'] ?? 'openai';
+            $this->apiKey = $settings['ai_api_key'] ?? '';
+            $this->model = $settings['ai_model'] ?? 'gpt-4o-mini';
+        }
     }
 
     /**
