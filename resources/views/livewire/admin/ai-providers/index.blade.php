@@ -59,7 +59,7 @@
                         </div>
                         <div>
                             <p class="text-xs text-gray-500">API Key:</p>
-                            <p class="text-sm font-mono text-gray-800">{{ $provider->masked_api_key }}</p>
+                            <p class="text-sm font-mono text-gray-800 break-all">{{ $provider->masked_api_key }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-gray-500">Estado:</p>
