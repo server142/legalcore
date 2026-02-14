@@ -40,6 +40,13 @@ class AIService
             return ['error' => 'AI API Key not configured.'];
         }
 
+        // Debug logging
+        \Log::info('AIService Debug', [
+            'provider' => $this->provider,
+            'model' => $this->model,
+            'has_key' => !empty($this->apiKey),
+        ]);
+
         $result = ['error' => 'Provider not fully implemented yet.'];
 
         if ($this->provider === 'openai') {
