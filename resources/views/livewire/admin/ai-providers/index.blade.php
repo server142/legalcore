@@ -21,13 +21,17 @@
         <!-- Providers Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($providers as $provider)
-                <div class="bg-white rounded-lg shadow-md p-6 border-2 {{ AiProvider::getActive()?->id === $provider->id ? 'border-green-500' : 'border-gray-200' }}">
+                @php
+                    $activeProvider = \App\Models\AiProvider::getActive();
+                    $isActive = $activeProvider && $activeProvider->id === $provider->id;
+                @endphp
+                <div class="bg-white rounded-lg shadow-md p-6 border-2 {{ $isActive ? 'border-green-500' : 'border-gray-200' }}">
                     <!-- Header -->
                     <div class="flex justify-between items-start mb-4">
                         <div class="flex-1">
                             <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
                                 {{ $provider->name }}
-                                @if(AiProvider::getActive()?->id === $provider->id)
+                                @if($isActive)
                                     <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Activo</span>
                                 @endif
                             </h3>
@@ -67,7 +71,7 @@
 
                     <!-- Actions -->
                     <div class="flex gap-2">
-                        @if(AiProvider::getActive()?->id !== $provider->id)
+                        @if(!$isActive)
                             <button wire:click="setActive({{ $provider->id }})" class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded-lg text-sm font-medium transition">
                                 Activar
                             </button>
