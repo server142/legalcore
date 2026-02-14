@@ -90,6 +90,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/admin/settings', \App\Livewire\Admin\TenantSettings::class)->name('admin.settings')->middleware('can:manage settings');
     Route::get('/admin/reports/income', \App\Livewire\Admin\Reports\IncomeReport::class)->name('admin.reports.income')->middleware('can:manage tenants');
     Route::get('/admin/global-settings', \App\Livewire\Admin\GlobalSettings::class)->name('admin.global-settings')->middleware('can:manage tenants');
+    Route::get('/admin/ai-providers', \App\Livewire\Admin\AiProviders\Index::class)->name('admin.ai-providers')->middleware('can:manage tenants');
     Route::get('/admin/announcements', \App\Livewire\Admin\Announcements::class)->name('admin.announcements')->middleware('can:manage tenants');
     
     // Legal Documents
