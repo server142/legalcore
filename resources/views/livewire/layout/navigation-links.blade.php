@@ -83,6 +83,10 @@
             {{ __('Configuración Global') }}
         </x-sidebar-link>
         
+        <x-sidebar-link :href="route('admin.ai-providers')" :active="request()->routeIs('admin.ai-providers')" icon="cpu">
+            {{ __('Proveedores de IA') }}
+        </x-sidebar-link>
+        
         <x-sidebar-link :href="route('admin.announcements')" :active="request()->routeIs('admin.announcements')" icon="speakerphone">
             {{ __('Anuncios') }}
         </x-sidebar-link>
