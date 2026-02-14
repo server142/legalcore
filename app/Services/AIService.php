@@ -49,13 +49,13 @@ class AIService
 
         $result = ['error' => 'Provider not fully implemented yet.'];
 
-        if ($this->provider === 'openai') {
+        if ($this->provider === 'openai' || str_contains($this->provider, 'openai')) {
             $result = $this->askOpenAI($messages, $temperature, $maxTokens);
-        } elseif ($this->provider === 'deepseek') {
+        } elseif ($this->provider === 'deepseek' || str_contains($this->provider, 'deepseek')) {
             $result = $this->askDeepSeek($messages, $temperature, $maxTokens);
-        } elseif ($this->provider === 'groq') {
+        } elseif ($this->provider === 'groq' || str_contains($this->provider, 'groq')) {
             $result = $this->askGroq($messages, $temperature, $maxTokens);
-        } elseif ($this->provider === 'anthropic') {
+        } elseif ($this->provider === 'anthropic' || str_contains($this->provider, 'anthropic') || str_contains($this->provider, 'claude')) {
             $result = $this->askAnthropic($messages, $temperature, $maxTokens);
         }
 
