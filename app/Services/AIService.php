@@ -245,8 +245,9 @@ class AIService
                 ];
             }
 
+            $errorMsg = $response->json('error.message') ?? $response->json('error.type') ?? 'Unknown error';
             Log::error('Anthropic Error: ' . $response->body());
-            return ['success' => false, 'error' => 'Anthropic Error: ' . $response->status()];
+            return ['success' => false, 'error' => 'Anthropic Error ' . $response->status() . ': ' . $errorMsg];
 
         } catch (\Exception $e) {
             return ['success' => false, 'error' => 'Anthropic Connection Error: ' . $e->getMessage()];
