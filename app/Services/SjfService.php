@@ -28,40 +28,26 @@ class SjfService
         Log::info("SJF: Attempting sync via Microservice for page {$page}...");
 
         try {
-            $response = Http::timeout(30)
+            // The SCJN API now only accepts POST requests (GET returns 405)
+            $payload = [
+                "classifiers" => $filters['classifiers'] ?? [],
+                "searchTerms" => $filters['search_terms'] ?? [],
+                "bFacet" => true,
+                "ius" => [],
+                "idApp" => "SJFAPP2020",
+                "lbSearch" => [],
+                "filterExpression" => $filters['expression'] ?? ""
+            ];
+
+            $response = Http::timeout(45)
                 ->withHeaders([
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                     'Referer' => 'https://sjf2.scjn.gob.mx/listado-resultado-tesis',
                     'Origin' => 'https://sjf2.scjn.gob.mx',
                     'Accept' => 'application/json, text/plain, */*',
+                    'Content-Type' => 'application/json'
                 ])
-                ->get($this->apiUrl, [
-                    'page' => $page,
-                    'size' => $size,
-                ]);
-
-            // Retry with POST if GET is not allowed (Error 405)
-            if ($response->status() === 405 || $response->status() === 400) {
-                $payload = [
-                    "classifiers" => $filters['classifiers'] ?? [],
-                    "searchTerms" => $filters['search_terms'] ?? [],
-                    "bFacet" => true,
-                    "ius" => [],
-                    "idApp" => "SJFAPP2020",
-                    "lbSearch" => [],
-                    "filterExpression" => $filters['expression'] ?? ""
-                ];
-
-                $response = Http::timeout(45)
-                    ->withHeaders([
-                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                        'Referer' => 'https://sjf2.scjn.gob.mx/listado-resultado-tesis',
-                        'Origin' => 'https://sjf2.scjn.gob.mx',
-                        'Accept' => 'application/json, text/plain, */*',
-                        'Content-Type' => 'application/json'
-                    ])
-                    ->post($this->apiUrl . "?page={$page}&size={$size}", $payload);
-            }
+                ->post($this->apiUrl . "?page={$page}&size={$size}", $payload);
 
             if ($response->successful()) {
                 $json = $response->json();
