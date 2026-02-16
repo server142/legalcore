@@ -169,7 +169,8 @@ class SjfService
     protected function processItem($item)
     {
         // Common key variations in SCJN microservices
-        $regDigital = $item['registroDigital'] ?? $item['reg_digital'] ?? $item['ius'] ?? $item['id'] ?? null;
+        // Priority: ius (numeric registro digital) > registroDigital > id
+        $regDigital = $item['ius'] ?? $item['registroDigital'] ?? $item['reg_digital'] ?? $item['id'] ?? null;
         if (!$regDigital) return false;
 
         $rubro = $item['rubro'] ?? $item['Rubro'] ?? 'Sin rubro';
