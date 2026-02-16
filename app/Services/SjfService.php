@@ -14,10 +14,43 @@ class SjfService
 
     /**
      * Try to fetch recent publications.
+     * Fetches multiple pages to ensure all recent items are captured.
      */
     public function syncRecent($days = 7)
     {
-        return $this->syncPage(1, 50);
+        $totalImported = 0;
+        $maxPages = 10; // Fetch up to 10 pages (500 items) to ensure we get all recent publications
+        
+        for ($page = 1; $page <= $maxPages; $page++) {
+            Log::info("SJF: Fetching page {$page} for recent sync...");
+            
+            $result = $this->syncPage($page, 50);
+            
+            if (is_numeric($result)) {
+                $totalImported += $result;
+                
+                // If we got less than 50 items, we've reached the end
+                if ($result < 50) {
+                    Log::info("SJF: Reached end of results at page {$page}");
+                    break;
+                }
+                
+                // If we got 0 new items, all remaining items already exist
+                if ($result == 0) {
+                    Log::info("SJF: No new items found at page {$page}, stopping sync");
+                    break;
+                }
+            } else {
+                // Error occurred
+                Log::error("SJF: Error on page {$page}: " . $result);
+                break;
+            }
+            
+            // Small delay to avoid rate limiting
+            sleep(1);
+        }
+        
+        return $totalImported;
     }
 
     /**
