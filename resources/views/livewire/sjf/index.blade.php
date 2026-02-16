@@ -39,17 +39,25 @@
 
                 <div class="flex items-center justify-between text-xs">
                     <div class="text-gray-500 flex flex-wrap gap-2">
-                        @if($search)
-                            <span class="flex items-center text-indigo-600 font-medium">
-                                <svg class="w-3 h-3 mr-1 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                Analizando para "{{ $search }}"...
-                            </span>
-                            <span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">
-                                coincidencias: {{ $publications->total() }}
-                            </span>
-                        @else
-                            Busca conceptos, frases o números de registro digital.
-                        @endif
+                        {{-- Show loading indicator only while processing --}}
+                        <span wire:loading wire:target="search" class="flex items-center text-indigo-600 font-medium">
+                            <svg class="w-3 h-3 mr-1 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                            Analizando...
+                        </span>
+                        
+                        {{-- Show results when NOT loading --}}
+                        <span wire:loading.remove wire:target="search">
+                            @if($search)
+                                <span class="text-indigo-600 font-medium">
+                                    Búsqueda: "{{ $search }}"
+                                </span>
+                                <span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">
+                                    coincidencias: {{ $publications->total() }}
+                                </span>
+                            @else
+                                Busca conceptos, frases o números de registro digital.
+                            @endif
+                        </span>
                     </div>
                     <div class="text-gray-400 italic">
                         Base de datos: {{ \App\Models\SjfPublication::count() }} docs. registrados.
