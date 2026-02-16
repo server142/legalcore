@@ -36,7 +36,7 @@ class Index extends Component
             if (!$isNumericSearch && strlen($this->search) > 5) {
                 try {
                     // Semantic Search Logic
-                    $aiService = app(\\App\\Services\\AIService::class);
+                    $aiService = app(App\Services\AIService::class);
                     $queryVector = $aiService->getEmbeddings($this->search);
 
                     if ($queryVector) {
@@ -120,7 +120,7 @@ class Index extends Component
         $this->loading = true;
         
         try {
-            $service = app(\\App\\Services\\SjfService::class);
+            $service = app(App\Services\SjfService::class);
             $service->syncRecent(7);
             $this->dispatch('notify', 'Sincronización completada exitosamente.');
         } catch (\Exception $e) {
