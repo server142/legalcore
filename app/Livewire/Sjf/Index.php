@@ -29,14 +29,20 @@ class Index extends Component
         $query = SjfPublication::query();
 
         if ($this->search) {
-            // Skip AI for numeric searches (like registro digital)
-            $isNumericSearch = is_numeric($this->search) || preg_match('/^\d+$/', trim($this->search));
+            // Determine if we should skip AI:
+            // - Pure numbers (2031766)
+            // - Short queries (< 10 chars)
+            // - Alphanumeric codes (PR.A.C.CS. J/2 A, REG-2024-001)
+            $skipAI = 
+                is_numeric($this->search) ||                           // Pure numbers
+                strlen($this->search) < 10 ||                          // Too short
+                preg_match('/^[\w\.\-\/]+$/', trim($this->search));    // Alphanumeric codes
             
-            // Use AI automatically if search phrase is significant (concept search) and NOT numeric
-            if (!$isNumericSearch && strlen($this->search) > 5) {
+            // Use AI only for conceptual phrase searches (long text with spaces)
+            if (!$skipAI && strlen($this->search) > 10 && str_contains($this->search, ' ')) {
                 try {
                     // Semantic Search Logic
-                    $aiService = app(App\Services\AIService::class);
+                    $aiService = app(\App\Services\AIService::class);
                     $queryVector = $aiService->getEmbeddings($this->search);
 
                     if ($queryVector) {
@@ -85,7 +91,7 @@ class Index extends Component
                     $this->applyTraditionalSearch($query);
                 }
             } else {
-                // Use traditional search for numeric/short queries
+                // Use traditional search for numeric/short/code queries
                 $this->applyTraditionalSearch($query);
             }
         }
@@ -120,7 +126,7 @@ class Index extends Component
         $this->loading = true;
         
         try {
-            $service = app(App\Services\SjfService::class);
+            $service = app(\App\Services\SjfService::class);
             $service->syncRecent(7);
             $this->dispatch('notify', 'Sincronización completada exitosamente.');
         } catch (\Exception $e) {
@@ -130,5 +136,3 @@ class Index extends Component
         $this->loading = false;
     }
 }
-
-
