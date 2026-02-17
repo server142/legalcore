@@ -38,20 +38,20 @@ class Generator extends Component
             $finalPrompt = $this->prompt;
 
             if ($this->is_ad) {
-                // Modo Anuncio: Prompt enriquecido con ingeniería para mejor texto
-                $finalPrompt = "Create a professional advertisement poster. ";
-                $finalPrompt .= "Main Visual Concept: " . $this->prompt . ". ";
-                $finalPrompt .= "COMPOSITION RULE: Clean layout with purposeful negative space. ";
+                // Modo Anuncio: Ingeniería de Prompt Refinada para evitar "Mockups"
+                $finalPrompt = "Create a high-quality DIGITAL SOCIAL MEDIA ADVERTISEMENT GRAPHIC (Not a photo of a poster). ";
+                $finalPrompt .= "Visuals: " . $this->prompt . ". ";
+                $finalPrompt .= "FORMAT: Full screen digital graphic design, flat layout. ";
                 
                 if ($this->headline) {
-                    $finalPrompt .= "TYPOGRAPHY WARNING: Render the following headline VERBATIM (Letter by Letter), exactly as written in the quotes. Use a modern, bold Sans-Serif font. TEXT: '" . strtoupper($this->headline) . "'. Ensure correct spelling. ";
+                    $finalPrompt .= "TEXT INSTRUCTION: Render the title '" . strtoupper($this->headline) . "' in BIG BOLD letters at the top. Spelling must be exact. ";
                 }
                 
                 if ($this->subheadline) {
-                    $finalPrompt .= "SUBTITLE: Render this text clearly at the bottom: '" . $this->subheadline . "'. ";
+                    $finalPrompt .= "BOTTOM TEXT: Render '" . $this->subheadline . "' clearly at the bottom. ";
                 }
                 
-                $finalPrompt .= "STYLE: Commercial photography, 8k resolution, cinematic lighting, ultra-sharp text rendering.";
+                $finalPrompt .= "STYLE: Professional Graphic Design, Corporate Blue tones (if applicable), High Contrast, Sharp Vector-style elements mixed with realistic photos. NO FRAMES, NO WALLS, NO MOCKUPS.";
             }
 
             // Generar imagen (usando el prompt enriquecido)
