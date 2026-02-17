@@ -379,13 +379,18 @@ class AIService
                 }
 
                 // Download and store locally to avoid link expiration (DALL-E links expire in 1h)
-                $contents = file_get_contents($imageUrl);
+                try {
+                   $contents = file_get_contents($imageUrl);
+                } catch (\Exception $e) {
+                   return ['success' => false, 'error' => 'Failed to download image from OpenAI'];
+                }
+
                 $filename = 'marketing/' . uniqid() . '.png';
-                Storage::disk('public')->put($filename, $contents);
+                \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $contents);
                 
                 return [
                     'success' => true,
-                    'url' => Storage::url($filename),
+                    'url' => \Illuminate\Support\Facades\Storage::url($filename),
                     'path' => $filename,
                     'revised_prompt' => $revisedPrompt,
                     'cost' => 0.040, // DALL-E 3 Standard 1024x1024 price
