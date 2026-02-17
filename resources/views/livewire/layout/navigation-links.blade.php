@@ -59,6 +59,10 @@
             {{ __('Formatos') }}
         </x-sidebar-link>
 
+        <x-sidebar-link :href="route('marketing.generator')" :active="request()->routeIs('marketing.*')" icon="photograph">
+            {{ __('Marketing Studio') }}
+        </x-sidebar-link>
+
         @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin'))
         <x-sidebar-link :href="route('audit.index')" :active="request()->routeIs('audit.*')" icon="audit">
             {{ __('Bitácora') }}

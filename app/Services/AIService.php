@@ -33,6 +33,7 @@ class AIService
 
     /**
      * Send a completion request to the AI (Text Generation)
+     * Includes caching to reduce costs.
      */
     public function ask(array $messages, float $temperature = 0.2, int $maxTokens = 6000)
     {
@@ -40,14 +41,30 @@ class AIService
             return ['error' => 'AI API Key not configured.'];
         }
 
-        // Debug logging
-        \Log::info('AIService Debug', [
+        // 1. Generate Cache Key
+        // We hash the essential parameters to create a unique fingerprint for this request
+        $cacheKey = 'ai_resp_' . md5(json_encode([
             'provider' => $this->provider,
-            'model' => $this->model,
-            'has_key' => !empty($this->apiKey),
+            'model'   => $this->model,
+            'msg'     => $messages,
+            'temp'    => $temperature,
+        ]));
+
+        // 2. Check Cache (Default: 24 hours)
+        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            $cachedResponse = \Illuminate\Support\Facades\Cache::get($cacheKey);
+            // Return cached response but mark it for debugging
+            $cachedResponse['cached'] = true;
+            return $cachedResponse;
+        }
+
+        // 3. Execute API Call (Cache Miss)
+        \Log::info('AIService: Cache MISS - Calling API', [
+            'provider' => $this->provider,
+            'model' => $this->model
         ]);
 
-        $result = ['error' => 'Provider not fully implemented yet.'];
+        $result = ['error' => 'Provider not implemented.'];
 
         if ($this->provider === 'openai' || str_contains($this->provider, 'openai')) {
             $result = $this->askOpenAI($messages, $temperature, $maxTokens);
@@ -59,8 +76,13 @@ class AIService
             $result = $this->askAnthropic($messages, $temperature, $maxTokens);
         }
 
+        // 4. Handle Result
         if (isset($result['success']) && $result['success']) {
+            // Log the cost only on real API calls
             $this->logUsage($result);
+            
+            // Store in cache for 24 hours
+            \Illuminate\Support\Facades\Cache::put($cacheKey, $result, now()->addHours(24));
         }
 
         return $result;
@@ -295,6 +317,86 @@ class AIService
         } catch (\Exception $e) {
             Log::error('Embedding Connection Exception: ' . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Generate an image using DALL-E 3 or supported provider.
+     * 
+     * @param string $prompt Description of the image
+     * @param string $size Size (e.g. 1024x1024)
+     * @param string $style Style (vivid or natural)
+     * @return array Result with 'url' or 'error'
+     */
+    public function generateImage(string $prompt, string $size = '1024x1024', string $style = 'vivid')
+    {
+        // For images, we default to OpenAI (DALL-E 3) as Groq/others don't support it standardly yet.
+        // We need to check if we have a specific key for images, or reuse the main key if it's OpenAI-compatible.
+        
+        // Strategy: Use the main key. If the main provider is NOT OpenAI, we might fail unless
+        // the user has set up a secondary key for images (advanced config). 
+        // For simplicity now: We try to use the configured key. If it's Groq, DALL-E won't work.
+        // But the user might have an OpenAI key in 'global_settings' under 'openai_api_key' specifically for this?
+        // Let's check for a specific OpenAI backup key if the main one is Groq.
+        
+        $imageApiKey = $this->apiKey;
+        
+        // If current provider is NOT openai, try to find an OpenAI key in settings for images
+        if (!str_contains($this->provider, 'openai')) {
+             $backupKey = \DB::table('global_settings')->where('key', 'openai_api_key')->value('value');
+             if ($backupKey) {
+                 $imageApiKey = $backupKey;
+             } elseif (str_starts_with($this->apiKey, 'sk-')) {
+                 // If the main key looks like an OpenAI key (sk-...), try using it even if provider says 'groq' (misconfiguration?)
+                 // actually Groq keys start with 'gsk_', OpenAI with 'sk-'.
+             }
+        }
+
+        if (empty($imageApiKey)) {
+            return ['success' => false, 'error' => 'No API Key configured for Image Generation (OpenAI required).'];
+        }
+
+        try {
+            $response = Http::withToken($imageApiKey)
+                ->timeout(60)
+                ->post('https://api.openai.com/v1/images/generations', [
+                    'model' => 'dall-e-3',
+                    'prompt' => $prompt,
+                    'n' => 1,
+                    'size' => $size,
+                    'style' => $style,
+                    'quality' => 'standard', // or 'hd'
+                    'response_format' => 'url', // or 'b64_json'
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $imageUrl = $data['data'][0]['url'] ?? null;
+                $revisedPrompt = $data['data'][0]['revised_prompt'] ?? $prompt;
+                
+                if (!$imageUrl) {
+                    return ['success' => false, 'error' => 'API returned no image URL'];
+                }
+
+                // Download and store locally to avoid link expiration (DALL-E links expire in 1h)
+                $contents = file_get_contents($imageUrl);
+                $filename = 'marketing/' . uniqid() . '.png';
+                Storage::disk('public')->put($filename, $contents);
+                
+                return [
+                    'success' => true,
+                    'url' => Storage::url($filename),
+                    'path' => $filename,
+                    'revised_prompt' => $revisedPrompt,
+                    'cost' => 0.040, // DALL-E 3 Standard 1024x1024 price
+                ];
+            }
+
+            return ['success' => false, 'error' => 'OpenAI Error: ' . $response->body()];
+
+        } catch (\Exception $e) {
+            Log::error('Image Generation Error: ' . $e->getMessage());
+            return ['success' => false, 'error' => 'Connection Error: ' . $e->getMessage()];
         }
     }
 

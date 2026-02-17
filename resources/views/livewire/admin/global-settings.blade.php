@@ -235,6 +235,21 @@
                                 <x-input-label for="ai_api_key" value="API Key" />
                                 <x-text-input wire:model="ai_api_key" id="ai_api_key" class="mt-1 block w-full" type="password" />
                             </div>
+
+                            <div class="mt-4 pt-4 border-t border-gray-100 bg-gray-50 p-4 rounded-lg">
+                                <h4 class="text-sm font-bold text-gray-700 mb-2 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    Generación de Imágenes (Marketing Studio)
+                                </h4>
+                                <div>
+                                    <x-input-label for="openai_api_key" value="OpenAI API Key (Respaldo)" />
+                                    <x-text-input wire:model="openai_api_key" id="openai_api_key" class="mt-1 block w-full" type="password" placeholder="sk-..." />
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        <strong>Úsalo solo si tu proveedor principal (arriba) es Groq, Claude o DeepSeek.</strong><br>
+                                        Si tu proveedor principal ya es OpenAI, deja este campo vacío (se usará la llave principal).
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

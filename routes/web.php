@@ -110,6 +110,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/manual', \App\Livewire\Manual\Index::class)->name('manual.index');
     Route::get('/admin/manual', \App\Livewire\Manual\Manage::class)->name('manual.manage')->middleware('can:manage users');
 
+    // Módulo de Marketing Visual
+    Route::get('/marketing/studio', \App\Livewire\Marketing\Generator::class)->name('marketing.generator');
+
     // Subscription Routes
     Route::get('/billing/subscribe/{plan}', \App\Livewire\Billing\Subscribe::class)->name('billing.subscribe');
     Route::get('/subscription/expired', [\App\Http\Controllers\SubscriptionController::class, 'expired'])->name('subscription.expired');

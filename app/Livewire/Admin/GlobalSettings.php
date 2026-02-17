@@ -42,6 +42,7 @@ class GlobalSettings extends Component
     public $ai_provider = 'openai';
     public $ai_api_key;
     public $ai_model = 'gpt-4o-mini';
+    public $openai_api_key; // Backup key for images if main provider is not OpenAI
 
     // Welcome Settings
     public $welcome_video_url;
@@ -101,6 +102,7 @@ class GlobalSettings extends Component
         $this->ai_provider = $settings['ai_provider'] ?? 'openai';
         $this->ai_api_key = $settings['ai_api_key'] ?? '';
         $this->ai_model = $settings['ai_model'] ?? 'gpt-4o-mini';
+        $this->openai_api_key = $settings['openai_api_key'] ?? '';
 
         $this->welcome_video_url = $settings['welcome_video_url'] ?? '';
         $this->welcome_message = $settings['welcome_message'] ?? 'Bienvenido a Diogenes, tu plataforma de gestión legal.';
@@ -141,6 +143,7 @@ class GlobalSettings extends Component
             'ai_provider' => $this->ai_provider,
             'ai_api_key' => $this->ai_api_key,
             'ai_model' => $this->ai_model,
+            'openai_api_key' => $this->openai_api_key,
             'welcome_video_url' => $this->welcome_video_url,
             'welcome_message' => $this->welcome_message,
             'welcome_title' => $this->welcome_title,
