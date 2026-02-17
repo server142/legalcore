@@ -424,4 +424,103 @@ class AIService
         
         return $dotProduct / (sqrt($normA) * sqrt($normB));
     }
+
+    /**
+     * Overlay professional text on an image using GD Library.
+     * This mimics professional ad creation tools.
+     */
+    public function overlayText(string $imagePath, string $headline, string $subheadline = ''): bool
+    {
+        try {
+            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($imagePath);
+            
+            if (!file_exists($fullPath)) {
+                return false;
+            }
+
+            // Create GD image from PNG
+            $image = imagecreatefrompng($fullPath);
+            if (!$image) return false;
+
+            // Colors
+            $white = imagecolorallocate($image, 255, 255, 255);
+            $black = imagecolorallocate($image, 0, 0, 0);
+            $shadowColor = imagecolorallocatealpha($image, 0, 0, 0, 60); // Semi-transparent shadow
+
+            // Enhanced Font Loading Logic
+            $fontPath = '';
+            
+            // 1. Try Windows Core Fonts (Best for this environment)
+            $windowsFonts = [
+                'C:\Windows\Fonts\arialbd.ttf', // Apple/Microsoft standard
+                'C:\Windows\Fonts\arial.ttf',
+                'C:\Windows\Fonts\impact.ttf',  // Good for headlines
+                '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', // Linux fallback
+            ];
+
+            foreach ($windowsFonts as $font) {
+                if (file_exists($font)) {
+                    $fontPath = $font;
+                    break;
+                }
+            }
+
+            // Fallback if no font found (GD native font - ugly but works)
+            if (empty($fontPath)) {
+                // If we can't load a TTF, we can't do big fancy text easily with native GD functions 
+                // in a way that looks "Professional". We will try our best or return false 
+                // to let the user know they need fonts.
+                // However, let's try to proceed with basic text if needed, but for "OpenClaw" quality we need TTF.
+                return false; 
+            }
+
+            // Get Image Dimensions
+            $width = imagesx($image);
+            $height = imagesy($image);
+
+            // --- RENDER HEADLINE (Top) ---
+            if (!empty($headline)) {
+                $fontSize = 60;
+                // Calculate bbox to center text
+                $bbox = imagettfbbox($fontSize, 0, $fontPath, strtoupper($headline));
+                $textWidth = $bbox[2] - $bbox[0];
+                $x = ($width - $textWidth) / 2;
+                $y = 150; // Padding from top
+
+                // Drop Shadow
+                imagettftext($image, $fontSize, 0, $x + 4, $y + 4, $shadowColor, $fontPath, strtoupper($headline));
+                // Main Text
+                imagettftext($image, $fontSize, 0, $x, $y, $white, $fontPath, strtoupper($headline));
+            }
+
+            // --- RENDER SUBHEADLINE (Bottom) ---
+            if (!empty($subheadline)) {
+                $subFontSize = 40;
+                $bboxSub = imagettfbbox($subFontSize, 0, $fontPath, $subheadline);
+                $textWidthSub = $bboxSub[2] - $bboxSub[0];
+                $xSub = ($width - $textWidthSub) / 2;
+                $ySub = $height - 100; // Padding from bottom
+
+                // Background Bar for Subtitle (to ensure readability)
+                $barHeight = 100;
+                $barColor = imagecolorallocatealpha($image, 0, 0, 0, 40); // Dark semi-transparent bar
+                imagefilledrectangle($image, 0, $height - 180, $width, $height, $barColor);
+
+                // Drop Shadow
+                imagettftext($image, $subFontSize, 0, $xSub + 2, $ySub + 2, $black, $fontPath, $subheadline);
+                // Main Text
+                imagettftext($image, $subFontSize, 0, $xSub, $ySub, $white, $fontPath, $subheadline);
+            }
+
+            // Save the image back
+            imagepng($image, $fullPath);
+            imagedestroy($image);
+
+            return true;
+
+        } catch (\Exception $e) {
+            Log::error('Text Overlay Error: ' . $e->getMessage());
+            return false;
+        }
+    }
 }

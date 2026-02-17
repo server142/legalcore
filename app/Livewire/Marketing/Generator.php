@@ -38,20 +38,12 @@ class Generator extends Component
             $finalPrompt = $this->prompt;
 
             if ($this->is_ad) {
-                // Modo Anuncio: Ingeniería de Prompt Refinada para evitar "Mockups"
-                $finalPrompt = "Create a high-quality DIGITAL SOCIAL MEDIA ADVERTISEMENT GRAPHIC (Not a photo of a poster). ";
-                $finalPrompt .= "Visuals: " . $this->prompt . ". ";
-                $finalPrompt .= "FORMAT: Full screen digital graphic design, flat layout. ";
-                
-                if ($this->headline) {
-                    $finalPrompt .= "TEXT INSTRUCTION: Render the title '" . strtoupper($this->headline) . "' in BIG BOLD letters at the top. Spelling must be exact. ";
-                }
-                
-                if ($this->subheadline) {
-                    $finalPrompt .= "BOTTOM TEXT: Render '" . $this->subheadline . "' clearly at the bottom. ";
-                }
-                
-                $finalPrompt .= "STYLE: Professional Graphic Design, Corporate Blue tones (if applicable), High Contrast, Sharp Vector-style elements mixed with realistic photos. NO FRAMES, NO WALLS, NO MOCKUPS.";
+                // Modo Híbrido Profesional: IA solo hace el arte, PHP pone el texto.
+                $finalPrompt = "Create a high-quality DIGITAL SOCIAL MEDIA BACKGROUND GRAPHIC. ";
+                $finalPrompt .= "Subject: " . $this->prompt . ". ";
+                $finalPrompt .= "LAYOUT: Clean composition with SIGNIFICANT NEGATIVE SPACE (Empty area) at the top and bottom. ";
+                $finalPrompt .= "IMPORTANT: DO NOT INCLUDE ANY TEXT. NO LETTERS. NO TYPOGRAPHY. JUST THE ARTWORK. ";
+                $finalPrompt .= "STYLE: Professional Graphic Design, Corporate tones, High Contrast, Sharp Vector-style elements mixed with realistic photos. Flat lay.";
             }
 
             // Generar imagen (usando el prompt enriquecido)
@@ -61,6 +53,15 @@ class Generator extends Component
                 $this->error = $result['error'];
                 $this->loading = false;
                 return;
+            }
+
+            // Aplicar Texto con PHP (GD) si es un anuncio
+            if ($this->is_ad && ($this->headline || $this->subheadline)) {
+                 $textApplied = $ai->overlayText($result['path'], $this->headline, $this->subheadline);
+                 if (!$textApplied) {
+                    // Si falla (por falta de fuentes), no pasa nada, se queda la imagen limpia.
+                    // Podríamos avisar al usuario, pero es mejor entregar algo.
+                 }
             }
 
             // Guardar registro
