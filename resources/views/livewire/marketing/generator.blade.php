@@ -11,10 +11,14 @@
     <!-- Generator Panel -->
     <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 relative">
         <!-- Loading Overlay -->
-        <div wire:loading wire:target="generate" class="absolute inset-0 bg-white/90 z-20 flex flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-            <p class="text-indigo-600 font-medium animate-pulse">La IA está pintando tu idea...</p>
-            <p class="text-xs text-gray-400 mt-2">Puede tomar 10-15 segundos</p>
+        <!-- Loading Overlay (Full Screen) -->
+        <div wire:loading.flex wire:target="generate" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-[100] flex-col items-center justify-center">
+            <div class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm mx-4 animate-bounce-in">
+                <div class="animate-spin rounded-full h-16 w-16 border-4 border-indigo-100 border-t-indigo-600 mb-6"></div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Creando tu Diseño...</h3>
+                <p class="text-indigo-600 font-medium animate-pulse text-center">La IA está pintando tu idea pixel por pixel.</p>
+                <p class="text-xs text-gray-400 mt-4 text-center">Esto toma unos 15-20 segundos.<br>Por favor no cierres esta ventana.</p>
+            </div>
         </div>
 
         <div class="p-8">

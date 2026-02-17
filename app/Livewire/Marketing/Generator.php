@@ -38,20 +38,20 @@ class Generator extends Component
             $finalPrompt = $this->prompt;
 
             if ($this->is_ad) {
-                // Modo Anuncio: Prompt enriquecido para tipografía y composición
+                // Modo Anuncio: Prompt enriquecido con ingeniería para mejor texto
                 $finalPrompt = "Create a professional advertisement poster. ";
                 $finalPrompt .= "Main Visual Concept: " . $this->prompt . ". ";
-                $finalPrompt .= "COMPOSITION RULE: Use plenty of negative space for text overlays. ";
+                $finalPrompt .= "COMPOSITION RULE: Clean layout with purposeful negative space. ";
                 
                 if ($this->headline) {
-                    $finalPrompt .= "TYPOGRAPHY INSTRUCTION: The image must include the text '" . $this->headline . "' clearly visible at the top in modern bold font. ";
+                    $finalPrompt .= "TYPOGRAPHY WARNING: Render the following headline VERBATIM (Letter by Letter), exactly as written in the quotes. Use a modern, bold Sans-Serif font. TEXT: '" . strtoupper($this->headline) . "'. Ensure correct spelling. ";
                 }
                 
                 if ($this->subheadline) {
-                    $finalPrompt .= "SUBTITLE: It must include the text '" . $this->subheadline . "' at the bottom. ";
+                    $finalPrompt .= "SUBTITLE: Render this text clearly at the bottom: '" . $this->subheadline . "'. ";
                 }
                 
-                $finalPrompt .= "STYLE: Commercial photography, high contrast, vivid colors, 8k resolution, cinematic lighting.";
+                $finalPrompt .= "STYLE: Commercial photography, 8k resolution, cinematic lighting, ultra-sharp text rendering.";
             }
 
             // Generar imagen (usando el prompt enriquecido)
