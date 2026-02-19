@@ -242,87 +242,91 @@
                     <!-- Mobile Cards -->
                     <div class="block md:hidden">
                         @forelse($tenants as $tenant)
-                        <div class="p-4 border-b border-gray-200 hover:bg-gray-50 transition">
-                            <div class="flex justify-between items-start mb-2">
+                        <div class="p-4 border-b border-gray-200 hover:bg-gray-50 transition bg-white mb-2 shadow-sm rounded-lg mx-2 my-2">
+                            <div class="flex justify-between items-start mb-3 border-b pb-2">
                                 <div>
                                     <h3 class="text-lg font-bold text-gray-900">{{ $tenant->name }}</h3>
-                                    <p class="text-xs text-gray-500">{{ $tenant->slug }}</p>
+                                    <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{{ $tenant->slug }}</p>
                                 </div>
-                                <button wire:click="toggleStatus({{ $tenant->id }})" class="px-2 py-1 text-xs font-semibold rounded-full {{ $tenant->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                    {{ $tenant->is_active ? 'Activo' : 'Inactivo' }}
+                                <button wire:click="toggleStatus({{ $tenant->id }})" class="px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded-full {{ $tenant->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ $tenant->is_active ? 'ACTIVO' : 'INACTIVO' }}
                                 </button>
                             </div>
                             
-                            <div class="flex flex-wrap gap-2 mb-3">
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="px-2 py-1 text-[10px] font-bold uppercase tracking-wide rounded-full 
                                     {{ $tenant->plan === 'trial' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
                                     Plan: {{ $tenant->planRelation ? $tenant->planRelation->name : ucfirst($tenant->plan) }}
                                 </span>
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                <span class="px-2 py-1 text-[10px] font-bold uppercase tracking-wide rounded-full bg-gray-100 text-gray-600">
                                     {{ $tenant->users_count }} Usuarios
                                 </span>
                             </div>
 
-                            <div class="mb-4 text-xs">
-                                <div class="grid grid-cols-2 gap-2 mb-3 bg-gray-50 p-2 rounded border">
-                                    <div>
-                                        <span class="text-[9px] font-black text-gray-400 uppercase block">Alta</span>
-                                        <span class="text-gray-700 font-bold">{{ $tenant->created_at->format('d/m/Y') }}</span>
-                                    </div>
-                                    <div>
-                                        <span class="text-[9px] font-black text-gray-400 uppercase block">Expedientes</span>
-                                        <span class="text-indigo-600 font-bold">{{ $tenant->expedientes_count }}</span>
-                                    </div>
-                                    <div class="col-span-2 mt-1 pt-1 border-t grid grid-cols-2 gap-2">
-                                        <div>
-                                            <span class="text-[9px] font-black text-gray-400 uppercase block">Última Actividad</span>
-                                            <span class="text-emerald-600 font-bold">
-                                                {{ $tenant->last_activity ? $tenant->last_activity->diffForHumans() : 'Sin actividad' }}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span class="text-[9px] font-black text-gray-400 uppercase block">Almacenamiento</span>
-                                            <span class="text-amber-600 font-bold">{{ $tenant->storage_usage_formatted }}</span>
-                                        </div>
-                                    </div>
+                            <div class="grid grid-cols-2 gap-3 mb-4 text-xs bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <div>
+                                    <span class="text-[9px] font-black text-gray-400 uppercase block mb-0.5">Alta</span>
+                                    <span class="text-gray-900 font-bold">{{ $tenant->created_at->format('d/m/Y') }}</span>
                                 </div>
-
-                                @if($tenant->expiration_date)
-                                    <div class="flex items-center">
-                                        <span class="text-[9px] font-black text-gray-400 uppercase mr-2">Vencimiento:</span>
-                                        <span class="{{ $tenant->is_expired ? 'text-red-600 font-bold' : 'text-gray-900 font-bold' }}">
-                                            {{ $tenant->expiration_date->format('d/m/Y') }}
-                                        </span>
-                                    </div>
-                                    @if(!$tenant->is_expired)
-                                        <div class="text-[10px] text-green-600 font-bold mt-0.5">{{ now()->diffInDays($tenant->expiration_date) }} días restantes</div>
+                                <div>
+                                    <span class="text-[9px] font-black text-gray-400 uppercase block mb-0.5">Expedientes</span>
+                                    <span class="text-indigo-600 font-bold">{{ $tenant->expedientes_count }}</span>
+                                </div>
+                                <div>
+                                    <span class="text-[9px] font-black text-gray-400 uppercase block mb-0.5">Última Actividad</span>
+                                    <span class="font-bold {{ $tenant->last_activity && $tenant->last_activity->diffInDays() < 7 ? 'text-emerald-600' : 'text-gray-500' }}">
+                                        {{ $tenant->last_activity ? $tenant->last_activity->diffForHumans() : 'Sin actividad' }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-[9px] font-black text-gray-400 uppercase block mb-0.5">Almacenamiento</span>
+                                    <span class="text-amber-600 font-bold">{{ $tenant->storage_usage_formatted }}</span>
+                                </div>
+                                
+                                <div class="col-span-2 pt-2 mt-1 border-t border-gray-200">
+                                    @if($tenant->expiration_date)
+                                     <div class="flex justify-between items-center">
+                                        <span class="text-[9px] font-black text-gray-400 uppercase">Vencimiento:</span>
+                                        <div class="text-right">
+                                            <span class="block {{ $tenant->is_expired ? 'text-red-600 font-black' : 'text-gray-900 font-bold' }}">
+                                                {{ $tenant->expiration_date->format('d/m/Y') }}
+                                            </span>
+                                            @if(!$tenant->is_expired)
+                                                <span class="text-[9px] text-green-600 font-bold block">{{ now()->diffInDays($tenant->expiration_date) }} días restantes</span>
+                                            @endif
+                                        </div>
+                                     </div>
+                                    @else
+                                        <span class="text-[10px] text-gray-400 italic font-medium">Sin fecha de vencimiento (Ilimitado)</span>
                                     @endif
-                                @endif
+                                </div>
                             </div>
 
-                            <div class="flex justify-end space-x-3 border-t pt-3">
+                            <div class="grid grid-cols-2 gap-2 pt-2">
                                 @if($tenant->plan === 'trial')
-                                    <button wire:click="extendTrial({{ $tenant->id }}, 15)" class="text-blue-600 font-medium text-sm hover:text-blue-800">
-                                        +15 días
+                                    <button wire:click="extendTrial({{ $tenant->id }}, 15)" class="w-full bg-blue-50 text-blue-700 py-2 rounded-lg text-xs font-bold border border-blue-100 hover:bg-blue-100 transition">
+                                        +15 Días Trial
                                     </button>
                                 @endif
-                                <button type="button" wire:click="openEditModal({{ $tenant->id }})" class="text-indigo-600 font-medium text-sm hover:text-indigo-800">
+                                <button type="button" wire:click="openEditModal({{ $tenant->id }})" class="w-full bg-white text-gray-700 py-2 rounded-lg text-xs font-bold border border-gray-300 hover:bg-gray-50 transition">
                                     Editar
                                 </button>
-                                <button type="button" wire:click="openPlanChangeModal({{ $tenant->id }})" class="text-blue-600 font-medium text-sm hover:text-blue-800">
+                                <button type="button" wire:click="openPlanChangeModal({{ $tenant->id }})" class="w-full bg-white text-gray-700 py-2 rounded-lg text-xs font-bold border border-gray-300 hover:bg-gray-50 transition">
                                     Plan
                                 </button>
-                                <button type="button" wire:click="resetWelcomeForTenant({{ $tenant->id }})" class="text-amber-600 font-medium text-sm hover:text-amber-800">
+                                <button type="button" wire:click="resetWelcomeForTenant({{ $tenant->id }})" class="w-full bg-white text-amber-600 py-2 rounded-lg text-xs font-bold border border-gray-300 hover:bg-gray-50 transition">
                                     Reset Welcome
                                 </button>
-                                <button type="button" wire:click="deleteTenant({{ $tenant->id }})" wire:confirm="¿Eliminar permanentemente '{{ $tenant->name }}' y todos sus datos?" class="text-red-600 font-medium text-sm hover:text-red-800">
-                                    Eliminar
-                                </button>
+                                <div class="col-span-2 mt-1">
+                                    <button type="button" wire:click="deleteTenant({{ $tenant->id }})" wire:confirm="¿Eliminar permanentemente '{{ $tenant->name }}'?" class="w-full bg-red-50 text-red-600 py-2 rounded-lg text-xs font-bold border border-red-100 hover:bg-red-100 transition">
+                                        Eliminar Tenant
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         @empty
-                            <div class="p-6 text-center text-gray-500">
-                                No se encontraron tenants que coincidan con los filtros.
+                            <div class="p-8 text-center bg-gray-50 rounded-lg mx-4 border-2 border-dashed border-gray-300">
+                                <p class="text-gray-500 font-medium">No se encontraron tenants.</p>
                             </div>
                         @endforelse
                     </div>
