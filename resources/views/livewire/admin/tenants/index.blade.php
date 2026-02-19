@@ -373,7 +373,12 @@
 
                 <div class="flex items-center">
                     <input type="checkbox" wire:model="editIsActive" id="editIsActive" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                    <x-input-label for="editIsActive" value="{{ __('Tenant Activo') }}" class="ml-2" />
+                    <label for="editIsActive" class="ml-2 text-sm text-gray-600">{{ __('Tenant Activo') }}</label>
+                </div>
+
+                <div class="flex items-center mt-2">
+                    <input type="checkbox" wire:model="editHasMarketingModule" id="editHasMarketingModule" class="rounded border-gray-300 text-purple-600 shadow-sm focus:ring-purple-500">
+                    <label for="editHasMarketingModule" class="ml-2 text-sm text-gray-600 font-bold">{{ __('Activar Marketing Studio') }} 🎨</label>
                 </div>
             </div>
 

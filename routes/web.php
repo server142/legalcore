@@ -24,6 +24,11 @@ Route::get('/', function () {
     ]);
 })->name('welcome');
 
+// Static Pages
+Route::view('/features', 'features')->name('features');
+Route::get('/contacto', \App\Livewire\PublicContact::class)->name('contact');
+Route::view('/ayuda', 'help')->name('help');
+
 // Public Legal Pages (Required by Google API Verification)
 Route::get('/legal/acceptance', \App\Livewire\Legal\AcceptanceMandatory::class)->name('legal.acceptance')->middleware('auth');
 Route::get('/privacy', [\App\Http\Controllers\LegalDocumentController::class, 'show'])->defaults('type', 'PRIVACIDAD')->name('privacy');

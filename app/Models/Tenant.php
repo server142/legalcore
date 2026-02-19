@@ -37,6 +37,8 @@ class Tenant extends Model
         'pm_last_four',
         'is_active',
         'settings',
+        'has_marketing_module',
+        'marketing_credits',
     ];
 
     protected $casts = [
@@ -45,6 +47,7 @@ class Tenant extends Model
         'subscription_ends_at' => 'datetime',
         'grace_period_ends_at' => 'datetime',
         'is_active' => 'boolean',
+        'has_marketing_module' => 'boolean',
     ];
 
     public function users()

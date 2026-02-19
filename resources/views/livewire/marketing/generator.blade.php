@@ -5,7 +5,15 @@
             <h2 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">Studio de Marketing</h2>
             <p class="text-gray-500 text-sm">Crea imágenes profesionales para tus redes sociales o presentaciones.</p>
         </div>
-        <div class="text-xs text-gray-400">Powered by DALL-E 3</div>
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-50 px-4 py-2 rounded-full border border-indigo-200 shadow-sm flex items-center" title="Saldo disponible">
+                <svg class="w-4 h-4 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="font-bold text-indigo-700 text-sm">
+                    {{ auth()->user()->tenant->marketing_credits }} Créditos
+                </span>
+            </div>
+            <div class="text-xs text-gray-400 hidden sm:block">Powered by DALL-E 3</div>
+        </div>
     </div>
 
     <!-- Generator Panel -->

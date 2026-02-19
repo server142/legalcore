@@ -34,6 +34,24 @@ class Generator extends Component
         $this->error = null;
 
         try {
+            $user = auth()->user();
+            $tenant = $user->tenant; 
+            $isSuperAdmin = $user->hasRole('super_admin') || $user->email === 'admin@legalcore.com';
+
+            // Check 1: Feature Flag (Bypass for Super Admin)
+            if (!$isSuperAdmin && (!$tenant || !$tenant->has_marketing_module)) {
+                $this->error = 'El módulo de Marketing no está activado para su despacho. Contacte a soporte.';
+                $this->loading = false;
+                return;
+            }
+
+            // Check 2: Credits (Bypass for Super Admin)
+            if (!$isSuperAdmin && (!$tenant || $tenant->marketing_credits <= 0)) {
+                 $this->error = 'Ha agotado sus créditos de generación de imágenes. Por favor adquiera un paquete de recarga.';
+                 $this->loading = false;
+                 return;
+            }
+
             // Construcción del Prompt Inteligente
             $finalPrompt = $this->prompt;
 
@@ -64,6 +82,11 @@ class Generator extends Component
                  }
             }
 
+            // Deduct Credit (1 credit per generation) - SKIP FOR SUPER ADMIN
+            if (!$isSuperAdmin && $tenant) {
+                \App\Models\Tenant::where('id', $tenant->id)->decrement('marketing_credits');
+            }
+
             // Guardar registro
             $image = MarketingImage::create([
                 'tenant_id' => auth()->user()->tenant_id,
@@ -84,6 +107,7 @@ class Generator extends Component
             }
 
             $this->dispatch('image-generated'); 
+            $this->dispatch('credits-updated'); // Notify UI to update counter
 
         } catch (\Exception $e) {
             $this->error = 'Ocurrió un error inesperado: ' . $e->getMessage();

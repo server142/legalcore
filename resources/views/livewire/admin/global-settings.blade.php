@@ -25,6 +25,7 @@
                     <button @click="$dispatch('set-tab', 'mail')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Servidor de Correo</button>
                     <button @click="$dispatch('set-tab', 'ai')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Inteligencia Artificial</button>
                     <button @click="$dispatch('set-tab', 'onboarding')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Onboarding (Bienvenida)</button>
+                    <button @click="$dispatch('set-tab', 'support')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700 ring-1 ring-indigo-50">Soporte y Contacto</button>
                     <button @click="$dispatch('set-tab', 'infrastructure')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Infraestructura & Costos</button>
                     <button @click="$dispatch('set-tab', 'general')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700">Configuración General</button>
                 </div>
@@ -249,6 +250,31 @@
                                         Si tu proveedor principal ya es OpenAI, deja este campo vacío (se usará la llave principal).
                                     </p>
                                 </div>
+                            </div>
+                            
+                            <div class="mt-4 pt-4 border-t border-gray-100">
+                                <h4 class="text-sm font-bold text-gray-700 mb-2">Prompt del Sistema (Cerebro de la IA)</h4>
+                                <x-input-label for="ai_system_prompt" value="Instrucciones Maestras del Asistente" />
+                                <textarea wire:model="ai_system_prompt" id="ai_system_prompt" rows="10" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm font-mono text-xs"></textarea>
+                                <p class="text-xs text-gray-500 mt-1">Define la personalidad, restricciones y reglas de seguridad del asistente. <strong>¡Ten cuidado con lo que escribes aquí!</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personalization & Support Settings -->
+                    <div x-show="tab === 'support'" class="bg-white rounded-lg shadow p-6 space-y-4" style="display: none;">
+                        <h3 class="text-lg font-bold text-gray-800 border-b pb-2">Configuración de Soporte Humano</h3>
+                        <p class="text-sm text-gray-600 mb-4">Define cómo los usuarios pueden contactar a un humano cuando la IA no sea suficiente.</p>
+                        
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <x-input-label for="support_phone" value="Teléfono de Soporte (Visible)" />
+                                <x-text-input wire:model="support_phone" id="support_phone" class="mt-1 block w-full" type="text" placeholder="Ej: 522281405060" />
+                            </div>
+                            <div>
+                                <x-input-label for="support_whatsapp_url" value="Enlace Directo a WhatsApp (Acción)" />
+                                <x-text-input wire:model="support_whatsapp_url" id="support_whatsapp_url" class="mt-1 block w-full" type="text" placeholder="https://wa.me/52..." />
+                                <p class="text-xs text-gray-500 mt-1">Este enlace se usará en los botones de 'Soporte' y cuando la IA derive al usuario.</p>
                             </div>
                         </div>
                     </div>
