@@ -296,7 +296,7 @@
 
     <!-- Footer -->
     <div class="border-t border-gray-200 bg-white py-5 text-center text-xs text-gray-400 print:hidden">
-        © {{ date('Y') }} Diogenes Legal · Directorio de Abogados Verificados en México
+        © {{ date('Y') }} Diogenes · Directorio de Abogados en México
     </div>
 
 </div>
