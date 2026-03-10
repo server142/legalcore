@@ -1,0 +1,299 @@
+<x-slot name="header">
+    <x-header title="{{ __('Apertura de Expediente') }}" subtitle="Registro inicial de nuevo caso judicial" />
+</x-slot>
+
+<div class="py-12">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+            <form wire:submit.prevent="save" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Número de Expediente -->
+                <div>
+                    <x-input-label for="numero" :value="__('Número de Expediente')" />
+                    <x-text-input id="numero" type="text" class="mt-1 block w-full" wire:model="numero" placeholder="Ej. 123/2024" />
+                    <x-input-error :messages="$errors->get('numero')" class="mt-2" />
+                </div>
+
+                <!-- Título -->
+                <div>
+                    <x-input-label for="titulo" :value="__('Título / Carátula')" />
+                    <x-text-input id="titulo" type="text" class="mt-1 block w-full" wire:model="titulo" placeholder="Ej. Perez vs Garcia" />
+                    <x-input-error :messages="$errors->get('titulo')" class="mt-2" />
+                </div>
+
+                <!-- Materia -->
+                <div>
+                    <div class="flex justify-between items-center">
+                        <x-input-label for="materia" :value="__('Materia')" />
+                        <button type="button" wire:click="$set('showMateriaModal', true)" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold">+ Nueva Materia</button>
+                    </div>
+                    <select id="materia" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model="materia">
+                        <option value="">Seleccione una materia</option>
+                        @foreach($materias as $m)
+                            <option value="{{ $m->nombre }}">{{ $m->nombre }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('materia')" class="mt-2" />
+                </div>
+
+                <!-- Juzgado -->
+                <div>
+                    <div class="flex justify-between items-center">
+                        <x-input-label for="juzgado" :value="__('Juzgado / Tribunal')" />
+                        <button type="button" wire:click="$set('showJuzgadoModal', true)" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold">+ Nuevo Juzgado</button>
+                    </div>
+                    <select id="juzgado" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model="juzgado">
+                        <option value="">Seleccione un juzgado</option>
+                        @php
+                            $juzgadosNombres = $juzgados->pluck('nombre')->all();
+                        @endphp
+                        @if(!empty($juzgado) && !in_array($juzgado, $juzgadosNombres, true))
+                            <option value="{{ $juzgado }}">{{ $juzgado }}</option>
+                        @endif
+                        @foreach($juzgados as $j)
+                            <option value="{{ $j->nombre }}">{{ $j->nombre }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('juzgado')" class="mt-2" />
+                </div>
+
+                <!-- Nombre del Juez -->
+                <div>
+                    <x-input-label for="nombre_juez" :value="__('Nombre del Juez')" />
+                    <x-text-input id="nombre_juez" type="text" class="mt-1 block w-full" wire:model="nombre_juez" placeholder="Ej. Lic. Juan Carlos Lopez" />
+                    <x-input-error :messages="$errors->get('nombre_juez')" class="mt-2" />
+                </div>
+
+                <!-- Cliente -->
+                <div>
+                    <div class="flex justify-between items-center">
+                        <x-input-label for="cliente_id" :value="__('Cliente')" />
+                        <button type="button" wire:click="$set('showClienteModal', true)" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold">+ Nuevo Cliente</button>
+                    </div>
+                    <select id="cliente_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model="cliente_id">
+                        <option value="">Seleccione un cliente</option>
+                        @foreach($clientes as $cliente)
+                            <option value="{{ $cliente->id }}">{{ $cliente->nombre }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('cliente_id')" class="mt-2" />
+                </div>
+
+                <!-- Abogado Responsable -->
+                <div>
+                    <div class="flex justify-between items-center">
+                        <x-input-label for="abogado_responsable_id" :value="__('Abogado Responsable')" />
+                        @if($isAdmin)
+                            <button type="button" wire:click="$set('showAbogadoModal', true)" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold">+ Nuevo Abogado</button>
+                        @endif
+                    </div>
+                    @if($isAdmin)
+                        <select id="abogado_responsable_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model="abogado_responsable_id">
+                            <option value="">Seleccione un abogado</option>
+                            @foreach($abogados as $abogado)
+                                <option value="{{ $abogado->id }}">{{ $abogado->name }}</option>
+                            @endforeach
+                        </select>
+                    @else
+                        <div class="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-700">
+                            {{ auth()->user()->name }}
+                        </div>
+                    @endif
+                    <x-input-error :messages="$errors->get('abogado_responsable_id')" class="mt-2" />
+                </div>
+
+                <!-- Estado Procesal -->
+                <div>
+                    <x-input-label for="estado_procesal_id" :value="__('Estado Procesal')" />
+                    <select id="estado_procesal_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model="estado_procesal_id">
+                        <option value="">Seleccione un estado</option>
+                        @foreach($estadosProcesales as $estado)
+                            <option value="{{ $estado->id }}">{{ $estado->nombre }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('estado_procesal_id')" class="mt-2" />
+                </div>
+
+                <!-- Fecha de Inicio -->
+                <div>
+                    <x-input-label for="fecha_inicio" :value="__('Fecha de Inicio')" />
+                    <x-text-input id="fecha_inicio" type="date" class="mt-1 block w-full" wire:model="fecha_inicio" />
+                    <x-input-error :messages="$errors->get('fecha_inicio')" class="mt-2" />
+                </div>
+
+                <!-- Vencimiento del Término -->
+                <div>
+                    <x-input-label for="vencimiento_termino" class="text-red-600 font-bold" :value="__('🚨 Vencimiento del Término')" />
+                    <x-text-input id="vencimiento_termino" type="date" class="mt-1 block w-full border-red-300 focus:border-red-500 focus:ring-red-500" wire:model="vencimiento_termino" />
+                    <p class="mt-1 text-xs text-red-500 italic">Fecha fatal para contestar o presentar recursos.</p>
+                    <x-input-error :messages="$errors->get('vencimiento_termino')" class="mt-2" />
+                </div>
+
+                <!-- Información Financiera -->
+                <div class="md:col-span-2 mt-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{ __('Información Financiera') }}
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <x-input-label for="honorarios_totales" :value="__('Presupuesto / Honorarios Totales')" />
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">$</span>
+                                </div>
+                                <x-text-input id="honorarios_totales" type="number" step="0.01" class="pl-7 mt-1 block w-full border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" wire:model="honorarios_totales" placeholder="0.00" />
+                            </div>
+                            <x-input-error :messages="$errors->get('honorarios_totales')" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="anticipo_inicial" :value="__('Monto de Anticipo (Pagado hoy)')" />
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">$</span>
+                                </div>
+                                <x-text-input id="anticipo_inicial" type="number" step="0.01" class="pl-7 mt-1 block w-full border-gray-300 focus:ring-indigo-500 focus:border-indigo-500" wire:model="anticipo_inicial" placeholder="0.00" />
+                            </div>
+                            <x-input-error :messages="$errors->get('anticipo_inicial')" class="mt-2" />
+                            <p class="text-[10px] text-gray-500 mt-1 italic">{{ __('El restante se marcará como saldo pendiente.') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                <div class="md:col-span-2">
+                    <x-input-label for="descripcion" :value="__('Descripción / Notas Iniciales')" />
+                    <textarea id="descripcion" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" rows="3" wire:model="descripcion"></textarea>
+                    <x-input-error :messages="$errors->get('descripcion')" class="mt-2" />
+                </div>
+
+                <div class="md:col-span-2 flex justify-end space-x-3">
+                    <a href="{{ route('expedientes.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancelar</a>
+                    <x-primary-button>
+                        {{ __('Crear Expediente') }}
+                    </x-primary-button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    
+    <!-- Modal Materia -->
+    @if($showMateriaModal)
+    <div class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showMateriaModal', false)"></div>
+            <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full z-50">
+                <div class="p-6">
+                    <h3 class="text-lg font-bold mb-4">Nueva Materia</h3>
+                    <x-input-label for="newMateriaNombre" :value="__('Nombre de la Materia')" />
+                    <x-text-input id="newMateriaNombre" type="text" class="mt-1 block w-full" wire:model="newMateriaNombre" placeholder="Ej. Familiar" />
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button type="button" wire:click="$set('showMateriaModal', false)" class="text-sm text-gray-500">Cancelar</button>
+                        <x-primary-button wire:click="createMateria">Guardar</x-primary-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Modal Juzgado -->
+    @if($showJuzgadoModal)
+    <div class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showJuzgadoModal', false)"></div>
+            <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full z-50">
+                <div class="p-6">
+                    <h3 class="text-lg font-bold mb-4">Nuevo Juzgado</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <x-input-label for="newJuzgadoNombre" :value="__('Nombre')" />
+                            <x-text-input id="newJuzgadoNombre" type="text" class="mt-1 block w-full" wire:model="newJuzgadoNombre" />
+                            <x-input-error :messages="$errors->get('newJuzgadoNombre')" class="mt-2" />
+                        </div>
+                        <div>
+                            <x-input-label for="newJuzgadoDireccion" :value="__('Dirección')" />
+                            <x-text-input id="newJuzgadoDireccion" type="text" class="mt-1 block w-full" wire:model="newJuzgadoDireccion" />
+                            <x-input-error :messages="$errors->get('newJuzgadoDireccion')" class="mt-2" />
+                        </div>
+                        <div>
+                            <x-input-label for="newJuzgadoTelefono" :value="__('Teléfono')" />
+                            <x-text-input id="newJuzgadoTelefono" type="text" class="mt-1 block w-full" wire:model="newJuzgadoTelefono" />
+                            <x-input-error :messages="$errors->get('newJuzgadoTelefono')" class="mt-2" />
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button type="button" wire:click="$set('showJuzgadoModal', false)" class="text-sm text-gray-500">Cancelar</button>
+                        <x-primary-button wire:click="createJuzgado">Guardar</x-primary-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Modal Cliente -->
+    @if($showClienteModal)
+    <div class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showClienteModal', false)"></div>
+            <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full z-50">
+                <div class="p-6">
+                    <h3 class="text-lg font-bold mb-4">Nuevo Cliente</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <x-input-label for="newClienteNombre" :value="__('Nombre Completo')" />
+                            <x-text-input id="newClienteNombre" type="text" class="mt-1 block w-full" wire:model="newClienteNombre" />
+                        </div>
+                        <div>
+                            <x-input-label for="newClienteEmail" :value="__('Email')" />
+                            <x-text-input id="newClienteEmail" type="email" class="mt-1 block w-full" wire:model="newClienteEmail" />
+                        </div>
+                        <div>
+                            <x-input-label for="newClienteTelefono" :value="__('Teléfono')" />
+                            <x-text-input id="newClienteTelefono" type="text" class="mt-1 block w-full" wire:model="newClienteTelefono" />
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button type="button" wire:click="$set('showClienteModal', false)" class="text-sm text-gray-500">Cancelar</button>
+                        <x-primary-button wire:click="createCliente">Guardar Cliente</x-primary-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Modal Abogado -->
+    @if($showAbogadoModal)
+    <div class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showAbogadoModal', false)"></div>
+            <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full z-50">
+                <div class="p-6">
+                    <h3 class="text-lg font-bold mb-4">Nuevo Abogado</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <x-input-label for="newAbogadoNombre" :value="__('Nombre Completo')" />
+                            <x-text-input id="newAbogadoNombre" type="text" class="mt-1 block w-full" wire:model="newAbogadoNombre" />
+                        </div>
+                        <div>
+                            <x-input-label for="newAbogadoEmail" :value="__('Email')" />
+                            <x-text-input id="newAbogadoEmail" type="email" class="mt-1 block w-full" wire:model="newAbogadoEmail" />
+                        </div>
+                        <p class="text-xs text-gray-500 italic">* La contraseña por defecto será: password123</p>
+                    </div>
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button type="button" wire:click="$set('showAbogadoModal', false)" class="text-sm text-gray-500">Cancelar</button>
+                        <x-primary-button wire:click="createAbogado">Guardar Abogado</x-primary-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+</div>

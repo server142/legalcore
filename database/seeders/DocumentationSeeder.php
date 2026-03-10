@@ -189,6 +189,35 @@ En la esquina superior derecha, haga clic en su nombre > **Perfil**.
 3.  **Autenticación de Dos Factores (2FA):** **ALTAMENTE RECOMENDADO.** Active esto para que, aunque roben su contraseña, no puedan entrar sin su celular. Proteja los datos de sus clientes.
 4.  **Integraciones:** Conecte aquí su cuenta de Google para el Calendario.
 '
+            ],
+            [
+                'title'   => '🚀 10. Proyectos Inteligentes (Workflows)',
+                'slug'    => 'uso-proyectos',
+                'order'   => 10,
+                'content' => '# Automatización de Procesos Legales
+
+El módulo de **Proyectos** es el corazón de la eficiencia en Diogenes. Permite pasar de una idea o consulta inicial a un borrador legal en minutos.
+
+### ¿Qué es un Proyecto?
+A diferencia de un Expediente (que es un caso ya radicado), un **Proyecto** es la etapa de preparación. Es un asistente que le guiará paso a paso para recolectar la información necesaria según el tipo de juicio.
+
+### Biblioteca de Procesos Incluida:
+Diogenes incluye por defecto flujos especializados para:
+*   **Familiar:** Pensión Alimenticia y Divorcio Incausado.
+*   **Civil:** Contratos de Arrendamiento y Sucesiones Intestamentarias.
+*   **Mercantil:** Juicio Ejecutivo (Cobro de Pagarés).
+*   **Amparo:** Guía para Amparo Indirecto contra actos de autoridad.
+*   **Laboral:** Demandas por Despido Injustificado.
+
+### Flujo de Trabajo Sugerido:
+1.  **Selección:** Elija un flujo de trabajo de la galería.
+2.  **Wizard (Asistente):** Complete los pasos. Diogenes le pedirá datos específicos, hará cálculos y le mostrará un checklist de documentos necesarios (ej. Acta de Defunción en Sucesiones o el Pagaré en Mercantil).
+3.  **Generación de Documentos:** En el último paso, haga clic en **"Generar Documento"**. El sistema usará sus respuestas para rellenar automáticamente la plantilla de su biblioteca.
+4.  **Formalización:** ¿El cliente ya firmó? Use el botón **"Convertir a Expediente"** para transferir todo al control operativo del despacho sin escribir nada de nuevo.
+
+### Configuración del Despacho
+Para que el autollenado funcione, asegúrese de que sus formatos en la **Biblioteca** tengan etiquetas entre corchetes, por ejemplo: `[NOMBRE_DEL_ACTOR]`.
+'
             ]
         ];
 

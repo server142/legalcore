@@ -1,0 +1,158 @@
+<?php
+
+namespace App\Livewire\Admin\Abogados;
+
+use App\Models\User;
+use Livewire\Component;
+use Livewire\WithPagination;
+use Illuminate\Support\Facades\Hash;
+
+class Index extends Component
+{
+    use WithPagination;
+
+    public $search = '';
+    public $showModal = false;
+    public $editMode = false;
+    public $abogadoId;
+
+    public $name;
+    public $email;
+    public $password;
+    public $password_confirmation;
+
+    protected $rules = [
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|confirmed|min:8',
+    ];
+
+    public function render()
+    {
+        $abogados = User::where('tenant_id', auth()->user()->tenant_id)
+            ->role('abogado')
+            ->where(function($query) {
+                $query->where('name', 'like', '%' . $this->search . '%')
+                      ->orWhere('email', 'like', '%' . $this->search . '%');
+            })
+            ->paginate(10);
+
+        return view('livewire.admin.abogados.index', [
+            'abogados' => $abogados,
+        ]);
+    }
+
+    public function edit($id)
+    {
+        $this->reset(['name', 'email', 'password', 'password_confirmation']);
+        $this->editMode = true;
+        $this->abogadoId = $id;
+        $abogado = User::findOrFail($id);
+        $this->name = $abogado->name;
+        $this->email = $abogado->email;
+        $this->showModal = true;
+    }
+
+    public function create()
+    {
+        $this->reset(['name', 'email', 'password', 'password_confirmation', 'abogadoId', 'editMode']);
+        $this->showModal = true;
+    }
+
+    public function store()
+    {
+        $this->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|confirmed|min:8',
+        ]);
+
+        if (!auth()->user()->tenant->canAddLawyerUser()) {
+            $this->addError('email', 'Ha alcanzado el límite de abogados permitidos por su plan actual.');
+            return;
+        }
+
+        $abogado = User::create([
+            'name' => $this->name,
+            'email' => $this->email,
+            'password' => Hash::make($this->password),
+            'tenant_id' => auth()->user()->tenant_id,
+            'role' => 'abogado',
+        ]);
+
+        $abogado->assignRole('abogado');
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($abogado->email)->send(new \App\Mail\LawyerInvitationMail($abogado, $this->password));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error sending welcome email to lawyer: ' . $e->getMessage());
+        }
+
+        $this->showModal = false;
+        $this->dispatch('notify', 'Abogado creado y notificado exitosamente');
+    }
+
+    public function update()
+    {
+        $rules = [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $this->abogadoId,
+        ];
+
+        if (!empty($this->password)) {
+            $rules['password'] = 'required|confirmed|min:8';
+        }
+
+        $this->validate($rules);
+
+        $abogado = User::findOrFail($this->abogadoId);
+        
+        $data = [
+            'name' => $this->name,
+            'email' => $this->email,
+        ];
+
+        if (!empty($this->password)) {
+            $data['password'] = Hash::make($this->password);
+        }
+
+        $abogado->update($data);
+
+        $this->showModal = false;
+        $this->dispatch('notify', 'Abogado actualizado exitosamente');
+    }
+
+    public $confirmingDeletion = false;
+    public $itemToDeleteId;
+
+    public function confirmDelete($id)
+    {
+        $this->itemToDeleteId = $id;
+        $this->confirmingDeletion = true;
+    }
+
+    public function delete()
+    {
+        $abogado = User::findOrFail($this->itemToDeleteId);
+        $abogado->delete();
+        $this->confirmingDeletion = false;
+        $this->dispatch('notify', 'Abogado eliminado exitosamente');
+        $this->reset(['itemToDeleteId']);
+    }
+
+    public function resendInvitation($id)
+    {
+        $abogado = User::findOrFail($id);
+        
+        // Generamos una contraseña temporal nueva para el reenvío
+        $newPassword = \Illuminate\Support\Str::random(10);
+        $abogado->update(['password' => Hash::make($newPassword)]);
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($abogado->email)->send(new \App\Mail\LawyerInvitationMail($abogado, $newPassword));
+            $this->dispatch('notify', 'Invitación reenviada correctamente con nueva contraseña temporal.');
+        } catch (\Exception $e) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Error al reenviar: ' . $e->getMessage()]);
+        }
+    }
+}

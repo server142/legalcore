@@ -1,0 +1,643 @@
+<x-slot name="header">
+    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        {{ $expediente->numero }}
+    </h2>
+</x-slot>
+
+<div class="p-6">
+    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex items-center space-x-4 w-full md:w-auto">
+            <a href="{{ route('expedientes.index') }}" class="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition text-gray-500 flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </a>
+            <div class="min-w-0">
+                <h2 class="text-2xl font-bold text-gray-800 truncate">{{ $expediente->numero }}</h2>
+                <p class="text-gray-500 text-sm truncate">{{ $expediente->materia }} | {{ $expediente->juzgado }}</p>
+            </div>
+        </div>
+        <div class="flex flex-wrap gap-2 w-full md:w-auto">
+            <!-- AI Assistant Trigger -->
+            <button @click="$dispatch('toggle-ai-assistant')" class="bg-gradient-to-r from-indigo-600 to-purple-600 border border-transparent text-white px-3 py-2 rounded-lg hover:from-indigo-700 hover:to-purple-700 flex items-center justify-center flex-1 md:flex-none shadow-md transition-all text-sm font-bold">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                Asistente IA
+            </button>
+
+            @can('manage users')
+                <a href="{{ route('expedientes.assignments', $expediente) }}" wire:navigate class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none whitespace-nowrap text-sm">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    Gestionar
+                </a>
+            @endcan
+            <a href="{{ route('reportes.expediente', $expediente) }}" target="_blank" class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none transition shadow-sm text-sm">
+                <svg class="w-4 h-4 mr-1.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Imprimir
+            </a>
+            <button wire:click="edit" class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center flex-1 md:flex-none text-sm transition shadow-sm">
+                <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                Editar
+            </button>
+            <button wire:click="toggleAddActuacion" class="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 flex-1 md:flex-none whitespace-nowrap text-sm font-bold">
+                + Actuación
+            </button>
+        </div>
+    </div>
+
+    @if($showAddActuacion)
+        <div class="mb-6">
+            <livewire:expedientes.add-actuacion :expediente="$expediente" />
+        </div>
+    @endif
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Sidebar Info -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold mb-4 border-b pb-2">Detalles del Asunto</h3>
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">Estado Procesal</p>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">{{ $expediente->estado_procesal }}</span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">Título / Carátula</p>
+                        <p class="text-sm font-medium">{{ $expediente->titulo }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">Cliente</p>
+                        <p class="text-sm font-medium">{{ $expediente->cliente->nombre }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">Abogado Responsable</p>
+                        <p class="text-sm font-medium">{{ $expediente->abogado->name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">Juez</p>
+                        <p class="text-sm font-medium">{{ $expediente->nombre_juez ?? 'No asignado' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">Fecha de Inicio</p>
+                        <p class="text-sm font-medium">{{ $expediente->fecha_inicio?->format('d/m/Y') ?? 'N/A' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content (Tabs) -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="flex border-b overflow-x-auto scrollbar-hide">
+                    <button wire:click="setTab('actuaciones')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'actuaciones' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                        Actuaciones
+                    </button>
+                    <button wire:click="setTab('documentos')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'documentos' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        Documentos
+                    </button>
+                    <button wire:click="setTab('agenda')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'agenda' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        Agenda
+                    </button>
+                    <button wire:click="setTab('notas_ai')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'notas_ai' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Notas IA
+                    </button>
+                    <button wire:click="setTab('comentarios')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'comentarios' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+                        Comentarios
+                    </button>
+                    @can('manage billing')
+                    <button wire:click="setTab('finanzas')" class="flex flex-col items-center justify-center px-4 md:px-6 py-3 text-sm font-medium whitespace-nowrap gap-1 {{ $activeTab == 'finanzas' ? 'border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-200' : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-50 transition-colors duration-200' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Finanzas
+                    </button>
+                    @endcan
+                </div>
+
+                <div class="p-6">
+                    @if($activeTab == 'actuaciones')
+                        <div class="space-y-4">
+                            @forelse($expediente->actuaciones as $actuacion)
+                                <div class="border-l-4 border-indigo-500 bg-gray-50 p-4 rounded-r-lg">
+                                    <div class="flex justify-between">
+                                        <h4 class="font-bold text-gray-800">{{ $actuacion->titulo }}</h4>
+                                        <span class="text-xs text-gray-500">{{ $actuacion->fecha?->format('d/m/Y') }}</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-1">{{ $actuacion->descripcion }}</p>
+                                </div>
+                            @empty
+                                <p class="text-center text-gray-500 py-8">No hay actuaciones registradas.</p>
+                            @endforelse
+                        </div>
+                    @elseif($activeTab == 'documentos')
+                        <div class="mb-6">
+                            <livewire:expedientes.upload-document :expediente="$expediente" />
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            @forelse($expediente->documentos as $doc)
+                                <div class="border rounded-xl p-4 flex items-start space-x-4 hover:bg-gray-50 transition group relative">
+                                    <div class="p-3 rounded-lg {{ $doc->tipo == 'pdf' ? 'bg-red-100 text-red-600' : ($doc->tipo == 'image' ? 'bg-blue-100 text-blue-600' : ($doc->tipo == 'video' ? 'bg-purple-100 text-purple-600' : ($doc->tipo == 'audio' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'))) }}">
+                                        @if($doc->tipo == 'pdf')
+                                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path><path d="M3 8a2 2 0 012-2v10h8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path></svg>
+                                        @elseif($doc->tipo == 'image')
+                                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path></svg>
+                                        @elseif($doc->tipo == 'video')
+                                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"></path></svg>
+                                        @elseif($doc->tipo == 'audio')
+                                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.983 5.983 0 01-1.414 4.243 1 1 0 01-1.415-1.415A3.983 3.983 0 0013 10a3.983 3.983 0 00-1.172-2.828a1 1 0 010-1.415z" clip-rule="evenodd"></path></svg>
+                                        @else
+                                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path></svg>
+                                        @endif
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-bold text-gray-900 truncate">{{ $doc->nombre }}</p>
+                                        <p class="text-[10px] text-gray-500 uppercase mb-2">
+                                            {{ $doc->extension }} | {{ $doc->created_at->locale('es')->diffForHumans() }}
+                                        </p>
+                                        
+                                        <div class="flex flex-wrap gap-y-2 gap-x-4">
+                                            <button wire:click="openViewer({{ $doc->id }})" class="flex items-center text-xs font-bold text-indigo-600 hover:text-indigo-800 transition whitespace-nowrap">
+                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                Ver
+                                            </button>
+                                            <a href="{{ route('documentos.show', $doc) }}" download class="flex items-center text-xs font-bold text-green-600 hover:text-green-800 transition whitespace-nowrap">
+                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                                Descargar
+                                            </a>
+                                            <button wire:click="deleteDocument({{ $doc->id }})" wire:confirm="¿Estás seguro de eliminar este documento?" class="flex items-center text-xs font-bold text-red-600 hover:text-red-800 transition whitespace-nowrap">
+                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                Eliminar
+                                            </button>
+                                        </div>
+
+                                        <div class="mt-2 pt-2 border-t border-gray-100">
+                                            <p class="text-[9px] text-gray-400 truncate">
+                                                Subido por: <span class="font-medium text-gray-600">{{ $doc->uploader->name ?? 'Sistema' }}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="col-span-2 text-center text-gray-500 py-12 bg-gray-50 rounded-xl border-2 border-dashed">
+                                    No hay documentos cargados.
+                                </div>
+                            @endforelse
+                        </div>
+                    @elseif($activeTab == 'agenda')
+                        <div class="flex justify-between items-center mb-6">
+                            <h4 class="text-sm font-bold text-gray-400 uppercase">Eventos Programados</h4>
+                            <button wire:click="toggleAddEvent" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-indigo-700 transition shadow-sm">
+                                + Programar Evento
+                            </button>
+                        </div>
+
+                        <!-- Modal para Agregar Evento -->
+                        @if($showAddEvent)
+                            <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="toggleAddEvent"></div>
+                                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                    <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                                                <h3 class="text-lg font-bold text-gray-900">Programar Nuevo Evento</h3>
+                                                <button wire:click="toggleAddEvent" class="text-gray-400 hover:text-gray-600">
+                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                </button>
+                                            </div>
+                                            <livewire:expedientes.add-event :expediente="$expediente" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="space-y-4">
+                            @forelse($expediente->eventos->sortBy('start_time') as $evento)
+                                <div class="flex items-start space-x-4 p-4 bg-white border rounded-xl hover:shadow-md transition border-l-4 {{ $evento->tipo == 'audiencia' ? 'border-red-500' : ($evento->tipo == 'cita' ? 'border-blue-500' : 'border-orange-500') }}">
+                                    <div class="text-center min-w-[50px] bg-gray-50 p-2 rounded-lg">
+                                        <span class="block text-[10px] font-bold text-gray-400 uppercase">{{ $evento->start_time->format('M') }}</span>
+                                        <span class="block text-lg font-bold text-gray-800">{{ $evento->start_time->format('d') }}</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h5 class="font-bold text-gray-900">{{ $evento->titulo }}</h5>
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $evento->tipo == 'audiencia' ? 'bg-red-100 text-red-700' : ($evento->tipo == 'cita' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700') }}">
+                                                {{ ucfirst($evento->tipo) }}
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-0.5">
+                                            {{ $evento->start_time->format('H:i') }} - {{ $evento->end_time->format('H:i') }}
+                                        </p>
+                                        @if($evento->descripcion)
+                                            <p class="text-xs text-gray-600 mt-2 bg-gray-50 p-2 rounded italic">{{ $evento->descripcion }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed">
+                                    <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    <p class="text-gray-500">No hay eventos programados para este expediente.</p>
+                                </div>
+                            @endforelse
+                        </div>
+                    @elseif($activeTab == 'comentarios')
+                        <livewire:expedientes.comentarios :expediente="$expediente" />
+                    @elseif($activeTab == 'finanzas')
+                        @can('manage billing')
+                        <div class="space-y-8">
+                            <!-- Summary Cards -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl">
+                                    <p class="text-xs font-bold text-indigo-600 uppercase mb-1">Total Proyecto</p>
+                                    <p class="text-2xl font-black text-indigo-900">${{ number_format($expediente->honorarios_totales, 2) }}</p>
+                                </div>
+                                <div class="bg-green-50 border border-green-100 p-4 rounded-2xl">
+                                    <p class="text-xs font-bold text-green-600 uppercase mb-1">Abonado</p>
+                                    <p class="text-2xl font-black text-green-900">${{ number_format($expediente->honorarios_totales - $expediente->saldo_pendiente, 2) }}</p>
+                                </div>
+                                <div class="{{ $expediente->saldo_pendiente > 0 ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100' }} border p-4 rounded-2xl">
+                                    <p class="text-xs font-bold {{ $expediente->saldo_pendiente > 0 ? 'text-red-600' : 'text-gray-600' }} uppercase mb-1">Restante</p>
+                                    <p class="text-2xl font-black {{ $expediente->saldo_pendiente > 0 ? 'text-red-900' : 'text-gray-900' }}">${{ number_format($expediente->saldo_pendiente, 2) }}</p>
+                                </div>
+                            </div>
+
+                            <!-- New Payment Section -->
+                            @if($expediente->saldo_pendiente > 0)
+                            <div class="bg-white border rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden" x-data="{ open: false }">
+                                <div @click="open = !open" class="p-6 cursor-pointer hover:bg-gray-50 transition-colors flex justify-between items-center bg-white">
+                                    <h4 class="text-sm font-bold text-gray-900 flex items-center select-none">
+                                        <span class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-3 text-xs shadow-sm">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                        </span>
+                                        Registrar Nuevo Pago / Abono
+                                    </h4>
+                                    <button type="button" class="text-gray-400">
+                                        <svg x-show="!open" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        <svg x-show="open" style="display: none;" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                                    </button>
+                                </div>
+                                
+                                <div x-show="open" style="display: none;" class="px-6 pb-6 pt-0 border-t border-gray-100 bg-gray-50/50">
+                                    <form wire:submit.prevent="recordPayment" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <x-input-label for="monto_pago" :value="__('Monto Total a Pagar (Entrada de dinero)')" />
+                                                <div class="mt-1 relative rounded-md shadow-sm">
+                                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                        <span class="text-gray-500 sm:text-sm">$</span>
+                                                    </div>
+                                                    <x-text-input id="monto_pago" type="number" step="0.01" class="pl-7 block w-full font-bold" wire:model.live.debounce.500ms="monto_pago" placeholder="0.00" />
+                                                </div>
+                                                <x-input-error :messages="$errors->get('monto_pago')" class="mt-2" />
+                                            </div>
+                                            <div>
+                                                <x-input-label for="concepto_pago" :value="__('Concepto')" />
+                                                <x-text-input id="concepto_pago" type="text" class="mt-1 block w-full" wire:model="concepto_pago" />
+                                                <x-input-error :messages="$errors->get('concepto_pago')" class="mt-2" />
+                                            </div>
+                                        </div>
+
+                                        <div class="md:col-span-2 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                            <div class="flex items-center mb-3">
+                                                <input type="checkbox" wire:model.live="breakdown_iva" id="breakdown_iva" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 mr-2">
+                                                <label for="breakdown_iva" class="text-sm text-gray-700 font-medium cursor-pointer">Desglosar / Aplicar IVA (16%)</label>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <x-input-label for="subtotal_amount" :value="__('Subtotal')" class="text-xs" />
+                                                    <div class="mt-1 relative rounded-md shadow-sm">
+                                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                            <span class="text-gray-500 sm:text-xs">$</span>
+                                                        </div>
+                                                        <x-text-input id="subtotal_amount" type="number" step="0.01" class="pl-7 block w-full text-sm bg-white" wire:model.live.debounce.500ms="subtotal_amount" />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <x-input-label for="iva_amount" :value="__('IVA')" class="text-xs" />
+                                                    <div class="mt-1 relative rounded-md shadow-sm">
+                                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                            <span class="text-gray-500 sm:text-xs">$</span>
+                                                        </div>
+                                                        <x-text-input id="iva_amount" type="number" step="0.01" class="pl-7 block w-full text-sm bg-white" wire:model.live.debounce.500ms="iva_amount" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="md:col-span-2 flex justify-end">
+                                            <x-primary-button>
+                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                {{ __('Guardar Abono') }}
+                                            </x-primary-button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- Payment History -->
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-400 uppercase mb-4">Historial de Pagos y Facturas</h4>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-sm">
+                                        <thead class="bg-gray-50 text-gray-500 uppercase text-[10px]">
+                                            <tr>
+                                                <th class="px-4 py-3">Fecha</th>
+                                                <th class="px-4 py-3">Concepto</th>
+                                                <th class="px-4 py-3">Monto</th>
+                                                <th class="px-4 py-3">Estado</th>
+                                                <th class="px-4 py-3">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y">
+                                            @forelse($expediente->facturas()->orderBy('created_at', 'desc')->get() as $pago)
+                                                <tr class="hover:bg-gray-50">
+                                                    <td class="px-4 py-3 whitespace-nowrap">{{ $pago->created_at->format('d/m/Y') }}</td>
+                                                    <td class="px-4 py-3">
+                                                        <span class="font-medium text-gray-900">{{ data_get($pago->conceptos, '0.descripcion', 'Pago registrado') }}</span>
+                                                    </td>
+                                                    <td class="px-4 py-3 font-bold text-gray-900">${{ number_format($pago->total, 2) }}</td>
+                                                    <td class="px-4 py-3">
+                                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $pago->estado == 'pagada' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                                            {{ ucfirst($pago->estado) }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-3">
+                                                        <a href="{{ route('reportes.factura', $pago) }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-bold text-[11px] mr-2">Recibo</a>
+                                                        @if($pago->estado == 'pagada')
+                                                            <button wire:click="cancelPayment({{ $pago->id }})" wire:confirm="¿Estás seguro de cancelar este pago? Esto repondrá el saldo pendiente. Esta acción no se puede deshacer." class="text-red-600 hover:text-red-800 font-bold text-[11px]">Cancelar</button>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="5" class="px-4 py-8 text-center text-gray-500">No hay registros de pagos.</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        @endcan
+                    @elseif($activeTab == 'notas_ai')
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                @forelse($expediente->aiNotes as $note)
+                                    <div class="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition relative flex flex-col h-full">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <span class="text-[10px] uppercase font-bold text-gray-400">
+                                                {{ $note->created_at->format('d/m/Y H:i') }}
+                                            </span>
+                                            <button wire:click="deleteAiNote({{ $note->id }})" wire:confirm="¿Borrar esta nota permanentemente?" class="text-gray-300 hover:text-red-500 transition">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="flex-1 mb-4 prose prose-sm max-w-none text-gray-600 line-clamp-4 text-xs">
+                                            {{ \Illuminate\Support\Str::limit($note->content, 200) }}
+                                        </div>
+                                        
+                                        <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
+                                            <div class="flex items-center">
+                                                <div class="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 text-[10px] font-bold mr-2">
+                                                    {{ substr($note->user->name ?? '?', 0, 1) }}
+                                                </div>
+                                                <span class="text-[10px] text-gray-500">{{ $note->user->name ?? 'Usuario' }}</span>
+                                            </div>
+                                            <button wire:click="viewNote({{ $note->id }})" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center">
+                                                Leer nota
+                                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="col-span-1 md:col-span-2 text-center py-12 bg-gray-50 rounded-xl border border-dashed text-gray-400">
+                                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                        <p>No hay notas de IA guardadas.</p>
+                                        <p class="text-xs mt-1">Usa el botón "Guardar" en el chat del asistente.</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ver Nota IA -->
+    @if($viewingNote)
+        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="closeNote"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                    <div class="bg-indigo-600 px-4 py-3 sm:px-6 flex justify-between items-center">
+                        <h3 class="text-lg leading-6 font-bold text-white flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Nota de IA
+                        </h3>
+                        <button wire:click="closeNote" class="text-indigo-200 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+                        <div class="prose prose-sm max-w-none text-gray-700">
+                             {!! \Illuminate\Support\Str::markdown($viewingNote->content) !!}
+                        </div>
+                        <div class="mt-6 pt-4 border-t text-xs text-gray-400 flex justify-between">
+                            <span>Guardado por: {{ $viewingNote->user->name ?? 'Usuario' }}</span>
+                            <span>{{ $viewingNote->created_at->format('d/m/Y H:i') }}</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="button" wire:click="closeNote" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+
+    <!-- Modal Visor de Archivos -->
+    @if($showViewer && $selectedDoc)
+        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="closeViewer"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="flex justify-between items-center mb-4 border-b pb-3">
+                            <h3 class="text-lg font-bold text-gray-900 truncate flex items-center">
+                                <span class="mr-2 p-1 bg-indigo-100 text-indigo-600 rounded">
+                                    @if($selectedDoc->tipo == 'pdf') PDF @elseif($selectedDoc->tipo == 'image') IMG @else DOC @endif
+                                </span>
+                                {{ $selectedDoc->nombre }}
+                            </h3>
+                            <button wire:click="closeViewer" class="text-gray-400 hover:text-gray-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+                        
+                        <div class="bg-gray-100 rounded-xl overflow-hidden flex justify-center items-center min-h-[500px]">
+                            @if($selectedDoc->tipo == 'image')
+                                <img src="{{ route('documentos.show', $selectedDoc) }}" class="max-w-full max-h-[70vh] object-contain shadow-lg">
+                            @elseif($selectedDoc->tipo == 'pdf')
+                                <iframe src="{{ route('documentos.show', $selectedDoc) }}" class="w-full h-[70vh]" frameborder="0"></iframe>
+                            @elseif($selectedDoc->tipo == 'video')
+                                <video controls class="max-w-full max-h-[70vh] shadow-lg">
+                                    <source src="{{ route('documentos.show', $selectedDoc) }}" type="video/{{ $selectedDoc->extension }}">
+                                    Tu navegador no soporta el reproductor de video.
+                                </video>
+                            @elseif($selectedDoc->tipo == 'audio')
+                                <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md text-center">
+                                    <div class="bg-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-600">
+                                        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.983 5.983 0 01-1.414 4.243 1 1 0 01-1.415-1.415A3.983 3.983 0 0013 10a3.983 3.983 0 00-1.172-2.828a1 1 0 010-1.415z" clip-rule="evenodd"></path></svg>
+                                    </div>
+                                    <h4 class="font-bold text-gray-800 mb-4">{{ $selectedDoc->nombre }}</h4>
+                                    <audio controls class="w-full">
+                                        <source src="{{ route('documentos.show', $selectedDoc) }}" type="audio/{{ $selectedDoc->extension }}">
+                                        Tu navegador no soporta el reproductor de audio.
+                                    </audio>
+                                </div>
+                            @else
+                                <div class="text-center p-12">
+                                    <svg class="w-20 h-20 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    <p class="text-gray-500 font-medium">Este tipo de archivo no se puede previsualizar.</p>
+                                    <a href="{{ route('documentos.show', $selectedDoc) }}" download class="mt-4 inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition">
+                                        Descargar para ver
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <x-modal-wire wire:model="showEditModal">
+        <div class="px-6 py-4 border-b">
+            <h3 class="text-lg font-bold text-gray-900">Editar Expediente</h3>
+        </div>
+        <div class="p-6">
+            <form wire:submit.prevent="update" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Numero -->
+                    <div>
+                        <x-input-label for="numero" :value="__('Número de Expediente')" />
+                        <x-text-input id="numero" type="text" class="mt-1 block w-full" wire:model="numero" required />
+                        <x-input-error :messages="$errors->get('numero')" class="mt-2" />
+                    </div>
+
+                    <!-- Titulo -->
+                    <div>
+                        <x-input-label for="titulo" :value="__('Título / Carátula')" />
+                        <x-text-input id="titulo" type="text" class="mt-1 block w-full" wire:model="titulo" required />
+                        <x-input-error :messages="$errors->get('titulo')" class="mt-2" />
+                    </div>
+
+                    <!-- Cliente -->
+                    <div>
+                        <x-input-label for="cliente_id" :value="__('Cliente')" />
+                        <select id="cliente_id" wire:model="cliente_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <option value="">-- Seleccionar --</option>
+                            @foreach($clientes as $cliente)
+                                <option value="{{ $cliente->id }}">{{ $cliente->nombre }}</option>
+                            @endforeach
+                        </select>
+                        <x-input-error :messages="$errors->get('cliente_id')" class="mt-2" />
+                    </div>
+
+                    <!-- Abogado -->
+                    <div>
+                        <x-input-label for="abogado_responsable_id" :value="__('Abogado Responsable')" />
+                        <select id="abogado_responsable_id" wire:model="abogado_responsable_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <option value="">-- Seleccionar --</option>
+                            @foreach($abogados as $abogado)
+                                <option value="{{ $abogado->id }}">{{ $abogado->name }}</option>
+                            @endforeach
+                        </select>
+                        <x-input-error :messages="$errors->get('abogado_responsable_id')" class="mt-2" />
+                    </div>
+
+                    <!-- Materia -->
+                    <div>
+                        <x-input-label for="materia" :value="__('Materia')" />
+                        <x-text-input id="materia" list="materias-list" type="text" class="mt-1 block w-full" wire:model="materia" required />
+                        <datalist id="materias-list">
+                            @foreach($materias as $m)
+                                <option value="{{ $m->nombre }}">
+                            @endforeach
+                        </datalist>
+                        <x-input-error :messages="$errors->get('materia')" class="mt-2" />
+                    </div>
+
+                    <!-- Juzgado -->
+                    <div>
+                        <x-input-label for="juzgado" :value="__('Juzgado / Instancia')" />
+                        <x-text-input id="juzgado" list="juzgados-list" type="text" class="mt-1 block w-full" wire:model="juzgado" />
+                        <datalist id="juzgados-list">
+                            @foreach($juzgados as $j)
+                                <option value="{{ $j->nombre }}">
+                            @endforeach
+                        </datalist>
+                        <x-input-error :messages="$errors->get('juzgado')" class="mt-2" />
+                    </div>
+
+                    <!-- Estado Procesal -->
+                    <div>
+                        <x-input-label for="estado_procesal_id" :value="__('Estado Procesal')" />
+                        <select id="estado_procesal_id" wire:model="estado_procesal_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <option value="">-- Manual (Usar texto actual) --</option>
+                            @foreach($estadosProcesales as $ep)
+                                <option value="{{ $ep->id }}">{{ $ep->nombre }}</option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Actual: {{ $estado_procesal }}</p>
+                        <x-input-error :messages="$errors->get('estado_procesal_id')" class="mt-2" />
+                    </div>
+
+                    <!-- Juez -->
+                    <div>
+                        <x-input-label for="nombre_juez" :value="__('Nombre del Juez')" />
+                        <x-text-input id="nombre_juez" type="text" class="mt-1 block w-full" wire:model="nombre_juez" />
+                    </div>
+
+                    <!-- Fecha Inicio -->
+                    <div>
+                        <x-input-label for="fecha_inicio" :value="__('Fecha de Inicio')" />
+                        <x-text-input id="fecha_inicio" type="date" class="mt-1 block w-full" wire:model="fecha_inicio" />
+                    </div>
+
+                     <!-- Honorarios -->
+                     <div>
+                        <x-input-label for="honorarios_totales" :value="__('Honorarios Totales ($)')" />
+                        <x-text-input id="honorarios_totales" type="number" step="0.01" class="mt-1 block w-full" wire:model="honorarios_totales" />
+                        <p class="text-xs text-gray-500 mt-1">Cambiarlos recalculará el saldo pendiente</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-4 gap-2">
+                    <button type="button" wire:click="$set('showEditModal', false)" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-bold">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </x-modal-wire>
+
+    <!-- AI Assistant Panel -->
+    <livewire:expedientes.ai-assistant :expediente="$expediente" />
+</div>

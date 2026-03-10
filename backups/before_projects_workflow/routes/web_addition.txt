@@ -1,0 +1,1 @@
+﻿    Route::get('/admin/ai-providers', \\App\\Livewire\\Admin\\AiProviders\\Index::class)->name('admin.ai-providers')->middleware('can:manage tenants');

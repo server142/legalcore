@@ -33,13 +33,29 @@ class WelcomeOverlay extends Component
     public function loadSettings()
     {
         $settings = DB::table('global_settings')
-            ->whereIn('key', ['welcome_video_url', 'welcome_message', 'welcome_title'])
+            ->whereIn('key', [
+                'welcome_video_url', 
+                'welcome_message', 
+                'welcome_title',
+                'directory_welcome_video_url',
+                'directory_welcome_message'
+            ])
             ->pluck('value', 'key')
             ->toArray();
 
-        $this->videoUrl = $settings['welcome_video_url'] ?? '';
-        $this->message = $settings['welcome_message'] ?? 'Bienvenido a LegalCore.';
-        $this->title = $settings['welcome_title'] ?? 'Bienvenido a tu Espacio Legal';
+        $user = Auth::user();
+        $plan = $user->tenant->plan ?? '';
+        $isDirectoryOnly = $plan && str_contains($plan, 'directory');
+
+        if ($isDirectoryOnly) {
+            $this->videoUrl = $settings['directory_welcome_video_url'] ?? '';
+            $this->message = $settings['directory_welcome_message'] ?? 'Bienvenido al Directorio Público de Abogados. Configura tu perfil para empezar.';
+            $this->title = 'Bienvenido al Directorio';
+        } else {
+            $this->videoUrl = $settings['welcome_video_url'] ?? '';
+            $this->message = $settings['welcome_message'] ?? 'Bienvenido a LegalCore.';
+            $this->title = $settings['welcome_title'] ?? 'Bienvenido a tu Espacio Legal';
+        }
 
         $this->processVideoUrl();
     }

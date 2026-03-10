@@ -37,9 +37,39 @@ Route::get('/legal/{type}', [\App\Http\Controllers\LegalDocumentController::clas
 
 Route::get('/cita/{token}', [\App\Http\Controllers\PublicAsesoriaController::class, 'show'])->name('asesorias.public');
 Route::get('/qr/asesoria/{token}', [\App\Http\Controllers\PublicAsesoriaQrController::class, 'show'])->name('asesorias.public.qr');
+    Route::get('/directorio', \App\Livewire\PublicDirectory::class)->name('directory.public');
+    Route::get('/directory/join', function () {
+    return view('directory.join');
+})->name('directory.advertise');
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+// Nueva ruta para perfil detallado (Ficha Digital)
+Route::get('/directorio/{profile}', App\Livewire\PublicDirectoryProfile::class)->name('directory.show');
+
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('dashboard', function () {
+            $user = auth()->user();
+            
+            // Si es super admin, siempre al dashboard de control total
+            if ($user->hasRole('super_admin')) {
+                return view('dashboard');
+            }
+
+            // Si es un usuario de plan exclusivo de directorio, mandarlo a su dashboard de perfil
+            if ($user->tenant && str_contains($user->tenant->plan ?? '', 'directory')) {
+                return redirect()->route('directory.dashboard');
+            }
+            
+            return view('dashboard');
+        })->name('dashboard');
+        
+        
+        // Admin - Directory Management
+        Route::get('/admin/directory', \App\Livewire\Admin\Directory\Index::class)->name('admin.directory.index')->middleware('can:manage tenants');
+    // Proyectos Legales (Workflows)
+    Route::get('/proyectos', \App\Livewire\Projects\ProjectIndex::class)->name('projects.index');
+    Route::get('/proyectos/nuevo/{workflow?}', \App\Livewire\Projects\ProjectWizard::class)->name('projects.wizard');
+    Route::get('/proyectos/{project}', \App\Livewire\Projects\ProjectWizard::class)->name('projects.show');
+
     
     Route::get('/expedientes', \App\Livewire\Expedientes\Index::class)->name('expedientes.index');
     Route::get('/expedientes/nuevo', \App\Livewire\Expedientes\Create::class)->name('expedientes.create');
@@ -125,6 +155,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/library', \App\Livewire\Library\TemplateLibrary::class)->name('library.index');
 
     // Google Calendar Routes
+    // Public Directory Profile Management
+    Route::get('/perfil-publico', \App\Livewire\Profile\DirectoryManager::class)->name('profile.directory');
+    Route::get('/mi-directorio', \App\Livewire\Directory\Dashboard::class)->name('directory.dashboard');
+
     Route::get('auth/google', [\App\Http\Controllers\GoogleController::class, 'redirectToGoogle'])->name('auth.google');
     Route::get('auth/google/callback', [\App\Http\Controllers\GoogleController::class, 'handleGoogleCallback']);
     Route::post('auth/google/disconnect', [\App\Http\Controllers\GoogleController::class, 'disconnect'])->name('auth.google.disconnect');
