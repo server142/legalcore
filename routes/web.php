@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Plan;
 use App\Models\Expediente; // Added for the moved route
 
+// Rutas del subdominio del Directorio de Abogados
+Route::domain('abogados.diogenes.com.mx')->group(base_path('routes/directory.php'));
+
 // Public Legal Pages (Required by Google API Verification)
 
 Route::get('/', function () {
@@ -37,13 +40,6 @@ Route::get('/legal/{type}', [\App\Http\Controllers\LegalDocumentController::clas
 
 Route::get('/cita/{token}', [\App\Http\Controllers\PublicAsesoriaController::class, 'show'])->name('asesorias.public');
 Route::get('/qr/asesoria/{token}', [\App\Http\Controllers\PublicAsesoriaQrController::class, 'show'])->name('asesorias.public.qr');
-    Route::get('/directorio', \App\Livewire\PublicDirectory::class)->name('directory.public');
-    Route::get('/directory/join', function () {
-    return view('directory.join');
-})->name('directory.advertise');
-
-// Nueva ruta para perfil detallado (Ficha Digital)
-Route::get('/directorio/{profile}', App\Livewire\PublicDirectoryProfile::class)->name('directory.show');
 
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('dashboard', function () {
@@ -155,10 +151,6 @@ Route::get('/directorio/{profile}', App\Livewire\PublicDirectoryProfile::class)-
     Route::get('/library', \App\Livewire\Library\TemplateLibrary::class)->name('library.index');
 
     // Google Calendar Routes
-    // Public Directory Profile Management
-    Route::get('/perfil-publico', \App\Livewire\Profile\DirectoryManager::class)->name('profile.directory');
-    Route::get('/mi-directorio', \App\Livewire\Directory\Dashboard::class)->name('directory.dashboard');
-
     Route::get('auth/google', [\App\Http\Controllers\GoogleController::class, 'redirectToGoogle'])->name('auth.google');
     Route::get('auth/google/callback', [\App\Http\Controllers\GoogleController::class, 'handleGoogleCallback']);
     Route::post('auth/google/disconnect', [\App\Http\Controllers\GoogleController::class, 'disconnect'])->name('auth.google.disconnect');
