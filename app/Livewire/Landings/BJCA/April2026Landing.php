@@ -28,6 +28,7 @@ class April2026Landing extends Component
     public $asunto;
     public $fecha;
     public $hora;
+    public $tipo = 'presencial';
     public $success = false;
     public $message = "";
     public $availableSlots = [];
@@ -43,6 +44,7 @@ class April2026Landing extends Component
         'asunto' => 'required|string|min:10|max:2000',
         'fecha' => 'required|date|after_or_equal:2026-04-01|before_or_equal:2026-04-30',
         'hora' => 'required',
+        'tipo' => 'required|in:presencial,videoconferencia',
     ];
 
     public function mount()
@@ -190,7 +192,7 @@ class April2026Landing extends Component
                 'fecha_hora' => $fechaHora,
                 'duracion_minutos' => self::DURATION,
                 'abogado_id' => self::LAWYER_ID,
-                'tipo' => 'presencial', 
+                'tipo' => $this->tipo, 
                 'estado' => 'agendada',
                 'costo' => 0.00,
                 'notas' => "[ORIGEN: {$this->campaniaNombre}]\n\n" . 

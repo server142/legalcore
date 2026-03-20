@@ -202,6 +202,41 @@
                                     </div>
                                 </div>
 
+                                <!-- Tipo de Asesoría -->
+                                <div class="space-y-2">
+                                    <label class="text-xs font-black text-indigo-500 uppercase tracking-widest px-1">¿Cómo prefieres la asesoría?</label>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <!-- Presencial -->
+                                        <label class="relative flex cursor-pointer rounded-2xl border-2 p-4 focus:outline-none transition-all {{ $tipo === 'presencial' ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-300' }}">
+                                            <input type="radio" wire:model.live="tipo" value="presencial" class="sr-only">
+                                            <span class="flex flex-1">
+                                                <span class="flex flex-col text-left">
+                                                    <span class="block text-sm font-black text-gray-900">🏛️ Presencial</span>
+                                                    <span class="mt-1 flex items-center text-xs text-gray-500 font-medium italic">En nuestras oficinas</span>
+                                                </span>
+                                            </span>
+                                            @if($tipo === 'presencial')
+                                                <svg class="h-6 w-6 text-indigo-600 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                            @endif
+                                        </label>
+                                        
+                                        <!-- En Línea -->
+                                        <label class="relative flex cursor-pointer rounded-2xl border-2 p-4 focus:outline-none transition-all {{ $tipo === 'videoconferencia' ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-300' }}">
+                                            <input type="radio" wire:model.live="tipo" value="videoconferencia" class="sr-only">
+                                            <span class="flex flex-1">
+                                                <span class="flex flex-col text-left">
+                                                    <span class="block text-sm font-black text-gray-900">💻 En Línea</span>
+                                                    <span class="mt-1 flex items-center text-xs text-gray-500 font-medium italic">Videollamada / Zoom</span>
+                                                </span>
+                                            </span>
+                                            @if($tipo === 'videoconferencia')
+                                                <svg class="h-6 w-6 text-indigo-600 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                            @endif
+                                        </label>
+                                    </div>
+                                    @error('tipo') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
+                                </div>
+
                                 <div class="space-y-2">
                                     <label class="text-xs font-black text-indigo-500 uppercase tracking-widest px-1">¿Qué tema legal te preocupa?</label>
                                     <textarea wire:model.defer="asunto" rows="3" class="w-full bg-white border-0 ring-1 ring-gray-200 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-indigo-600 transition shadow-sm text-gray-900" placeholder="Ej: Divorcio, Demanda Laboral, Revisión de Contrato..." required></textarea>
