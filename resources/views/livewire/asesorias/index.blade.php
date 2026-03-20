@@ -102,6 +102,12 @@
                     <option value="semana">Esta Semana</option>
                     <option value="mes">Este Mes</option>
                 </select>
+                <div class="flex items-center ml-2 border-l border-gray-200 pl-4 py-1">
+                    <label class="flex items-center cursor-pointer group">
+                        <input type="checkbox" wire:model.live="soloCampania" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 shadow-sm transition duration-150 ease-in-out cursor-pointer">
+                        <span class="ml-2 text-xs font-bold text-gray-700 group-hover:text-indigo-600 transition">✨ Campaña Abril</span>
+                    </label>
+                </div>
             </div>
         </div>
 
@@ -123,7 +129,12 @@
                             <td class="px-6 py-4">
                                 <div class="flex flex-col">
                                     <span class="text-xs font-bold text-indigo-600">{{ $asesoria->folio }}</span>
-                                    <span class="text-sm font-medium text-gray-900">{{ $asesoria->nombre_prospecto }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-medium text-gray-900">{{ $asesoria->nombre_prospecto }}</span>
+                                        @if(str_contains($asesoria->notas, 'LANDING CAMPAÑA ABRIL 2026'))
+                                            <span class="inline-flex px-1.5 py-0.5 rounded text-[9px] font-black bg-indigo-600 text-white uppercase tracking-tighter">Campaña</span>
+                                        @endif
+                                    </div>
                                     <span class="text-xs text-gray-500 truncate max-w-[200px]">{{ $asesoria->asunto }}</span>
                                 </div>
                             </td>
@@ -234,7 +245,12 @@
                     </div>
 
                     <div class="space-y-2 mb-4">
-                        <h3 class="text-base font-bold text-gray-900 leading-tight">{{ $asesoria->nombre_prospecto }}</h3>
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-base font-bold text-gray-900 leading-tight">{{ $asesoria->nombre_prospecto }}</h3>
+                            @if(str_contains($asesoria->notas, 'LANDING CAMPAÑA ABRIL 2026'))
+                                <span class="px-2 py-0.5 rounded text-[8px] font-black bg-indigo-600 text-white uppercase">Campaña</span>
+                            @endif
+                        </div>
                         <div class="text-xs text-gray-500 truncate">{{ $asesoria->asunto }}</div>
 
                         <div class="flex items-center text-sm text-gray-600">

@@ -19,6 +19,7 @@ class Index extends Component
     public $filtroEstado = '';
     public $filtroTipo = '';
     public $filtroFecha = '';
+    public $soloCampania = false;
 
     public function generarRecibo($asesoriaId)
     {
@@ -183,8 +184,13 @@ class Index extends Component
             $query->where(function($q) {
                 $q->where('nombre_prospecto', 'like', '%' . $this->search . '%')
                   ->orWhere('folio', 'like', '%' . $this->search . '%')
-                  ->orWhere('asunto', 'like', '%' . $this->search . '%');
+                  ->orWhere('asunto', 'like', '%' . $this->search . '%')
+                  ->orWhere('notas', 'like', '%' . $this->search . '%');
             });
+        }
+
+        if ($this->soloCampania) {
+            $query->where('notas', 'like', '%LANDING CAMPAÑA ABRIL 2026%');
         }
 
         if ($this->filtroEstado) {
