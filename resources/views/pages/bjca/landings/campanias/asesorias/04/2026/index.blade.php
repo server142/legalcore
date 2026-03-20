@@ -209,24 +209,36 @@
                                     @error('asunto') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                                 </div>
 
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                                <div class="grid md:grid-cols-2 gap-8">
                                     <div class="space-y-2">
                                         <label class="text-xs font-black text-indigo-500 uppercase tracking-widest px-1">Fecha de preferencia</label>
-                                        <input type="date" wire:model.defer="fecha" class="w-full bg-white border-0 ring-1 ring-gray-200 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-indigo-600 transition shadow-sm h-16 text-gray-900" required>
+                                        <input type="date" wire:model.live="fecha" class="w-full bg-white border-0 ring-1 ring-gray-200 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-indigo-600 transition shadow-sm h-16 text-gray-900" required>
                                         @error('fecha') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                                     </div>
                                     <div class="space-y-2">
                                         <label class="text-xs font-black text-indigo-500 uppercase tracking-widest px-1">Hora sugerida</label>
-                                        <select wire:model.defer="hora" class="w-full bg-white border-0 ring-1 ring-gray-200 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-indigo-600 transition shadow-sm h-16 text-gray-900 appearance-none" required>
-                                            <option value="09:00">09:00 AM</option>
-                                            <option value="10:00" selected>10:00 AM</option>
-                                            <option value="11:00">11:00 AM</option>
-                                            <option value="12:00">12:00 PM</option>
-                                            <option value="13:00">01:00 PM</option>
-                                            <option value="14:00">02:00 PM</option>
-                                            <option value="16:00">04:00 PM</option>
-                                            <option value="17:00">05:00 PM</option>
-                                        </select>
+                                        
+                                        <div class="relative min-h-[4rem]">
+                                            <div wire:loading wire:target="fecha" class="absolute inset-0 bg-white/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">
+                                                <svg class="animate-spin h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                            </div>
+
+                                            @if(empty($availableSlots))
+                                                <div class="p-4 bg-red-50 text-red-600 text-xs font-bold rounded-2xl border border-red-100 italic">
+                                                    No hay horarios disponibles para esta fecha. Intenta con otro día.
+                                                </div>
+                                            @else
+                                                <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                                    @foreach($availableSlots as $slot)
+                                                        <button type="button" 
+                                                                wire:click="selectSlot('{{ $slot['value'] }}')"
+                                                                class="py-3 px-4 rounded-xl text-sm font-bold transition-all border {{ $hora == $slot['value'] ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-white border-gray-100 text-gray-600 hover:border-indigo-300 hover:bg-indigo-50' }}">
+                                                            {{ $slot['label'] }}
+                                                        </button>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
                                         @error('hora') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
