@@ -40,7 +40,7 @@
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
                     </span>
-                    EDICIÓN ESPECIAL: ABRIL 2026
+                    EDICIÓN ESPECIAL: {{ strtoupper($this->campaniaMes) }}
                 </div>
                 <h1 class="text-4xl sm:text-6xl md:text-7xl font-black text-gray-900 leading-[1.1] mb-8">
                     Deja tus problemas legales<br>
@@ -64,8 +64,8 @@
             <!-- Featured Campaign Poster -->
             <div class="mt-20 relative px-4 max-w-4xl mx-auto group">
                 <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-                <img src="{{ asset('images/landings/bjca/campaign_april_2026.jpg') }}" 
-                     alt="Asesorías Legales Gratuitas Abril" 
+                <img src="{{ asset($this->campaniaPoster) }}" 
+                     alt="{{ $this->campaniaNombre }}" 
                      class="relative w-full h-auto rounded-[2rem] shadow-2xl border-2 border-white/50">
             </div>
         </div>
@@ -146,7 +146,18 @@
 
             <!-- The Form Card -->
             <div class="md:w-[55%] w-full">
-                <div class="bg-gray-50 p-6 md:p-12 rounded-[2.5rem] border border-gray-100 relative group overflow-hidden">
+                <!-- Urgency Banner -->
+                <div class="mb-6 flex items-center justify-between p-4 bg-orange-50 border border-orange-100 rounded-2xl">
+                    <div class="flex items-center gap-3">
+                        <span class="flex h-3 w-3 relative">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+                        </span>
+                        <span class="text-xs font-bold text-orange-700 uppercase tracking-tighter">Solo quedan 6 espacios disponibles para esta semana</span>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-6 md:p-12 rounded-[2.5rem] border border-gray-100 relative group overflow-hidden shadow-2xl shadow-indigo-50">
                     <!-- Internal Decor -->
                     <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-100/50 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
                     
@@ -158,6 +169,16 @@
                             <h3 class="text-3xl font-black text-gray-900 mb-4">¡Todo listo!</h3>
                             <p class="text-gray-600 mb-10 text-lg">{{ $message }}</p>
                             <button wire:click="$set('success', false)" class="px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition shadow-xl shadow-indigo-100">Agendar otra</button>
+                            
+                            <!-- Facebook Conversion Tracking -->
+                            <script>
+                                if (typeof fbq !== 'undefined') {
+                                    fbq('track', 'Lead', {
+                                        content_name: 'Asesoría Gratis Abril 2026',
+                                        content_category: 'Legal Lead'
+                                    });
+                                }
+                            </script>
                         </div>
                     @else
                         <div class="relative z-10">
@@ -227,8 +248,22 @@
                                     <svg class="w-6 h-6 group-hover:translate-x-2 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                                 </button>
                                 
-                                <div class="text-center">
-                                    <p class="text-[10px] text-gray-400 font-medium px-4">
+                                <div class="text-center space-y-4">
+                                    <div class="flex items-center justify-center gap-6 opacity-60 grayscale hover:grayscale-0 transition duration-500">
+                                        <div class="flex items-center gap-1 text-[8px] font-bold uppercase tracking-tighter">
+                                            <svg class="w-3 h-3 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
+                                            Datos Encriptados
+                                        </div>
+                                        <div class="flex items-center gap-1 text-[8px] font-bold uppercase tracking-tighter">
+                                            <svg class="w-3 h-3 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
+                                            No Spam
+                                        </div>
+                                        <div class="flex items-center gap-1 text-[8px] font-bold uppercase tracking-tighter">
+                                            <svg class="w-3 h-3 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
+                                            Sin Compromiso
+                                        </div>
+                                    </div>
+                                    <p class="text-[10px] text-gray-400 font-medium px-4 leading-tight">
                                         Al enviar este formulario, aceptas que **Bufete Jurídico & Consultores Asociados** te contacte para confirmar tu cita. Tus datos están protegidos por nuestro Aviso de Privacidad.
                                     </p>
                                 </div>
