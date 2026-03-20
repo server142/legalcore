@@ -1,114 +1,223 @@
-<div class="min-h-screen bg-gray-50 flex flex-col items-center">
-    <!-- Header with logo and back-to-site info -->
-    <header class="w-full bg-white shadow-sm py-4 px-6 md:px-12 flex justify-between items-center fixed top-0 z-40">
-        <div class="flex items-center">
-            <span class="text-2xl font-bold bg-gradient-to-r from-indigo-700 to-purple-800 bg-clip-text text-transparent">
-                Bufete Jurídico & Consultores Asociados
-            </span>
+<div class="min-h-screen bg-white overflow-hidden font-['Inter'] antialiased">
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-200">
+                    BJ
+                </div>
+                <span class="text-xl font-bold tracking-tight text-gray-900 hidden sm:block">
+                    Bufete Jurídico & Consultores Asociados
+                </span>
+                <span class="text-xl font-bold tracking-tight text-gray-900 sm:hidden">
+                    BJCA
+                </span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <a href="https://wa.me/522281405060" target="_blank" class="text-gray-500 hover:text-indigo-600 transition flex items-center gap-2 text-sm font-medium">
+                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.067 2.877 1.215 3.076.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    WhatsApp
+                </a>
+                <a href="#agendar" class="bg-indigo-600 text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">
+                    ¡Agendar Ahora!
+                </a>
+            </div>
         </div>
-        <div>
-            <a href="/" class="text-sm text-gray-600 hover:text-indigo-600 font-medium">Sitio Principal</a>
-        </div>
-    </header>
+    </nav>
 
-    <!-- Main Content -->
-    <main class="w-full pt-24 pb-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:flex lg:items-center lg:gap-16">
-                <!-- Left Column: Information -->
-                <div class="lg:w-1/2 mb-12 lg:mb-0">
-                    <div class="inline-block mb-4 px-4 py-2 bg-indigo-100 rounded-full text-indigo-700 text-sm font-bold uppercase tracking-wider">
-                        Campaña Abril 2026
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 md:pt-48 md:pb-32 px-4 flex flex-col items-center">
+        <!-- Background Decor -->
+        <div class="absolute inset-0 z-0 h-full w-full pointer-events-none">
+            <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-50 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-[300px] h-[300px] bg-purple-50 rounded-full blur-3xl opacity-50 translate-y-1/2 -translate-x-1/2"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto w-full relative z-10">
+            <div class="text-center max-w-4xl mx-auto">
+                <div class="inline-flex items-center gap-2 mb-6 px-4 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-700 text-sm font-bold animate-fade-in">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
+                    </span>
+                    EDICIÓN ESPECIAL: ABRIL 2026
+                </div>
+                <h1 class="text-4xl sm:text-6xl md:text-7xl font-black text-gray-900 leading-[1.1] mb-8">
+                    Deja tus problemas legales<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-700">en buenas manos.</span>
+                </h1>
+                <p class="text-lg md:text-2xl text-gray-600 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
+                    Sabemos que un proceso judicial puede quitarte el sueño. Durante todo el mes de abril, te regalamos **1 hora de asesoría estratégica** para que tomes el control hoy mismo.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="#agendar" class="bg-indigo-600 text-white px-8 py-5 rounded-2xl font-black text-lg hover:shadow-2xl hover:bg-indigo-700 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3">
+                        Agendar Mi Asesoría Sin Costo
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </a>
+                    <div class="flex flex-col items-center sm:items-start justify-center text-xs text-gray-400 font-medium">
+                        <span class="flex items-center gap-1"><svg class="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg> Registro Inmediato</span>
+                        <span class="flex items-center gap-1"><svg class="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg> 100% Confidencial</span>
                     </div>
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
-                        Mes de Asesoría Jurídica <br>
-                        <span class="text-indigo-600">Totalmente Gratis</span>
-                    </p>
-                    <p class="text-xl text-gray-600 mb-8 leading-relaxed">
-                        Durante todo el mes de abril, nuestro despacho abre sus puertas para ayudarte a resolver tus dudas legales. <br><br>
-                        Ofrecemos **hasta 1 hora de asesoría personalizada** completamente gratis. Ya sea para iniciar un nuevo asunto, resolver dudas jurídicas o revisar procesos legales en ejecución.
-                    </p>
+                </div>
+            </div>
 
-                    <ul class="space-y-4 mb-10 text-gray-700">
-                        <li class="flex items-center">
-                            <svg class="h-6 w-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span>Derecho Familiar, Civil, Mercantil y Laboral.</span>
-                        </li>
-                        <li class="flex items-center">
-                            <svg class="h-6 w-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span>Revisión de expedientes y juicios actuales.</span>
-                        </li>
-                        <li class="flex items-center">
-                            <svg class="h-6 w-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span>Abogados especialistas con amplia experiencia.</span>
-                        </li>
-                    </ul>
-
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 inline-block">
-                        <div class="text-sm font-bold text-gray-500 mb-2 uppercase tracking-wide">Despacho Responsable</div>
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                                BJ
-                            </div>
-                            <div>
-                                <div class="font-bold text-gray-900">Bufete Jurídico & Consultores Asociados</div>
-                                <div class="text-sm text-gray-500">Xalapa, Veracruz / Remoto</div>
-                            </div>
+            <!-- Dashboard Mockup/Visual -->
+            <div class="mt-20 relative px-4 max-w-5xl mx-auto h-[300px] md:h-[500px]">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-white z-20"></div>
+                <img src="/brain/468ba5b7-527f-4995-b381-7fb1a77c3520/legal_office_premium_1773991171442.png" 
+                     alt="Legal Office" 
+                     class="w-full h-full object-cover rounded-[2rem] md:rounded-[4rem] shadow-2xl border-4 border-white">
+                
+                <!-- Floating Card 1 -->
+                <div class="absolute top-10 -left-6 md:left-20 bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/50 z-30 hidden sm:block animate-bounce-slow">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500 font-bold uppercase tracking-wider">Disponibilidad hoy</div>
+                            <div class="text-sm font-black text-gray-900">4 Espacios Libres</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Column: Scheduling Form -->
-                <div class="lg:w-1/2">
-                    <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
-                        @if($success)
-                            <div class="text-center py-12">
-                                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <svg class="h-10 w-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                </div>
-                                <h2 class="text-2xl font-bold text-gray-900 mb-4">¡Agendado Exitosamente!</h2>
-                                <p class="text-gray-600 mb-8">{{ $message }}</p>
-                                <button wire:click="$set('success', false)" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition">Regresar al Formulario</button>
+                <!-- Floating Card 2 -->
+                <div class="absolute bottom-40 -right-6 md:right-20 bg-indigo-600 p-6 rounded-2xl shadow-xl z-30 hidden sm:block animate-pulse-slow">
+                    <div class="text-white">
+                        <div class="text-xs opacity-75 font-bold uppercase tracking-wider">Ahorro Estimado</div>
+                        <div class="text-2xl font-black">$1,500 MXN</div>
+                        <div class="text-[10px] opacity-75 italic">Monto de una hora de consultoría regular</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Us Section -->
+    <section class="py-24 bg-gray-50/50 relative">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-4">¿Por qué agendar con nosotros?</h2>
+            <p class="text-gray-500 mb-16 max-w-xl mx-auto">Damos el trato humano y profesional que tu caso merece.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="group p-8 bg-white rounded-3xl border border-gray-100 hover:border-indigo-200 hover:shadow-2xl hover:shadow-indigo-100 transition duration-500">
+                    <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition duration-500">
+                        <svg class="w-8 h-8 text-indigo-600 group-hover:text-white transition duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-3.642A9.963 9.963 0 0010 18a9.963 9.963 0 006.44-2.142m-9.44-3.642a4.992 4.992 0 01-4.096-2.433m13.536 2.433a4.992 4.992 0 014.096-2.433M15 8a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-3">Expertos Calificados</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">No te atiende un pasante. Hablarás directamente con abogados especialistas en tu materia.</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="group p-8 bg-white rounded-3xl border border-gray-100 hover:border-purple-200 hover:shadow-2xl hover:shadow-purple-100 transition duration-500">
+                    <div class="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-purple-600 transition duration-500">
+                        <svg class="w-8 h-8 text-purple-600 group-hover:text-white transition duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-3">Revisión de Casos</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">¿Ya tienes un juicio? Trae tu expediente. Lo analizamos y te damos una opinión honesta sobre tus posibilidades.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="group p-8 bg-white rounded-3xl border border-gray-100 hover:border-emerald-200 hover:shadow-2xl hover:shadow-emerald-100 transition duration-500">
+                    <div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-600 transition duration-500">
+                        <svg class="w-8 h-8 text-emerald-600 group-hover:text-white transition duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-3">Presencial o Remoto</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">¿No puedes venir a la oficina? Agendamos una videollamada segura para que no pierdas tiempo en traslados.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Form Section -->
+    <section id="agendar" class="py-24 px-4 bg-white relative">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-12 lg:gap-24 items-start">
+            <!-- Text Content -->
+            <div class="md:w-[45%] sticky top-24">
+                <div class="mb-4">
+                    <span class="text-indigo-600 font-black text-sm uppercase tracking-widest">Toma Acción</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-8 leading-tight">
+                    Tu tranquilidad está<br>a un formulario de distancia.
+                </h2>
+                <div class="space-y-8">
+                    <div class="flex gap-6">
+                        <div class="text-2xl font-black text-gray-200">01</div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">Llena tus datos actuales</h4>
+                            <p class="text-gray-500 text-sm">Necesitamos contactarte rápidamente para confirmar.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-6">
+                        <div class="text-2xl font-black text-gray-200">02</div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">Cuéntanos tu problema</h4>
+                            <p class="text-gray-500 text-sm">Resumir tu caso nos ayuda a asignar al abogado ideal antes de que llegues.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-6">
+                        <div class="text-2xl font-black text-gray-200">03</div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">¡Nos vemos pronto!</h4>
+                            <p class="text-gray-500 text-sm">Recibirás un correo y una llamada de confirmación.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Form Card -->
+            <div class="md:w-[55%] w-full">
+                <div class="bg-gray-50 p-6 md:p-12 rounded-[2.5rem] border border-gray-100 relative group overflow-hidden">
+                    <!-- Internal Decor -->
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-100/50 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+                    
+                    @if($success)
+                        <div class="relative z-10 text-center py-20">
+                            <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8 animate-success-pop">
+                                <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
                             </div>
-                        @else
-                            <h2 class="text-2xl font-bold text-gray-900 mb-2">Agénda tu Asesoría Aquí</h2>
-                            <p class="text-gray-500 mb-8">Completa el formulario y selecciona tu horario preferido.</p>
-
-                            <form wire:submit.prevent="schedule" class="space-y-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
-                                    <input type="text" wire:model.defer="nombre" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="Tu nombre..." required>
-                                    @error('nombre') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <h3 class="text-3xl font-black text-gray-900 mb-4">¡Todo listo!</h3>
+                            <p class="text-gray-600 mb-10 text-lg">{{ $message }}</p>
+                            <button wire:click="$set('success', false)" class="px-8 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition shadow-xl shadow-indigo-100">Agendar otra</button>
+                        </div>
+                    @else
+                        <div class="relative z-10">
+                            <form wire:submit.prevent="schedule" class="space-y-8">
+                                <div class="space-y-2">
+                                    <label class="text-xs font-black text-indigo-500 uppercase tracking-widest px-1">Nombre Completo</label>
+                                    <input type="text" wire:model.defer="nombre" class="w-full bg-white border-0 ring-1 ring-gray-200 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-indigo-600 transition shadow-sm h-16 text-gray-900" placeholder="Escribe tu nombre..." required>
+                                    @error('nombre') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                                 </div>
 
-                                <div class="grid md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico</label>
-                                        <input type="email" wire:model.defer="email" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="tu@correo.com" required>
-                                        @error('email') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                                    <div class="space-y-2">
+                                        <label class="text-xs font-black text-indigo-500 uppercase tracking-widest px-1">Email</label>
+                                        <input type="email" wire:model.defer="email" class="w-full bg-white border-0 ring-1 ring-gray-200 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-indigo-600 transition shadow-sm h-16 text-gray-900" placeholder="tu@correo.com" required>
+                                        @error('email') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono de Contacto</label>
-                                        <input type="tel" wire:model.defer="telefono" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="(228) 000 0000" required>
-                                        @error('telefono') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                                    <div class="space-y-2">
+                                        <label class="text-xs font-black text-indigo-500 uppercase tracking-widest px-1">WhatsApp / Teléfono</label>
+                                        <input type="tel" wire:model.defer="telefono" class="w-full bg-white border-0 ring-1 ring-gray-200 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-indigo-600 transition shadow-sm h-16 text-gray-900" placeholder="(10 dígitos)" required>
+                                        @error('telefono') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Breve descripción del asunto / duda</label>
-                                    <textarea wire:model.defer="asunto" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="¿En qué podemos apoyarte?" required></textarea>
-                                    @error('asunto') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                                <div class="space-y-2">
+                                    <label class="text-xs font-black text-indigo-500 uppercase tracking-widest px-1">¿Qué tema legal te preocupa?</label>
+                                    <textarea wire:model.defer="asunto" rows="3" class="w-full bg-white border-0 ring-1 ring-gray-200 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-indigo-600 transition shadow-sm text-gray-900" placeholder="Ej: Divorcio, Demanda Laboral, Revisión de Contrato..." required></textarea>
+                                    @error('asunto') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                                 </div>
 
-                                <div class="grid md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Fecha deseada</label>
-                                        <input type="date" wire:model.defer="fecha" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" required>
-                                        @error('fecha') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                                    <div class="space-y-2">
+                                        <label class="text-xs font-black text-indigo-500 uppercase tracking-widest px-1">Fecha de preferencia</label>
+                                        <input type="date" wire:model.defer="fecha" class="w-full bg-white border-0 ring-1 ring-gray-200 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-indigo-600 transition shadow-sm h-16 text-gray-900" required>
+                                        @error('fecha') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Hora deseada</label>
-                                        <select wire:model.defer="hora" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" required>
+                                    <div class="space-y-2">
+                                        <label class="text-xs font-black text-indigo-500 uppercase tracking-widest px-1">Hora sugerida</label>
+                                        <select wire:model.defer="hora" class="w-full bg-white border-0 ring-1 ring-gray-200 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-indigo-600 transition shadow-sm h-16 text-gray-900 appearance-none" required>
                                             <option value="09:00">09:00 AM</option>
                                             <option value="10:00" selected>10:00 AM</option>
                                             <option value="11:00">11:00 AM</option>
@@ -117,39 +226,73 @@
                                             <option value="14:00">02:00 PM</option>
                                             <option value="16:00">04:00 PM</option>
                                             <option value="17:00">05:00 PM</option>
-                                            <option value="18:00">06:00 PM</option>
                                         </select>
-                                        @error('hora') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                                        @error('hora') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
 
-                                <button type="submit" wire:loading.attr="disabled" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 hover:shadow-xl hover:translate-y-[-2px] transition transform disabled:opacity-50">
-                                    <span wire:loading.remove>Agendar Asesoría Gratis</span>
-                                    <span wire:loading>Procesando...</span>
+                                <button type="submit" wire:loading.attr="disabled" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-800 text-white font-black py-6 rounded-2xl shadow-xl shadow-indigo-200 hover:shadow-2xl hover:translate-y-[-4px] transition duration-300 flex items-center justify-center gap-4 text-xl group">
+                                    <span wire:loading.remove>¡RESERVAR MI HORA GRATIS!</span>
+                                    <span wire:loading>PROCESANDO...</span>
+                                    <svg class="w-6 h-6 group-hover:translate-x-2 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                                 </button>
                                 
-                                <p class="text-center text-gray-500 text-xs mt-4 italic">
-                                    *Sujeto a confirmación por parte del Licenciado asignado.
-                                </p>
+                                <div class="text-center">
+                                    <p class="text-[10px] text-gray-400 font-medium px-4">
+                                        Al enviar este formulario, aceptas que **Bufete Jurídico & Consultores Asociados** te contacte para confirmar tu cita. Tus datos están protegidos por nuestro Aviso de Privacidad.
+                                    </p>
+                                </div>
                             </form>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
-    </main>
+    </section>
 
-    <!-- Footer Landing -->
-    <footer class="w-full bg-gray-900 py-12 px-6">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm">
-            <div class="mb-6 md:mb-0">
-                <span class="text-white font-bold text-lg mr-2">Diogenes</span>
-                <span>© 2026 - Campaña Especial de Consultoría Legal</span>
+    <!-- Final CTA Area -->
+    <section class="py-20 bg-gray-900 overflow-hidden relative">
+        <div class="absolute inset-0 z-0 opacity-10 pointer-events-none">
+            <svg class="h-full w-full" fill="none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path d="M0 100 C 20 0, 50 0, 100 100" stroke="white" stroke-width="0.1" fill="none"/>
+            </svg>
+        </div>
+        <div class="max-w-4xl mx-auto px-4 text-center relative z-10">
+            <h2 class="text-3xl md:text-5xl font-black text-white mb-8">No permitas que el tiempo se agote.</h2>
+            <p class="text-gray-400 text-lg md:text-xl font-light mb-12">Esta campaña solo está disponible durante el mes de abril de 2026. Los espacios se llenan rápido.</p>
+            <a href="#agendar" class="inline-block bg-white text-gray-900 px-10 py-5 rounded-2xl font-black text-xl hover:bg-gray-100 transition shadow-2xl">
+                Asegurar Mi Espacio Hoy
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 bg-white border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400 font-medium space-y-6 md:space-y-0">
+            <div class="flex items-center gap-4">
+                <span class="text-gray-900 font-black tracking-widest">BJCA</span>
+                <span class="w-1 h-1 bg-gray-200 rounded-full"></span>
+                <span>Justicia a tu alcance.</span>
             </div>
             <div class="flex gap-8">
-                <a href="{{ route('privacy') }}" class="hover:text-white transition">Aviso de Privacidad</a>
-                <a href="{{ route('terms') }}" class="hover:text-white transition">Términos del Servicio</a>
+                <a href="{{ route('privacy') }}" class="hover:text-indigo-600 transition">Aviso de Privacidad</a>
+                <a href="{{ route('terms') }}" class="hover:text-indigo-600 transition">Términos de Servicio</a>
             </div>
         </div>
     </footer>
+
+    <style>
+        @keyframes fade-in { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes success-pop { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+        .animate-fade-in { animation: fade-in 1s ease-out forwards; }
+        .animate-success-pop { animation: success-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-bounce-slow { animation: bounce 3s infinite; }
+        .animate-pulse-slow { animation: pulse 4s infinite; }
+        html { scroll-behavior: smooth; }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
 </div>

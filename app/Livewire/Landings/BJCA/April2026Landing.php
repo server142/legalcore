@@ -29,10 +29,10 @@ class April2026Landing extends Component
     public $message = "";
 
     protected $rules = [
-        'nombre' => 'required|string|max:255',
+        'nombre' => 'required|string|min:4|max:255',
         'email' => 'required|email|max:255',
-        'telefono' => 'required|string|max:20',
-        'asunto' => 'required|string|max:1000',
+        'telefono' => 'required|string|min:10|max:15',
+        'asunto' => 'required|string|min:10|max:2000',
         'fecha' => 'required|date|after_or_equal:today',
         'hora' => 'required',
     ];
@@ -74,10 +74,10 @@ class April2026Landing extends Component
                 'fecha_hora' => $fechaHora,
                 'duracion_minutos' => 60, // 1 hour per campaign rules
                 'abogado_id' => $abogado?->id,
-                'tipo' => 'presencial', // Default to physical but can be changed later
+                'tipo' => 'presencial', 
                 'estado' => 'agendada',
-                'costo' => 0.00, // Campaign is free
-                'notas' => 'Agendada desde Landing de Campaña Abril 2026',
+                'costo' => 0.00,
+                'notas' => "AGENDADA DESDE LANDING CAMPAÑA ABRIL 2026 (GRATIS).\n\nDetalles adicionales:\n- Nombre: " . $this->nombre . "\n- Teléfono: " . $this->telefono . "\n- Asunto: " . $this->asunto,
             ]);
 
             DB::commit();
