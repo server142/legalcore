@@ -294,7 +294,7 @@
     </footer>
 
     <!-- WhatsApp Floating Button -->
-    <a href="https://wa.me/522281405060?text=Hola,%20quisiera%20más%20información%20sobre%20la%20campaña%20de%20asesorías%20gratuitas" 
+    <a href="https://wa.me/5212284076583?text=Hola,%20quisiera%20más%20información%20sobre%20la%20campaña%20de%20asesorías%20gratuitas" 
        target="_blank" 
        class="fixed bottom-8 right-8 z-[100] bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all group flex items-center gap-3">
         <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-500 font-bold text-sm">¿Dudas? Escríbenos</span>
