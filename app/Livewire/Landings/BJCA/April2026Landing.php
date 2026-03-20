@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AsesoriaConfirmation;
 use App\Mail\AsesoriaNotificationAbogado;
+use App\Models\CampaignVisit;
+use Illuminate\Support\Facades\Request;
 
 class April2026Landing extends Component
 {
@@ -32,6 +34,7 @@ class April2026Landing extends Component
     public $campaniaNombre = '';
     public $campaniaMes = '';
     public $campaniaPoster = '';
+    public $favicon;
 
     protected $rules = [
         'nombre' => 'required|string|min:4|max:255',
@@ -49,8 +52,25 @@ class April2026Landing extends Component
         $this->campaniaMes = $settings['asesorias_campania_mes'] ?? 'Abril 2026';
         $this->campaniaPoster = $settings['asesorias_campania_poster'] ?? 'images/landings/bjca/campaign_april_2026.jpg';
 
+        // Favicon from Tenant Logo
+        $tenantLogo = $settings['logo_path'] ?? null;
+        $this->favicon = $tenantLogo ? asset('storage/' . $tenantLogo) : asset('favicon.ico');
+
         $this->fecha = '2026-04-01';
         $this->refreshSlots();
+
+        // Local Statistics Tracking
+        try {
+            CampaignVisit::create([
+                'campaign_name' => $this->campaniaNombre,
+                'tenant_id' => self::TENANT_ID,
+                'ip_address' => Request::ip(),
+                'user_agent' => Request::header('User-Agent'),
+                'referer' => Request::header('referer'),
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Error saving campaign visit: " . $e->getMessage());
+        }
     }
 
     public function updatedFecha()
