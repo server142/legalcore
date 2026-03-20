@@ -42,7 +42,7 @@ Route::get('/cita/{token}', [\App\Http\Controllers\PublicAsesoriaController::cla
 Route::get('/qr/asesoria/{token}', [\App\Http\Controllers\PublicAsesoriaQrController::class, 'show'])->name('asesorias.public.qr');
 
 // Landings Campañas
-Route::get('/bjca/landings/campanias/asesorias/04/2026', \App\Livewire\Landings\BJCA\April2026Landing::class)->name('landings.bjca.april2026');
+Route::get('/landing-asesorias', \App\Livewire\Landings\BJCA\April2026Landing::class)->name('landings.bjca.april2026');
 
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('dashboard', function () {
