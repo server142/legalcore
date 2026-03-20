@@ -46,7 +46,7 @@
     </div>
 
     {{-- Tarjetas de Estadísticas --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4">
             <div class="p-3 bg-blue-100 text-blue-600 rounded-lg">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -72,6 +72,15 @@
             <div>
                 <p class="text-sm text-gray-500 font-medium">Realizadas (Mes)</p>
                 <p class="text-2xl font-bold text-gray-800">{{ $stats['realizadas_mes'] }}</p>
+            </div>
+        </div>
+        <div class="bg-indigo-50 p-4 rounded-xl shadow-sm border border-indigo-100 flex items-center space-x-4">
+            <div class="p-3 bg-indigo-600 text-white rounded-lg shadow-lg shadow-indigo-100">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+            </div>
+            <div>
+                <p class="text-sm text-indigo-700 font-bold uppercase tracking-tighter">Campaña Abril</p>
+                <p class="text-2xl font-black text-indigo-900">{{ $stats['campania_total'] }}</p>
             </div>
         </div>
     </div>

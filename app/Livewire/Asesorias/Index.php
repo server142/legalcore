@@ -228,6 +228,7 @@ class Index extends Component
             'hoy' => (clone $statsQuery)->whereDate('fecha_hora', Carbon::today())->where('estado', 'agendada')->count(),
             'pendientes' => (clone $statsQuery)->where('estado', 'agendada')->count(),
             'realizadas_mes' => (clone $statsQuery)->where('estado', 'realizada')->whereMonth('fecha_hora', Carbon::now()->month)->count(),
+            'campania_total' => (clone $statsQuery)->where('notas', 'like', '%LANDING CAMPAÑA ABRIL 2026%')->count(),
         ];
 
         return view('livewire.asesorias.index', [
