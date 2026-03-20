@@ -29,6 +29,9 @@ class April2026Landing extends Component
     public $success = false;
     public $message = "";
     public $availableSlots = [];
+    public $campaniaNombre = '';
+    public $campaniaMes = '';
+    public $campaniaPoster = '';
 
     protected $rules = [
         'nombre' => 'required|string|min:4|max:255',
@@ -41,6 +44,11 @@ class April2026Landing extends Component
 
     public function mount()
     {
+        $settings = auth()->user()->tenant?->settings ?? [];
+        $this->campaniaNombre = $settings['asesorias_campania_nombre'] ?? 'CAMPAÑA ABRIL 2026';
+        $this->campaniaMes = $settings['asesorias_campania_mes'] ?? 'Abril 2026';
+        $this->campaniaPoster = $settings['asesorias_campania_poster'] ?? 'images/landings/bjca/campaign_april_2026.jpg';
+
         $this->fecha = '2026-04-01';
         $this->refreshSlots();
     }
@@ -165,7 +173,7 @@ class April2026Landing extends Component
                 'tipo' => 'presencial', 
                 'estado' => 'agendada',
                 'costo' => 0.00,
-                'notas' => "[ORIGEN: CAMPAÑA ABRIL 2026]\n\n" . 
+                'notas' => "[ORIGEN: {$this->campaniaNombre}]\n\n" . 
                           "Detalles adicionales:\n- Nombre: " . $this->nombre . "\n- Teléfono: " . $this->telefono . "\n- Asunto: " . $this->asunto,
             ]);
 

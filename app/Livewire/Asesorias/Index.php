@@ -20,6 +20,10 @@ class Index extends Component
     public $filtroTipo = '';
     public $filtroFecha = '';
     public $filtroOrigen = '';
+    public $showCampaignModal = false;
+    public $campaniaNombre = '';
+    public $campaniaMes = '';
+    public $campaniaPoster = '';
 
     public function generarRecibo($asesoriaId)
     {
@@ -165,6 +169,31 @@ class Index extends Component
         } catch (\Exception $e) {
             $this->dispatch('notify-error', 'No se pudo eliminar la asesoría.');
         }
+    }
+
+    public function saveCampaignConfig()
+    {
+        $tenant = auth()->user()->tenant;
+        $settings = $tenant->settings ?? [];
+        
+        $settings['asesorias_campania_nombre'] = $this->campaniaNombre;
+        $settings['asesorias_campania_mes'] = $this->campaniaMes;
+        $settings['asesorias_campania_poster'] = $this->campaniaPoster;
+        
+        $tenant->settings = $settings;
+        $tenant->save();
+        
+        $this->showCampaignModal = false;
+        $this->dispatch('notify', 'Configuración de campaña actualizada correctamente.');
+    }
+
+    public function openCampaignModal()
+    {
+        $settings = auth()->user()->tenant?->settings ?? [];
+        $this->campaniaNombre = $settings['asesorias_campania_nombre'] ?? 'CAMPAÑA ABRIL 2026';
+        $this->campaniaMes = $settings['asesorias_campania_mes'] ?? 'Abril 2026';
+        $this->campaniaPoster = $settings['asesorias_campania_poster'] ?? 'images/landings/bjca/campaign_april_2026.jpg';
+        $this->showCampaignModal = true;
     }
 
     public function render()

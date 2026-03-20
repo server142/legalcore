@@ -39,10 +39,15 @@
             <h2 class="text-2xl font-bold text-gray-800">Control de Asesorías</h2>
             <p class="text-sm text-gray-500">Gestiona citas, seguimientos y conversiones a clientes</p>
         </div>
-        <a href="{{ route('asesorias.create') }}" class="w-full md:w-auto bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition text-center font-bold shadow-sm flex items-center justify-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Nueva Asesoría
-        </a>
+            <div class="flex items-center gap-3">
+                <button type="button" wire:click="openCampaignModal" class="inline-flex items-center justify-center p-2.5 bg-indigo-50 text-indigo-700 rounded-xl hover:bg-indigo-100 transition shadow-sm border border-indigo-100" title="Configurar Landings de Campaña">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+                </button>
+                <button type="button" wire:click="$dispatch('open-modal', 'modal-asesoria')" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 whitespace-nowrap">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                    <span>Nueva Asesoría</span>
+                </button>
+            </div>
     </div>
 
     {{-- Tarjetas de Estadísticas --}}
@@ -380,6 +385,47 @@
             {{ $asesorias->links() }}
         </div>
     </div>
+    {{-- Modal Configuración de Campaña --}}
+    @if($showCampaignModal)
+        <div class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="$set('showCampaignModal', false)"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100">
+                    <div class="bg-indigo-600 px-8 py-6">
+                        <h3 class="text-xl font-black text-white flex items-center gap-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+                            Control de Marketing
+                        </h3>
+                    </div>
+                    <form wire:submit.prevent="saveCampaignConfig">
+                        <div class="px-8 py-8 space-y-6">
+                            <div class="space-y-2">
+                                <label class="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Nombre Técnico de la Campaña</label>
+                                <input type="text" wire:model.defer="campaniaNombre" class="w-full bg-gray-50 border-0 ring-1 ring-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-600 transition" placeholder="Ej: CAMPAÑA MAYO 2026">
+                                <p class="text-[10px] text-gray-400 px-1">Este es el tag que el sistema usará para crear los filtros automáticos.</p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Mes Visible en la Web</label>
+                                <input type="text" wire:model.defer="campaniaMes" class="w-full bg-gray-50 border-0 ring-1 ring-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-600 transition" placeholder="Ej: Mayo 2026">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Ruta de la Imagen del Póster</label>
+                                <input type="text" wire:model.defer="campaniaPoster" class="w-full bg-gray-50 border-0 ring-1 ring-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-600 transition" placeholder="images/landings/bjca/tu_poster.jpg">
+                                <p class="text-[10px] text-gray-400 px-1 italic">Ej: images/landings/bjca/campaign_april_2026.jpg</p>
+                            </div>
+                        </div>
+                        <div class="px-8 pb-8 flex gap-3">
+                            <button type="button" wire:click="$set('showCampaignModal', false)" class="flex-1 px-4 py-4 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Cancelar</button>
+                            <button type="submit" class="flex-[2] px-4 py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-100">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 
 @push('scripts')
