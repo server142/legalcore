@@ -146,6 +146,10 @@
                                             <span class="inline-flex px-1.5 py-0.5 rounded text-[9px] font-black bg-indigo-600 text-white uppercase tracking-tighter" title="{{ $matches[1] }}">
                                                 {{ Str::limit($matches[1], 12) }}
                                             </span>
+                                        @elseif(str_contains($asesoria->notas, 'LANDING CAMPAÑA ABRIL 2026'))
+                                            <span class="inline-flex px-1.5 py-0.5 rounded text-[9px] font-black bg-indigo-600 text-white uppercase tracking-tighter">
+                                                Campaña Abril
+                                            </span>
                                         @endif
                                     </div>
                                     <span class="text-xs text-gray-500 truncate max-w-[200px]">{{ $asesoria->asunto }}</span>
@@ -262,6 +266,8 @@
                             <h3 class="text-base font-bold text-gray-900 leading-tight">{{ $asesoria->nombre_prospecto }}</h3>
                             @if(preg_match('/\[ORIGEN: (.*?)\]/', $asesoria->notas, $matches))
                                 <span class="px-2 py-0.5 rounded text-[8px] font-black bg-indigo-600 text-white uppercase">{{ $matches[1] }}</span>
+                            @elseif(str_contains($asesoria->notas, 'LANDING CAMPAÑA ABRIL 2026'))
+                                <span class="px-2 py-0.5 rounded text-[8px] font-black bg-indigo-600 text-white uppercase">Campaña Abril</span>
                             @endif
                         </div>
                         <div class="text-xs text-gray-500 truncate">{{ $asesoria->asunto }}</div>

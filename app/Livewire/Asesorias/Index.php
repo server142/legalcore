@@ -190,7 +190,14 @@ class Index extends Component
         }
 
         if ($this->filtroOrigen) {
-            $query->where('notas', 'like', "%[ORIGEN: " . $this->filtroOrigen . "]%");
+            if ($this->filtroOrigen === 'CAMPAÑA ABRIL 2026') {
+                $query->where(function($q) {
+                    $q->where('notas', 'like', '%[ORIGEN: CAMPAÑA ABRIL 2026]%')
+                      ->orWhere('notas', 'like', '%AGENDADA DESDE LANDING CAMPAÑA ABRIL 2026%');
+                });
+            } else {
+                $query->where('notas', 'like', "%[ORIGEN: " . $this->filtroOrigen . "]%");
+            }
         }
 
         if ($this->filtroEstado) {
@@ -234,7 +241,7 @@ class Index extends Component
         // Obtener origenes únicos para el filtro
         $origenesDisponibles = Asesoria::query()
             ->where('tenant_id', $user->tenant_id)
-            ->where('notas', 'like', '[ORIGEN: %')
+            ->where('notas', 'like', '%[ORIGEN: %')
             ->get()
             ->map(function($a) {
                 if (preg_match('/\[ORIGEN: (.*?)\]/', $a->notas, $matches)) {
@@ -244,7 +251,15 @@ class Index extends Component
             })
             ->filter()
             ->unique()
-            ->values();
+            ->values()
+            ->toArray();
+
+        // Agregar legado si existe
+        if (Asesoria::where('tenant_id', $user->tenant_id)->where('notas', 'like', '%LANDING CAMPAÑA ABRIL 2026%')->exists()) {
+            if (!in_array('CAMPAÑA ABRIL 2026', $origenesDisponibles)) {
+                $origenesDisponibles[] = 'CAMPAÑA ABRIL 2026';
+            }
+        }
 
         return view('livewire.asesorias.index', [
             'asesorias' => $asesorias,
