@@ -61,34 +61,12 @@
                 </div>
             </div>
 
-            <!-- Dashboard Mockup/Visual -->
-            <div class="mt-20 relative px-4 max-w-5xl mx-auto h-[300px] md:h-[500px]">
-                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-white z-20"></div>
-                <img src="/brain/468ba5b7-527f-4995-b381-7fb1a77c3520/legal_office_premium_1773991171442.png" 
-                     alt="Legal Office" 
-                     class="w-full h-full object-cover rounded-[2rem] md:rounded-[4rem] shadow-2xl border-4 border-white">
-                
-                <!-- Floating Card 1 -->
-                <div class="absolute top-10 -left-6 md:left-20 bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/50 z-30 hidden sm:block animate-bounce-slow">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                        <div>
-                            <div class="text-xs text-gray-500 font-bold uppercase tracking-wider">Disponibilidad hoy</div>
-                            <div class="text-sm font-black text-gray-900">4 Espacios Libres</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Floating Card 2 -->
-                <div class="absolute bottom-40 -right-6 md:right-20 bg-indigo-600 p-6 rounded-2xl shadow-xl z-30 hidden sm:block animate-pulse-slow">
-                    <div class="text-white">
-                        <div class="text-xs opacity-75 font-bold uppercase tracking-wider">Ahorro Estimado</div>
-                        <div class="text-2xl font-black">$1,500 MXN</div>
-                        <div class="text-[10px] opacity-75 italic">Monto de una hora de consultoría regular</div>
-                    </div>
-                </div>
+            <!-- Featured Campaign Poster -->
+            <div class="mt-20 relative px-4 max-w-4xl mx-auto group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                <img src="{{ asset('images/landings/bjca/campaign_april_2026.jpg') }}" 
+                     alt="Asesorías Legales Gratuitas Abril" 
+                     class="relative w-full h-auto rounded-[2rem] shadow-2xl border-2 border-white/50">
             </div>
         </div>
     </section>
