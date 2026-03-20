@@ -19,7 +19,7 @@ class Index extends Component
     public $filtroEstado = '';
     public $filtroTipo = '';
     public $filtroFecha = '';
-    public $soloCampania = false;
+    public $filtroOrigen = '';
 
     public function generarRecibo($asesoriaId)
     {
@@ -189,8 +189,8 @@ class Index extends Component
             });
         }
 
-        if ($this->soloCampania) {
-            $query->where('notas', 'like', '%LANDING CAMPAÑA ABRIL 2026%');
+        if ($this->filtroOrigen) {
+            $query->where('notas', 'like', "%[ORIGEN: " . $this->filtroOrigen . "]%");
         }
 
         if ($this->filtroEstado) {
@@ -231,6 +231,21 @@ class Index extends Component
             'campania_total' => (clone $statsQuery)->where('notas', 'like', '%LANDING CAMPAÑA ABRIL 2026%')->count(),
         ];
 
+        // Obtener origenes únicos para el filtro
+        $origenesDisponibles = Asesoria::query()
+            ->where('tenant_id', $user->tenant_id)
+            ->where('notas', 'like', '[ORIGEN: %')
+            ->get()
+            ->map(function($a) {
+                if (preg_match('/\[ORIGEN: (.*?)\]/', $a->notas, $matches)) {
+                    return $matches[1];
+                }
+                return null;
+            })
+            ->filter()
+            ->unique()
+            ->values();
+
         return view('livewire.asesorias.index', [
             'asesorias' => $asesorias,
             'stats' => $stats,
@@ -238,6 +253,7 @@ class Index extends Component
             'asesoriasBillingEnabled' => $billingEnabled,
             'isAdmin' => $isAdmin,
             'currentUserId' => $user->id,
+            'origenesDisponibles' => $origenesDisponibles,
         ]);
     }
 }

@@ -165,7 +165,8 @@ class April2026Landing extends Component
                 'tipo' => 'presencial', 
                 'estado' => 'agendada',
                 'costo' => 0.00,
-                'notas' => "AGENDADA DESDE LANDING CAMPAÑA ABRIL 2026 (GRATIS).\n\nDetalles adicionales:\n- Nombre: " . $this->nombre . "\n- Teléfono: " . $this->telefono . "\n- Asunto: " . $this->asunto,
+                'notas' => "[ORIGEN: CAMPAÑA ABRIL 2026]\n\n" . 
+                          "Detalles adicionales:\n- Nombre: " . $this->nombre . "\n- Teléfono: " . $this->telefono . "\n- Asunto: " . $this->asunto,
             ]);
 
             // Sync with internal Agenda
