@@ -18,6 +18,8 @@ class TenantAdmin extends Component
     public $eventos;
     public $sjfCount;
     public $dofCount;
+    public $campaignVisits;
+    public $campaignLeads;
     
     // Financial Stats
     public $totalCobrado;
@@ -225,6 +227,15 @@ class TenantAdmin extends Component
 
         $this->sjfCount = \App\Models\SjfPublication::count();
         $this->dofCount = \App\Models\DofPublication::count();
+
+        // Campaign Stats (April 2026)
+        try {
+            $this->campaignVisits = \App\Models\CampaignVisit::where('campaign_name', 'CAMPAÑA ABRIL 2026')->count();
+            $this->campaignLeads = \App\Models\Asesoria::where('notas', 'like', '%[ORIGEN: CAMPAÑA ABRIL 2026]%')->count();
+        } catch (\Throwable $e) {
+            $this->campaignVisits = 0;
+            $this->campaignLeads = 0;
+        }
     }
 
     private function resetFinancials()

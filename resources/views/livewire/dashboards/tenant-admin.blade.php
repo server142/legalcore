@@ -125,6 +125,66 @@
         </div>
         @endcan
     </div>
+    
+    <!-- Campaign Statistics (April 2026) -->
+    <div class="mt-8">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-orange-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5z"/></svg>
+            Impacto Marketing: Campaña Abril 2026
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Visits -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative group overflow-hidden">
+                <div class="flex justify-between items-start relative z-10">
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Visitas Landing</p>
+                        <h3 class="text-3xl font-black text-slate-800">{{ number_format($campaignVisits) }}</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    </div>
+                </div>
+                <div class="mt-4 text-[10px] text-slate-400 font-medium">Tráfico desde Web / Facebook</div>
+                <div class="absolute bottom-0 right-0 w-24 h-24 bg-indigo-50/50 rounded-full blur-3xl -mb-12 -mr-12"></div>
+            </div>
+
+            <!-- Leads -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative group overflow-hidden">
+                <div class="flex justify-between items-start relative z-10">
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Prospectos Agendados</p>
+                        <h3 class="text-3xl font-black text-indigo-600">{{ number_format($campaignLeads) }}</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    </div>
+                </div>
+                <div class="mt-4 text-[10px] text-emerald-600 font-bold">Citas generadas en sistema</div>
+                <div class="absolute bottom-0 right-0 w-24 h-24 bg-emerald-50/50 rounded-full blur-3xl -mb-12 -mr-12"></div>
+            </div>
+
+            <!-- Conversion Rate -->
+            <div class="bg-indigo-600 p-6 rounded-2xl shadow-xl border border-indigo-700 relative group overflow-hidden">
+                <div class="flex justify-between items-start relative z-10">
+                    <div>
+                        <p class="text-[11px] font-bold text-indigo-100 uppercase tracking-wider mb-1">Eficiencia (Citas/Visitas)</p>
+                        <h3 class="text-3xl font-black text-white">
+                            @if($campaignVisits > 0)
+                                {{ number_format(($campaignLeads / $campaignVisits) * 100, 1) }}%
+                            @else
+                                0%
+                            @endif
+                        </h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-white/10 text-white flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    </div>
+                </div>
+                <div class="mt-4 text-[10px] text-indigo-100 font-medium italic">Tasa de conversión real</div>
+                <div class="absolute bottom-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mb-12 -mr-12"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- 3. Main Grid (Charts & Lists) -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
