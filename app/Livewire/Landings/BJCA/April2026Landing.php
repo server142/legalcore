@@ -35,13 +35,13 @@ class April2026Landing extends Component
         'email' => 'required|email|max:255',
         'telefono' => 'required|string|min:10|max:15',
         'asunto' => 'required|string|min:10|max:2000',
-        'fecha' => 'required|date|after_or_equal:today',
+        'fecha' => 'required|date|after_or_equal:2026-04-01|before_or_equal:2026-04-30',
         'hora' => 'required',
     ];
 
     public function mount()
     {
-        $this->fecha = Carbon::today()->addDay()->format('Y-m-d');
+        $this->fecha = '2026-04-01';
         $this->refreshSlots();
     }
 

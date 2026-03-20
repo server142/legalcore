@@ -105,7 +105,7 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
             <table class="min-w-full divide-y divide-gray-200 hidden md:table">
                 <thead class="bg-gray-50">
                     <tr>
@@ -169,71 +169,38 @@
                                 {{ $asesoria->abogado->name }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex items-center justify-end">
+                                <div class="flex items-center justify-end gap-1">
                                     @if($isAdmin || $asesoria->abogado_id == $currentUserId)
-                                        <button type="button" wire:click="edit({{ $asesoria->id }})" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-900 mr-2" title="Editar asesoría">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <button type="button" wire:click="edit({{ $asesoria->id }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition" title="Editar asesoría">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                             </svg>
                                         </button>
-                                        <button type="button" wire:click="delete({{ $asesoria->id }})" wire:confirm="¿Estás seguro de eliminar esta asesoría?" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-900 mr-2" title="Eliminar asesoría">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <button type="button" wire:click="delete({{ $asesoria->id }})" wire:confirm="¿Estás seguro de eliminar esta asesoría?" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition" title="Eliminar asesoría">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                             </svg>
                                         </button>
                                     @endif
                                     
-                                    <button type="button" wire:click="compartirTarjeta({{ $asesoria->id }})" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 mr-2" title="Ver comprobante de cita">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <button type="button" wire:click="compartirTarjeta({{ $asesoria->id }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition" title="Ver comprobante de cita">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M5 11h14M5 7h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2z" />
                                         </svg>
                                     </button>
-
                                     @if(!empty($asesoria->telefono))
-                                        <button type="button" wire:click="compartirTarjetaWhatsApp({{ $asesoria->id }})" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-900 mr-3" title="Enviar comprobante de cita por WhatsApp">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <button type="button" wire:click="compartirTarjetaWhatsApp({{ $asesoria->id }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition" title="WhatsApp">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 20l1.5-4.5A8.5 8.5 0 1112 20a8.4 8.4 0 01-3.6-.8L3 20z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.5 9.8c.2-.7.6-1.2 1.1-1.4.4-.2 1-.1 1.4.2.6.5 1.2 1.2 1.7 1.8.3.4.4 1 .2 1.4-.2.5-.7.9-1.4 1.1.7 1.1 1.6 2 2.7 2.7.2-.7.6-1.2 1.1-1.4.4-.2 1-.1 1.4.2.6.5 1.2 1.2 1.7 1.8.3.4.4 1 .2 1.4-.4.8-1.2 1.3-2.4 1.4-1.5.2-3.6-.7-5.6-2.7-2-2-2.9-4.1-2.7-5.6.1-1.2.6-2 1.4-2.4z" />
                                             </svg>
                                         </button>
                                     @endif
-
-                                    @if($canManageBilling && $asesoriasBillingEnabled)
-                                        @if($asesoria->pagado)
-                                            @if($asesoria->factura_id)
-                                                <a href="{{ route('reportes.factura', $asesoria->factura_id) }}" target="_blank" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 mr-2" title="Abrir recibo (PDF)">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3h7l3 3v15a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3v4h4" />
-                                                    </svg>
-                                                </a>
-                                            @else
-                                                <button type="button" wire:click="generarRecibo({{ $asesoria->id }})" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-indigo-800 mr-2" title="Generar recibo (PDF)">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3h7l3 3v15a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3v4h4" />
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v6m-3-3h6" />
-                                                    </svg>
-                                                </button>
-                                            @endif
-
-                                            @if(!empty($asesoria->telefono))
-                                                @php
-                                                    $phone = preg_replace('/\D+/', '', $asesoria->telefono);
-                                                    $msg = "Hola, te comparto el recibo de tu asesoría ({$asesoria->folio}).";
-                                                    if ($asesoria->factura_id) {
-                                                        $msg .= " Puedes descargarlo aquí: " . route('reportes.factura', $asesoria->factura_id);
-                                                    }
-                                                    $wa = "https://wa.me/{$phone}?text=" . urlencode($msg);
-                                                @endphp
-                                                <a href="{{ $wa }}" target="_blank" rel="noopener" class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-900" title="Enviar recibo por WhatsApp">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 20l1.5-4.5A8.5 8.5 0 1112 20a8.4 8.4 0 01-3.6-.8L3 20z" />
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.5 9.8c.2-.7.6-1.2 1.1-1.4.4-.2 1-.1 1.4.2.6.5 1.2 1.2 1.7 1.8.3.4.4 1 .2 1.4-.2.5-.7.9-1.4 1.1.7 1.1 1.6 2 2.7 2.7.2-.7.6-1.2 1.1-1.4.4-.2 1-.1 1.4.2.6.5 1.2 1.2 1.7 1.8.3.4.4 1 .2 1.4-.4.8-1.2 1.3-2.4 1.4-1.5.2-3.6-.7-5.6-2.7-2-2-2.9-4.1-2.7-5.6.1-1.2.6-2 1.4-2.4z" />
-                                                    </svg>
-                                                </a>
-                                            @endif
-                                        @endif
+                                    @if($canManageBilling && $asesoriasBillingEnabled && $asesoria->pagado)
+                                         @if($asesoria->factura_id)
+                                            <a href="{{ route('reportes.factura', $asesoria->factura_id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition" title="Recibo">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3h7l3 3v15a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
+                                            </a>
+                                         @endif
                                     @endif
                                 </div>
                             </td>

@@ -212,7 +212,7 @@
                                 <div class="grid md:grid-cols-2 gap-8">
                                     <div class="space-y-2">
                                         <label class="text-xs font-black text-indigo-500 uppercase tracking-widest px-1">Fecha de preferencia</label>
-                                        <input type="date" wire:model.live="fecha" class="w-full bg-white border-0 ring-1 ring-gray-200 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-indigo-600 transition shadow-sm h-16 text-gray-900" required>
+                                        <input type="date" wire:model.live="fecha" min="2026-04-01" max="2026-04-30" class="w-full bg-white border-0 ring-1 ring-gray-200 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-indigo-600 transition shadow-sm h-16 text-gray-900" required>
                                         @error('fecha') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                                     </div>
                                     <div class="space-y-2">
