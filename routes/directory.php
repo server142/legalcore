@@ -25,5 +25,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', \App\Livewire\Directory\Dashboard::class)->name('directory.dashboard');
 });
 
+// Rutas de Sistema para el Subdominio (Asegurar que no las atrape el comodín de perfil)
+Route::get('/login', function () {
+    return redirect()->route('login');
+});
+
+Route::get('/register', function () {
+    // Redirigir al registro global manteniendo los parámetros (como el plan)
+    return redirect()->to(route('register', request()->query()));
+});
+
 // Perfil individual de abogado (COMODÍN AL FINAL)
-Route::get('/{profile}', App\Livewire\PublicDirectoryProfile::class)->name('directory.show');
+// Se añade una restricción para que no atrape palabras clave del sistema
+Route::get('/{profile}', App\Livewire\PublicDirectoryProfile::class)
+    ->where('profile', '^(?!login|register|admin|dashboard|unete).*$')
+    ->name('directory.show');
