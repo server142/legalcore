@@ -24,7 +24,8 @@ new #[Layout('layouts.guest')] class extends Component
 
     public function mount()
     {
-        $this->planSlug = request()->query('plan', 'trial');
+        $defaultPlan = request()->getHost() === 'abogados.diogenes.com.mx' ? 'directory-free' : 'trial';
+        $this->planSlug = request()->query('plan', $defaultPlan);
     }
 
     #[Url]
