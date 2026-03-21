@@ -29,6 +29,46 @@ class CheckSubscription
             return $next($request);
         }
 
+        // 2.1 AISLAMIENTO DE DIRECTORIO: Los usuarios que solo tienen plan de directorio NO pueden acceder a Diogenes (Expedientes, Agenda, etc)
+        if (str_contains($tenant->plan, 'directory')) {
+            $allowedDirectoryRoutes = [
+                'directory.*',
+                'profile',
+                'profile.directory',
+                'billing.*',
+                'subscription.*',
+                'logout',
+                'legal.view',
+                'legal.acceptance',
+                'privacy',
+                'terms',
+                'welcome',
+                'features',
+                'contact',
+                'help',
+                'asesorias.public',
+                'asesorias.public.qr',
+                'landings.*',
+                'password.*'
+            ];
+            
+            if ($request->is('livewire/*') || $request->is('logout')) {
+                return $next($request);
+            }
+
+            foreach ($allowedDirectoryRoutes as $route) {
+                if ($request->routeIs($route)) {
+                    return $next($request);
+                }
+            }
+            
+            if ($request->routeIs('dashboard')) {
+                return redirect()->route('directory.dashboard');
+            }
+
+            return redirect()->route('directory.dashboard')->with('error', 'Acceso denegado: Tu plan es exclusivo del Directorio. Suscríbete a un plan de Despacho para desbloquear la gestión de expedientes y agenda.');
+        }
+
         // 2.5 EXENCIÓN: Si el despacho está marcado como exento o tiene un plan vitalicio
         if ($tenant && ($tenant->plan === 'exento' || $tenant->plan === 'lifetime' || $tenant->is_active && $tenant->subscription_ends_at === null && $tenant->plan !== 'trial')) {
             return $next($request);
