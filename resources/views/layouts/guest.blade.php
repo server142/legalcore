@@ -21,7 +21,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                padding: 1.5rem;
+                padding: 2rem 1rem;
                 min-height: 100vh;
             }
             
@@ -30,40 +30,36 @@
                 border-radius: 4rem;
                 width: 100%;
                 max-width: 1100px;
-                height: 85vh;
-                min-height: 600px;
                 position: relative;
                 box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.03);
                 display: flex;
                 flex-direction: column;
-                overflow: hidden;
+                min-height: calc(100vh - 4rem);
             }
 
             .inner-form-card {
                 background: white;
                 border-radius: 2.5rem;
                 width: 100%;
-                max-width: 420px;
-                padding: 2.5rem;
-                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+                max-width: 440px;
+                padding: 2rem;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
                 position: relative;
                 z-index: 20;
+                margin: 2rem 0;
             }
 
             .illustration-layer {
                 position: absolute;
-                bottom: 10%;
-                left: 0;
-                right: 0;
-                display: flex;
-                justify-content: center;
+                bottom: 5%;
+                left: 5%;
                 pointer-events: none;
                 z-index: 10;
             }
             
             .illustration-layer img {
-                max-height: 400px;
-                opacity: 0.9;
+                max-height: 320px;
+                opacity: 1;
             }
 
             .btn-primary-custom {
@@ -133,23 +129,23 @@
                 </div>
 
                 <!-- Central Content -->
-                <div class="flex-1 flex items-center justify-center p-6 relative">
+                <div class="flex-1 flex items-center justify-center p-4 relative min-h-[500px]">
                     
+                    <!-- Illustration Layer (Background - Floating Left) -->
+                    <div class="illustration-layer hidden md:block">
+                        <img src="{{ asset('assets/img/auth-illustration.png') }}" alt="Illustration">
+                    </div>
+
                     <!-- Form Card (Floating on Top) -->
                     <div class="inner-form-card">
                         {{ $slot }}
                     </div>
 
-                    <!-- Illustration Layer (Background) -->
-                    <div class="illustration-layer">
-                        <img src="{{ asset('assets/img/auth-illustration.png') }}" alt="Illustration">
-                    </div>
-
                 </div>
 
                 <!-- Corner Texts / Footer inside -->
-                <div class="absolute bottom-8 right-12 text-[10px] font-bold text-slate-300 pointer-events-none">
-                    DIOGENES &copy; 2026
+                <div class="p-8 text-center md:text-right">
+                    <span class="text-[10px] font-bold text-slate-300 pointer-events-none uppercase tracking-widest">DIOGENES &copy; 2026 . Todos los derechos reservados</span>
                 </div>
 
             </div>
