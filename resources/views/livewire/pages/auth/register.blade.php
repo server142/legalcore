@@ -39,7 +39,6 @@ new #[Layout('layouts.guest')] class extends Component
     {
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'company_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,NULL,id,deleted_at,NULL'],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
             'accepted_legal' => ['accepted'],
@@ -50,7 +49,9 @@ new #[Layout('layouts.guest')] class extends Component
         DB::beginTransaction();
 
         try {
-            // (existing plan selection and tenant creation code...)
+            // Generar nombre de empresa temporal
+            $companyName = 'Despacho de ' . $validated['name'];
+            
             $selectedPlan = Plan::where('slug', $this->planSlug)->first();
             if (!$selectedPlan) { $selectedPlan = Plan::where('slug', 'trial')->first(); }
             
@@ -63,8 +64,8 @@ new #[Layout('layouts.guest')] class extends Component
             }
             
             $tenant = Tenant::create([
-                'name' => $validated['company_name'],
-                'slug' => Str::slug($validated['company_name']) . '-' . Str::random(6),
+                'name' => $companyName,
+                'slug' => Str::slug($companyName) . '-' . Str::random(6),
                 'plan' => $selectedPlan->slug,
                 'plan_id' => $selectedPlan->id,
                 'trial_ends_at' => $selectedPlan->slug === 'trial' ? now()->addDays($selectedPlan->duration_in_days ?? 15) : null,
@@ -136,16 +137,16 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 @php
-    $maxWidth = 'sm:max-w-xl'; 
+    $maxWidth = 'sm:max-w-xl md:max-w-4xl'; 
 @endphp
 
 <div>
     <div class="mb-10 text-center">
         <h2 class="text-3xl font-bold text-slate-900 tracking-tight mb-2">Crear cuenta</h2>
         @if($planSlug === 'directory-free')
-            <p class="text-xs font-black text-[#f07e3e] uppercase tracking-widest bg-orange-500/5 py-2 rounded-full inline-block px-4 border border-orange-500/10 mb-2">Plan Directorio Gratuito</p>
+            <p class="text-xs font-black text-indigo-600 uppercase tracking-widest bg-indigo-500/5 py-2 rounded-full inline-block px-4 border border-indigo-500/10 mb-2">Plan Directorio Gratuito</p>
         @endif
-        <p class="text-sm text-slate-500 font-medium tracking-wide">Únete a nuestra plataforma hoy mismo</p>
+        <p class="text-sm text-slate-500 font-medium tracking-wide">Comienza tu prueba gratuita hoy</p>
     </div>
 
     @if (session('error'))
@@ -155,35 +156,20 @@ new #[Layout('layouts.guest')] class extends Component
         </div>
     @endif
 
-    <form wire:submit="register" class="space-y-5">
+    <form wire:submit="register" class="space-y-4">
         <input type="hidden" wire:model="planSlug">
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <!-- Name -->
-            <div class="space-y-1">
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                    </div>
-                    <input wire:model="name" id="name" 
-                        class="block w-full pl-11 pr-4 py-3.5 input-custom rounded-2xl text-sm placeholder-slate-400" 
-                        type="text" name="name" required autofocus placeholder="Nombre completo" />
+        <!-- Name -->
+        <div class="space-y-1">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                 </div>
-                <x-input-error :messages="$errors->get('name')" class="mt-1 text-[10px]" />
+                <input wire:model="name" id="name" 
+                    class="block w-full pl-11 pr-4 py-4 input-custom rounded-2xl text-sm placeholder-slate-400" 
+                    type="text" name="name" required autofocus placeholder="Tu nombre completo" />
             </div>
-
-            <!-- Company Name -->
-            <div class="space-y-1">
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                    </div>
-                    <input wire:model="company_name" id="company_name" 
-                        class="block w-full pl-11 pr-4 py-3.5 input-custom rounded-2xl text-sm placeholder-slate-400" 
-                        type="text" name="company_name" required placeholder="Tu despacho" />
-                </div>
-                <x-input-error :messages="$errors->get('company_name')" class="mt-1 text-[10px]" />
-            </div>
+            <x-input-error :messages="$errors->get('name')" class="mt-1 text-[10px]" />
         </div>
 
         <!-- Email Address -->
@@ -193,27 +179,25 @@ new #[Layout('layouts.guest')] class extends Component
                     <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                 </div>
                 <input wire:model="email" id="email" 
-                    class="block w-full pl-11 pr-4 py-3.5 input-custom rounded-2xl text-sm placeholder-slate-400" 
+                    class="block w-full pl-11 pr-4 py-4 input-custom rounded-2xl text-sm placeholder-slate-400" 
                     type="email" name="email" required placeholder="Correo electrónico" />
             </div>
             <x-input-error :messages="$errors->get('email')" class="mt-1 text-[10px]" />
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Password -->
             <div class="space-y-1">
-                <div class="relative">
-                    <input wire:model="password" id="password" 
-                        class="block w-full px-4 py-3.5 input-custom rounded-2xl text-sm placeholder-slate-400" 
-                        type="password" name="password" required placeholder="Contraseña" />
-                </div>
+                <input wire:model="password" id="password" 
+                    class="block w-full px-4 py-4 input-custom rounded-2xl text-sm placeholder-slate-400" 
+                    type="password" name="password" required placeholder="Contraseña" />
                 <x-input-error :messages="$errors->get('password')" class="mt-1 text-[10px]" />
             </div>
 
             <!-- Confirm Password -->
             <div class="space-y-1">
                 <input wire:model="password_confirmation" id="password_confirmation" 
-                    class="block w-full px-4 py-3.5 input-custom rounded-2xl text-sm placeholder-slate-400" 
+                    class="block w-full px-4 py-4 input-custom rounded-2xl text-sm placeholder-slate-400" 
                     type="password" name="password_confirmation" required placeholder="Confirmar" />
                 <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1 text-[10px]" />
             </div>
@@ -222,9 +206,9 @@ new #[Layout('layouts.guest')] class extends Component
         <!-- Legal Documents Acceptance -->
         <div class="pt-2">
             <label class="flex items-center cursor-pointer group">
-                <input type="checkbox" wire:model="accepted_legal" class="rounded border-slate-300 text-[#f07e3e] focus:ring-[#f07e3e]/20">
+                <input type="checkbox" wire:model="accepted_legal" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600/20">
                 <span class="ms-3 text-[10px] font-semibold text-slate-500 group-hover:text-slate-700 transition-colors leading-tight">
-                    Acepto el <a href="{{ route('privacy') }}" target="_blank" class="text-[#f07e3e] font-bold">Aviso de Privacidad</a> y los <a href="{{ route('terms') }}" target="_blank" class="text-[#f07e3e] font-bold">Términos y Condiciones</a>
+                    Acepto el <a href="{{ route('privacy') }}" target="_blank" class="text-indigo-600 font-bold">Aviso de Privacidad</a> y los <a href="{{ route('terms') }}" target="_blank" class="text-indigo-600 font-bold">Términos y Condiciones</a>
                 </span>
             </label>
             <x-input-error :messages="$errors->get('accepted_legal')" class="mt-1 text-[10px]" />
@@ -233,11 +217,11 @@ new #[Layout('layouts.guest')] class extends Component
         <div class="pt-4 flex flex-col gap-4">
             <button type="submit" class="w-full py-4 btn-primary-custom rounded-2xl font-bold text-sm shadow-lg active:scale-95 transition-all" wire:loading.attr="disabled">
                 <span wire:loading.remove wire:target="register">Registrarse</span>
-                <span wire:loading wire:target="register">Validando...</span>
+                <span wire:loading wire:target="register">Procesando...</span>
             </button>
             <div class="text-center">
                 <a class="text-xs font-bold text-slate-400 hover:text-slate-600 transition" href="{{ route('login') }}" wire:navigate>
-                    ¿Ya tienes una cuenta? <span class="text-[#f07e3e]">Entra aquí</span>
+                    ¿Ya tienes una cuenta? <span class="text-indigo-600">Entra aquí</span>
                 </a>
             </div>
         </div>

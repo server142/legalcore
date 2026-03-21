@@ -62,12 +62,12 @@ new #[Layout('layouts.guest')] class extends Component
 
         <div class="flex items-center justify-between px-1">
             <label for="remember" class="inline-flex items-center cursor-pointer group">
-                <input wire:model="form.remember" id="remember" type="checkbox" class="rounded border-slate-300 text-[#f07e3e] focus:ring-[#f07e3e]/20" name="remember">
+                <input wire:model="form.remember" id="remember" type="checkbox" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600/20" name="remember">
                 <span class="ms-2 text-xs font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">Recordarme</span>
             </label>
 
             @if (Route::has('password.request'))
-                <a class="text-xs font-bold text-slate-400 hover:text-[#f07e3e] transition" href="{{ route('password.request') }}" wire:navigate>
+                <a class="text-xs font-bold text-slate-400 hover:text-indigo-600 transition" href="{{ route('password.request') }}" wire:navigate>
                     ¿Olvidaste tu contraseña?
                 </a>
             @endif
@@ -82,7 +82,7 @@ new #[Layout('layouts.guest')] class extends Component
         <div class="pt-4 text-center">
             <p class="text-xs font-semibold text-slate-500">
                 ¿Aún no tienes cuenta? 
-                <a href="{{ route('register') }}" class="text-[#f07e3e] font-bold hover:underline transition" wire:navigate>Regístrate aquí</a>
+                <a href="{{ route('register') }}" class="text-indigo-600 font-bold hover:underline transition" wire:navigate>Regístrate aquí</a>
             </p>
         </div>
     </form>

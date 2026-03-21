@@ -17,58 +17,72 @@
         
         <style>
             .premium-bg {
-                background-color: #f3f4f6;
-                background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
-                background-size: 20px 20px;
+                background-color: #f8fafc;
+                background-image: url('{{ asset('assets/img/auth-bg.png') }}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
             }
             
             .auth-card {
-                background: #ffffff;
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-                border: 1px solid #f1f5f9;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.05), 0 30px 60px -30px rgba(0, 0, 0, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.5);
             }
 
             .btn-primary-custom {
-                background: #f07e3e;
+                background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
                 color: white;
-                box-shadow: 0 10px 15px -3px rgba(240, 126, 62, 0.2);
+                box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.3);
             }
 
             .btn-primary-custom:hover {
-                background: #e06c2c;
+                background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
                 transform: translateY(-1px);
+                box-shadow: 0 15px 25px -5px rgba(79, 70, 229, 0.4);
             }
 
             .input-custom {
-                background: #f8fafc;
-                border: 1.5px solid #f1f5f9;
+                background: #f1f5f9;
+                border: 2px solid transparent;
                 color: #1e293b;
+                transition: all 0.3s ease;
             }
 
             .input-custom:focus {
                 background: #ffffff;
-                border-color: #f07e3e;
+                border-color: #4f46e5;
                 ring: 0;
                 outline: none;
-                box-shadow: 0 0 0 4px rgba(240, 126, 62, 0.1);
+                box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
             }
         </style>
     </head>
     <body class="font-sans antialiased text-slate-800">
         <div class="min-h-screen flex flex-col sm:justify-center items-center py-12 premium-bg relative px-4">
             
-            <div class="w-full {{ $maxWidth ?? 'sm:max-w-md' }} relative z-10 auth-card rounded-[2rem] p-8 sm:p-12">
-                <div class="flex flex-col items-center mb-10">
-                    <!-- Modern Clean Logo -->
-                    <a href="/" class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-[#f07e3e] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-500/10">
-                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
-                        </div>
-                        <span class="text-2xl font-black tracking-tighter text-slate-900">Diogenes<span class="text-[#f07e3e]">.</span></span>
-                    </a>
+            <div class="w-full {{ $maxWidth ?? 'sm:max-w-xl md:max-w-4xl' }} relative z-10 auth-card rounded-[3rem] p-8 sm:p-16 flex flex-col md:flex-row gap-16 items-center">
+                
+                <div class="hidden md:flex flex-1 flex-col justify-center">
+                    <div class="mb-12">
+                        <!-- Img Logo Diogenes -->
+                        <img src="{{ asset('favicon.png') }}" alt="Diogenes Logo" class="w-48 h-auto mb-6">
+                        <h1 class="text-4xl font-black text-slate-900 leading-tight">Gestión Jurídica<br><span class="text-indigo-600">Inteligente</span></h1>
+                    </div>
+                    <p class="text-slate-500 font-medium mb-8">El sistema de gestión más completo para abogados que buscan eficiencia y organización en un solo lugar.</p>
+                    <div class="flex items-center gap-4 text-xs font-bold text-slate-400">
+                        <span class="flex items-center gap-1"><svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> 15 Días Prueba Gratis</span>
+                        <span class="flex items-center gap-1"><svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> Soporte Premium</span>
+                    </div>
                 </div>
 
-                {{ $slot }}
+                <div class="w-full md:w-[450px]">
+                    <div class="md:hidden flex flex-col items-center mb-10">
+                        <img src="{{ asset('favicon.png') }}" alt="Diogenes Logo" class="w-32 h-auto">
+                    </div>
+                    {{ $slot }}
+                </div>
             </div>
             
             <!-- Footer Links -->
