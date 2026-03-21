@@ -135,94 +135,116 @@ new #[Layout('layouts.guest')] class extends Component
     }
 }; ?>
 
+@php
+    $maxWidth = 'sm:max-w-xl'; // Hacer el contenedor un poco más ancho para el registro
+@endphp
+
 <div class="w-full">
-    <div class="mb-6 text-center">
-        <h2 class="text-2xl font-bold text-gray-900">Crear cuenta</h2>
+    <div class="mb-10 text-center">
+        <h2 class="text-3xl font-black text-white tracking-tight mb-2">Crear Cuenta</h2>
         @if($planSlug === 'directory-free')
-            <p class="text-sm text-indigo-600 font-bold">Plan Directorio Gratuito</p>
+            <p class="text-xs font-black text-indigo-400 uppercase tracking-widest bg-indigo-500/10 py-2 rounded-full inline-block px-4 border border-indigo-500/20">Plan Directorio Gratuito</p>
         @else
-            <p class="text-sm text-gray-600">Regístrate para comenzar</p>
+            <p class="text-sm text-slate-400 font-medium tracking-wide">Comienza tu viaje con Diogenes</p>
         @endif
     </div>
 
     @if (session('error'))
-        <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-md">
+        <div class="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-2xl flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             {{ session('error') }}
         </div>
     @endif
 
-    <form wire:submit="register">
+    <form wire:submit="register" class="space-y-6">
         <input type="hidden" wire:model="planSlug">
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Nombre Completo')" />
-            <x-text-input wire:model="name" id="name" class="block mt-1 w-full" type="text" name="name" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
-        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Name -->
+            <div class="space-y-1">
+                <label for="name" class="block text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Nombre Completo</label>
+                <div class="relative group">
+                    <input wire:model="name" id="name" 
+                        class="block w-full px-4 py-4 bg-slate-800/50 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all input-glow" 
+                        type="text" name="name" required autofocus placeholder="Ej. Juan Pérez" />
+                </div>
+                <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            </div>
 
-        <!-- Company Name -->
-        <div class="mt-4">
-            <x-input-label for="company_name" :value="__('Nombre de la Empresa/Despacho')" />
-            <x-text-input wire:model="company_name" id="company_name" class="block mt-1 w-full" type="text" name="company_name" required autocomplete="organization" />
-            <x-input-error :messages="$errors->get('company_name')" class="mt-2" />
+            <!-- Company Name -->
+            <div class="space-y-1">
+                <label for="company_name" class="block text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Empresa / Despacho</label>
+                <div class="relative group">
+                    <input wire:model="company_name" id="company_name" 
+                        class="block w-full px-4 py-4 bg-slate-800/50 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all input-glow" 
+                        type="text" name="company_name" required placeholder="Nombre de tu firma" />
+                </div>
+                <x-input-error :messages="$errors->get('company_name')" class="mt-2" />
+            </div>
         </div>
 
         <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Correo Electrónico')" />
-            <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autocomplete="username" />
+        <div class="space-y-1">
+            <label for="email" class="block text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Correo Electrónico profesional</label>
+            <div class="relative group">
+                <input wire:model="email" id="email" 
+                    class="block w-full px-4 py-4 bg-slate-800/50 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all input-glow" 
+                    type="email" name="email" required placeholder="tu@email.com" />
+            </div>
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Contraseña')" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Password -->
+            <div class="space-y-1">
+                <label for="password" class="block text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Contraseña</label>
+                <div class="relative group">
+                    <input wire:model="password" id="password" 
+                        class="block w-full px-4 py-4 bg-slate-800/50 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all input-glow" 
+                        type="password" name="password" required placeholder="••••••••" />
+                </div>
+                <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            </div>
 
-            <x-text-input wire:model="password" id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirmar Contraseña')" />
-
-            <x-text-input wire:model="password_confirmation" id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            <!-- Confirm Password -->
+            <div class="space-y-1">
+                <label for="password_confirmation" class="block text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Confirmar</label>
+                <div class="relative group">
+                    <input wire:model="password_confirmation" id="password_confirmation" 
+                        class="block w-full px-4 py-4 bg-slate-800/50 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all input-glow" 
+                        type="password" name="password_confirmation" required placeholder="••••••••" />
+                </div>
+                <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            </div>
         </div>
 
         <!-- Legal Documents Acceptance -->
-        <div class="mt-4">
-            <label class="flex items-center">
-                <input type="checkbox" wire:model="accepted_legal" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                <span class="ml-2 text-sm text-gray-600">
-                    He leído y acepto el <a href="{{ route('privacy') }}" target="_blank" class="text-indigo-600 font-bold hover:underline">Aviso de Privacidad</a> y los <a href="{{ route('terms') }}" target="_blank" class="text-indigo-600 font-bold hover:underline">Términos y Condiciones</a>
+        <div class="pt-2">
+            <label class="flex items-start cursor-pointer group">
+                <div class="relative flex items-center mt-0.5">
+                    <input type="checkbox" wire:model="accepted_legal" class="sr-only peer">
+                    <div class="w-5 h-5 border-2 border-slate-700 rounded-md peer-checked:bg-indigo-600 peer-checked:border-indigo-600 transition-all flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                </div>
+                <span class="ml-3 text-xs leading-relaxed text-slate-500 group-hover:text-slate-400 transition-colors">
+                    He leído y acepto el <a href="{{ route('privacy') }}" target="_blank" class="text-indigo-400 font-bold hover:underline">Aviso de Privacidad</a> y los <a href="{{ route('terms') }}" target="_blank" class="text-indigo-400 font-bold hover:underline">Términos y Condiciones</a>
                 </span>
             </label>
             <x-input-error :messages="$errors->get('accepted_legal')" class="mt-2" />
         </div>
 
-        <div class="flex items-center justify-end mt-6">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}" wire:navigate>
-                {{ __('¿Ya tienes cuenta?') }}
-            </a>
-
-            <x-primary-button class="ms-4" wire:loading.attr="disabled">
-                <span wire:loading.remove wire:target="register">{{ __('Registrarse') }}</span>
-                <span wire:loading wire:target="register" class="flex items-center gap-2">
-                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Procesando...
+        <div class="pt-6 flex flex-col md:flex-row items-center gap-6">
+            <button type="submit" class="w-full md:flex-1 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-sm tracking-widest uppercase shadow-lg shadow-indigo-600/20 active:scale-95 transition-all" wire:loading.attr="disabled">
+                <span wire:loading.remove wire:target="register">Registrarme Ahora</span>
+                <span wire:loading wire:target="register" class="flex items-center justify-center gap-2">
+                    <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Validando datos...
                 </span>
-            </x-primary-button>
+            </button>
+            <a class="text-xs font-bold text-slate-500 hover:text-white transition" href="{{ route('login') }}" wire:navigate>
+                ¿Ya tienes una cuenta?
+            </a>
         </div>
     </form>
 </div>
