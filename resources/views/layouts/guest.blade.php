@@ -27,10 +27,10 @@
             
             .app-container {
                 background: white;
-                border-radius: 4rem;
+                border-radius: 2rem;
                 width: 100%;
                 max-width: 1000px;
-                height: 650px; /* Tamaño estable garantizado */
+                min-height: 80vh;
                 position: relative;
                 box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.04);
                 display: flex;
@@ -38,30 +38,34 @@
                 overflow: hidden;
             }
 
+            @media (min-width: 768px) {
+                .app-container {
+                    border-radius: 4rem;
+                }
+            }
+
             .inner-form-card {
                 background: white;
-                border-radius: 2.5rem;
+                border-radius: 2rem;
                 width: 100%;
-                max-width: 400px;
-                padding: 2.5rem;
+                max-width: 420px;
+                padding: 2.5rem 2rem;
                 box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
+                position: relative;
                 z-index: 30;
+                margin: 2rem auto;
             }
 
             .illustration-layer {
                 position: absolute;
-                bottom: 8%;
-                left: 8%;
+                bottom: 0;
+                left: 5%;
                 pointer-events: none;
                 z-index: 10;
             }
             
             .illustration-layer img {
-                height: 280px;
+                height: 320px;
                 width: auto;
             }
 
@@ -130,39 +134,33 @@
                 </div>
 
                 <!-- Central Content -->
-                <div class="flex-1 relative">
+                <div class="flex-1 flex items-center justify-center relative p-4 md:p-8">
                     
                     <!-- Illustration Layer (Background - Floating Left) -->
-                    <div class="illustration-layer hidden md:block">
+                    <div class="illustration-layer hidden lg:block">
                         <img src="{{ asset('assets/img/auth-illustration.png') }}" alt="Illustration">
                     </div>
 
-                    <!-- Form Card (Floating on Top - Centered Absoluto) -->
+                    <!-- Form Card (Floating, Normal Flow) -->
                     <div class="inner-form-card">
                         {{ $slot }}
                     </div>
 
                     <!-- Right Illustration Elements (Deco) -->
-                    <div class="absolute bottom-10 right-10 flex flex-col items-end gap-2 pointer-events-none">
+                    <div class="absolute bottom-10 right-10 flex-col items-end gap-2 pointer-events-none hidden lg:flex">
                         <div class="w-24 h-32 bg-yellow-400 opacity-20 rounded-xl"></div>
                         <div class="w-16 h-16 bg-indigo-600 opacity-10 rounded-xl"></div>
                     </div>
 
                 </div>
 
-                <!-- Corner Texts / Footer inside -->
-                <div class="absolute bottom-6 left-1/2 -translate-x-1/2">
-                    <span class="text-[9px] font-bold text-slate-200 uppercase tracking-widest whitespace-nowrap">DIOGENES &copy; 2026 . GESTIÓN JURÍDICA INTELIGENTE</span>
+                <!-- Footer inside -->
+                <div class="w-full text-center p-6 mt-auto relative z-20">
+                    <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">DIOGENES &copy; {{ date('Y') }} . GESTIÓN JURÍDICA INTELIGENTE</span>
                 </div>
 
             </div>
-            
-            <!-- Footer Links -->
-            <div class="mt-8 text-center text-xs text-white/80 relative z-10">
-                <p>
-                    &copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. Todos los derechos reservados.
-                </p>
-            </div>
+
         </div>
     </body>
 </html>
