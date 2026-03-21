@@ -60,26 +60,26 @@
         </style>
     </head>
     <body class="font-sans antialiased text-slate-800">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center py-12 premium-bg relative px-4">
+        <div class="min-h-screen flex flex-col sm:justify-center items-center py-6 premium-bg relative px-4">
             
-            <div class="w-full {{ $maxWidth ?? 'sm:max-w-xl md:max-w-4xl' }} relative z-10 auth-card rounded-[3rem] p-8 sm:p-16 flex flex-col md:flex-row gap-16 items-center">
+            <div class="w-full {{ $maxWidth ?? 'sm:max-w-xl md:max-w-4xl' }} relative z-10 auth-card rounded-[2.5rem] p-8 sm:p-12 flex flex-col md:flex-row gap-8 lg:gap-16 items-center">
                 
                 <div class="hidden md:flex flex-1 flex-col justify-center">
-                    <div class="mb-12">
+                    <div class="mb-8">
                         <!-- Img Logo Diogenes -->
-                        <img src="{{ asset('favicon.png') }}" alt="Diogenes Logo" class="w-48 h-auto mb-6">
-                        <h1 class="text-4xl font-black text-slate-900 leading-tight">Gestión Jurídica<br><span class="text-indigo-600">Inteligente</span></h1>
+                        <img src="{{ asset('favicon.png') }}" alt="Diogenes Logo" class="w-32 h-auto mb-6">
+                        <h1 class="text-3xl font-black text-slate-900 leading-tight">Gestión Jurídica<br><span class="text-indigo-600">Inteligente</span></h1>
                     </div>
-                    <p class="text-slate-500 font-medium mb-8">El sistema de gestión más completo para abogados que buscan eficiencia y organización en un solo lugar.</p>
-                    <div class="flex items-center gap-4 text-xs font-bold text-slate-400">
-                        <span class="flex items-center gap-1"><svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> 15 Días Prueba Gratis</span>
-                        <span class="flex items-center gap-1"><svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> Soporte Premium</span>
+                    <p class="text-sm text-slate-500 font-medium mb-6">Optimiza tu firma con la plataforma líder para abogados mexicanos.</p>
+                    <div class="flex items-center gap-4 text-[10px] font-bold text-slate-400">
+                        <span class="flex items-center gap-1"><svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> 15 DÍAS PRUEBA GRATIS</span>
+                        <span class="flex items-center gap-1"><svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> SOPORTE PREMIUM</span>
                     </div>
                 </div>
 
-                <div class="w-full md:w-[450px]">
-                    <div class="md:hidden flex flex-col items-center mb-10">
-                        <img src="{{ asset('favicon.png') }}" alt="Diogenes Logo" class="w-32 h-auto">
+                <div class="w-full md:w-[400px]">
+                    <div class="md:hidden flex flex-col items-center mb-8">
+                        <img src="{{ asset('favicon.png') }}" alt="Diogenes Logo" class="w-24 h-auto">
                     </div>
                     {{ $slot }}
                 </div>

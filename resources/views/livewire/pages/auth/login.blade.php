@@ -25,15 +25,14 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
-    <div class="mb-8 text-center">
-        <h2 class="text-3xl font-bold text-slate-900 tracking-tight mb-2">Iniciar sesión</h2>
-        <p class="text-sm text-slate-500 font-medium">Por favor ingresa tus datos para continuar</p>
+    <div class="mb-6 text-center">
+        <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Iniciar sesión</h2>
     </div>
 
     <!-- Session Status -->
-    <x-auth-session-status class="mb-6" :status="session('status')" />
+    <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form wire:submit="login" class="space-y-5">
+    <form wire:submit="login" class="space-y-4">
         <!-- Email Address -->
         <div class="space-y-1">
             <div class="relative">
@@ -41,10 +40,10 @@ new #[Layout('layouts.guest')] class extends Component
                     <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206" /></svg>
                 </div>
                 <input wire:model="form.email" id="email" 
-                    class="block w-full pl-12 pr-4 py-4 input-custom rounded-2xl text-sm placeholder-slate-400 transition-all" 
-                    type="email" name="email" required autofocus autocomplete="username" placeholder="Tu correo electrónico" />
+                    class="block w-full pl-12 pr-4 py-3.5 input-custom rounded-2xl text-sm placeholder-slate-400 transition-all font-medium" 
+                    type="email" name="email" required autofocus autocomplete="username" placeholder="Correo electrónico" />
             </div>
-            <x-input-error :messages="$errors->get('form.email')" class="mt-2 text-xs" />
+            <x-input-error :messages="$errors->get('form.email')" class="mt-1 text-[10px]" />
         </div>
 
         <!-- Password -->
@@ -54,10 +53,10 @@ new #[Layout('layouts.guest')] class extends Component
                     <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                 </div>
                 <input wire:model="form.password" id="password" 
-                    class="block w-full pl-12 pr-4 py-4 input-custom rounded-2xl text-sm placeholder-slate-400 transition-all" 
-                    type="password" name="password" required autocomplete="current-password" placeholder="Tu contraseña" />
+                    class="block w-full pl-12 pr-4 py-3.5 input-custom rounded-2xl text-sm placeholder-slate-400 transition-all font-medium" 
+                    type="password" name="password" required autocomplete="current-password" placeholder="Contraseña" />
             </div>
-            <x-input-error :messages="$errors->get('form.password')" class="mt-2 text-xs" />
+            <x-input-error :messages="$errors->get('form.password')" class="mt-1 text-[10px]" />
         </div>
 
         <div class="flex items-center justify-between px-1">
