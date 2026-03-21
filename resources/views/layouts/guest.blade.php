@@ -21,51 +21,53 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                padding: 2rem 1rem;
                 min-height: 100vh;
+                padding: 1rem;
             }
             
             .app-container {
                 background: white;
                 border-radius: 4rem;
                 width: 100%;
-                max-width: 1100px;
+                max-width: 1000px;
+                height: 650px; /* Tamaño estable garantizado */
                 position: relative;
-                box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.03);
+                box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.04);
                 display: flex;
                 flex-direction: column;
-                min-height: calc(100vh - 4rem);
+                overflow: hidden;
             }
 
             .inner-form-card {
                 background: white;
                 border-radius: 2.5rem;
                 width: 100%;
-                max-width: 440px;
-                padding: 2rem;
-                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
-                position: relative;
-                z-index: 20;
-                margin: 2rem 0;
+                max-width: 400px;
+                padding: 2.5rem;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 30;
             }
 
             .illustration-layer {
                 position: absolute;
-                bottom: 5%;
-                left: 5%;
+                bottom: 8%;
+                left: 8%;
                 pointer-events: none;
                 z-index: 10;
             }
             
             .illustration-layer img {
-                max-height: 320px;
-                opacity: 1;
+                height: 280px;
+                width: auto;
             }
 
             .btn-primary-custom {
                 background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
                 color: white;
-                box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.3);
             }
 
             .btn-primary-custom:hover {
@@ -85,12 +87,11 @@
                 border-color: #4f46e5;
                 ring: 0;
                 outline: none;
-                box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.05);
             }
 
             .social-circle {
-                width: 44px;
-                height: 44px;
+                width: 40px;
+                height: 40px;
                 border-radius: 50%;
                 border: 1.5px solid #f1f5f9;
                 display: flex;
@@ -129,23 +130,29 @@
                 </div>
 
                 <!-- Central Content -->
-                <div class="flex-1 flex items-center justify-center p-4 relative min-h-[500px]">
+                <div class="flex-1 relative">
                     
                     <!-- Illustration Layer (Background - Floating Left) -->
                     <div class="illustration-layer hidden md:block">
                         <img src="{{ asset('assets/img/auth-illustration.png') }}" alt="Illustration">
                     </div>
 
-                    <!-- Form Card (Floating on Top) -->
+                    <!-- Form Card (Floating on Top - Centered Absoluto) -->
                     <div class="inner-form-card">
                         {{ $slot }}
+                    </div>
+
+                    <!-- Right Illustration Elements (Deco) -->
+                    <div class="absolute bottom-10 right-10 flex flex-col items-end gap-2 pointer-events-none">
+                        <div class="w-24 h-32 bg-yellow-400 opacity-20 rounded-xl"></div>
+                        <div class="w-16 h-16 bg-indigo-600 opacity-10 rounded-xl"></div>
                     </div>
 
                 </div>
 
                 <!-- Corner Texts / Footer inside -->
-                <div class="p-8 text-center md:text-right">
-                    <span class="text-[10px] font-bold text-slate-300 pointer-events-none uppercase tracking-widest">DIOGENES &copy; 2026 . Todos los derechos reservados</span>
+                <div class="absolute bottom-6 left-1/2 -translate-x-1/2">
+                    <span class="text-[9px] font-bold text-slate-200 uppercase tracking-widest whitespace-nowrap">DIOGENES &copy; 2026 . GESTIÓN JURÍDICA INTELIGENTE</span>
                 </div>
 
             </div>
