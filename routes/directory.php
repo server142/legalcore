@@ -17,9 +17,6 @@ Route::get('/unete', function () {
 
 // Rutas autenticadas del directorio (ANTES del comodín)
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Gestión del perfil público del abogado
-    Route::get('/perfil', \App\Livewire\Profile\DirectoryManager::class)->name('profile.directory');
-    
     // Dashboard del directorio (analytics, pagos, etc.)
     Route::get('/dashboard', \App\Livewire\Directory\Dashboard::class)->name('directory.dashboard');
 });

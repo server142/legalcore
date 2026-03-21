@@ -157,6 +157,9 @@ Route::get('/landing-asesorias', \App\Livewire\Landings\BJCA\April2026Landing::c
     Route::get('auth/google', [\App\Http\Controllers\GoogleController::class, 'redirectToGoogle'])->name('auth.google');
     Route::get('auth/google/callback', [\App\Http\Controllers\GoogleController::class, 'handleGoogleCallback']);
     Route::post('auth/google/disconnect', [\App\Http\Controllers\GoogleController::class, 'disconnect'])->name('auth.google.disconnect');
+
+    // Gestión del perfil público del abogado (Global)
+    Route::get('/perfil', \App\Livewire\Profile\DirectoryManager::class)->name('profile.directory');
 });
 
 Route::view('profile', 'profile')
