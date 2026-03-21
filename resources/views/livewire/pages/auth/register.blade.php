@@ -210,7 +210,7 @@ new #[Layout('layouts.guest')] class extends Component
                     </svg>
                 </div>
                 <span class="text-xs font-medium text-slate-500 leading-snug">
-                    Acepto el <a href="{{ route('aviso-privacidad') }}" target="_blank" class="text-indigo-600 font-bold hover:underline">Aviso de Privacidad</a> y los <a href="{{ route('terminos-condiciones') }}" target="_blank" class="text-indigo-600 font-bold hover:underline">Términos y Condiciones</a>
+                    Acepto el <a href="{{ route('privacy') }}" target="_blank" class="text-indigo-600 font-bold hover:underline">Aviso de Privacidad</a> y los <a href="{{ route('terms') }}" target="_blank" class="text-indigo-600 font-bold hover:underline">Términos y Condiciones</a>
                 </span>
             </label>
             <x-input-error :messages="$errors->get('accepted_legal')" class="mt-1 text-[10px]" />
