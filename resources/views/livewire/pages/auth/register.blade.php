@@ -147,7 +147,7 @@ new #[Layout('layouts.guest')] class extends Component
         @else
             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Completar Registro</h3>
         @endif
-        <h2 class="text-3xl font-black text-slate-900 tracking-tight leading-none mb-2">Crea tu<br>Cuenta.</h2>
+        <h2 class="text-3xl font-black text-slate-900 tracking-tight leading-none mb-2">Crea tu Cuenta.</h2>
         <p class="text-sm text-slate-500 font-medium">Únete a cientos de despachos</p>
     </div>
 

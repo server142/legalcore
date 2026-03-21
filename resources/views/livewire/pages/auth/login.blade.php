@@ -26,7 +26,7 @@ new #[Layout('layouts.guest')] class extends Component
 
 <div>
     <div class="mb-8">
-        <h2 class="text-3xl font-black text-slate-900 tracking-tight leading-none mb-2">Comienza a<br>Gestionar.</h2>
+        <h2 class="text-3xl font-black text-slate-900 tracking-tight leading-none mb-2">Comienza a Gestionar.</h2>
         <p class="text-sm text-slate-500 font-medium">Inicia sesión en tu cuenta</p>
     </div>
 

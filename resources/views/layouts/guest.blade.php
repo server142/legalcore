@@ -87,9 +87,7 @@
                 <!-- Navbar fixed inside -->
                 <div class="flex items-center justify-between p-6 md:p-10 md:absolute top-0 left-0 w-full z-40">
                     <a href="/" class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white">
-                            <img src="{{ asset('favicon.png') }}" class="w-6 h-6 brightness-0 invert" alt="">
-                        </div>
+                        <img src="{{ asset('favicon.png') }}" alt="Logo" class="w-10 h-10 object-contain">
                         <span class="text-2xl font-bold tracking-tight">Diogenes.</span>
                     </a>
                     
