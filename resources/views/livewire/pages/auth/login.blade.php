@@ -33,7 +33,7 @@ new #[Layout('layouts.guest')] class extends Component
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form wire:submit="login" class="space-y-4">
+    <form wire:submit.prevent="login" class="space-y-4">
         <!-- Email Address -->
         <div>
             <div class="relative">

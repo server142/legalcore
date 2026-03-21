@@ -136,10 +136,6 @@ new #[Layout('layouts.guest')] class extends Component
     }
 }; ?>
 
-@php
-    $maxWidth = 'sm:max-w-xl md:max-w-4xl'; 
-@endphp
-
 <div>
     <div class="mb-8">
         @if($planSlug === 'directory-free')
@@ -157,7 +153,7 @@ new #[Layout('layouts.guest')] class extends Component
         </div>
     @endif
 
-    <form wire:submit="register" class="space-y-4">
+    <form wire:submit.prevent="register" class="space-y-4">
         <!-- Name -->
         <div>
             <div class="relative">
