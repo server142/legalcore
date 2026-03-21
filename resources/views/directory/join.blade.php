@@ -114,21 +114,22 @@
 
                         <ul class="relative space-y-4 mb-10 flex-grow">
                             @php
-                                $features = [
-                                    'directory-free' => ['Perfil Público Básico', 'Aparecer en búsquedas', '1 Especialidad', 'Foto de perfil'],
-                                    'directory-pro' => ['✅ Perfil Pro Verificado', '🌟 Ubicación Premium', '🚀 5 Especialidades', '💬 Botón Directo WhatsApp', '📊 Estadísticas de Visitas'],
-                                    'default' => ['Perfil Pro', 'Soporte Prioritario', 'Todo incluido']
-                                ];
-                                $pFeatures = $features[$plan->slug] ?? $features['default'];
+                                // Usar las características reales de la base de datos (lo que edita el Super Admin)
+                                $pFeatures = is_string($plan->features) ? json_decode($plan->features, true) : ($plan->features ?? []);
                             @endphp
-                            @foreach($pFeatures as $feature)
-                                <li class="flex items-start gap-3 text-sm text-gray-300 leading-tight">
-                                    <div class="flex-shrink-0 mt-0.5">
-                                        <svg class="w-4 h-4 {{ $isPro ? 'text-indigo-400' : 'text-emerald-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                                    </div>
-                                    {{ $feature }}
-                                </li>
-                            @endforeach
+                            
+                            @if(!empty($pFeatures))
+                                @foreach($pFeatures as $feature)
+                                    <li class="flex items-start gap-3 text-sm text-gray-300 leading-tight">
+                                        <div class="flex-shrink-0 mt-0.5">
+                                            <svg class="w-4 h-4 {{ $isPro ? 'text-indigo-400' : 'text-emerald-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                        </div>
+                                        {{ $feature }}
+                                    </li>
+                                @endforeach
+                            @else
+                                <li class="text-sm text-gray-500 italic">No se han definido características para este plan.</li>
+                            @endif
                         </ul>
 
                         <div class="relative">
