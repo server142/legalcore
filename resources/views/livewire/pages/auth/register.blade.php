@@ -141,91 +141,95 @@ new #[Layout('layouts.guest')] class extends Component
 @endphp
 
 <div>
-    <div class="mb-8 text-left">
+    <div class="mb-8">
         @if($planSlug === 'directory-free')
-            <p class="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 py-1.5 px-3 rounded-full inline-block border border-indigo-100 mb-4">Directorio Gratuito</p>
+            <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 py-1.5 px-3 rounded-full inline-block border border-indigo-100 mb-4">Directorio Gratuito</p>
         @else
-            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Paso 1/1</h3>
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Completar Registro</h3>
         @endif
-        <h2 class="text-3xl font-black text-slate-900 tracking-tight leading-tight">Crea tu Cuenta</h2>
-        <p class="text-xs text-slate-400 font-bold mt-2">Únete a cientos de despachos digitales</p>
+        <h2 class="text-3xl font-black text-slate-900 tracking-tight leading-none mb-2">Crea tu<br>Cuenta.</h2>
+        <p class="text-sm text-slate-500 font-medium">Únete a cientos de despachos</p>
     </div>
 
     @if (session('error'))
-        <div class="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-xs rounded-2xl flex items-center gap-2 font-semibold">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <div class="mb-4 bg-red-50 border-auth-card border-red-200 text-red-600 px-4 py-3 rounded-2xl text-xs font-semibold shadow-sm">
             {{ session('error') }}
         </div>
     @endif
 
     <form wire:submit="register" class="space-y-4">
-        <input type="hidden" wire:model="planSlug">
-        
         <!-- Name -->
-        <div class="space-y-1">
+        <div>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                 </div>
                 <input wire:model="name" id="name" 
-                    class="block w-full pl-11 pr-4 py-4 input-custom rounded-2xl text-sm placeholder-slate-400" 
-                    type="text" name="name" required autofocus placeholder="Tu nombre completo" />
+                    class="block w-full pl-11 pr-4 py-4 input-flat" 
+                    type="text" name="name" required autofocus autocomplete="name" placeholder="Tu nombre completo" />
             </div>
             <x-input-error :messages="$errors->get('name')" class="mt-1 text-[10px]" />
         </div>
 
         <!-- Email Address -->
-        <div class="space-y-1">
+        <div>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206" /></svg>
                 </div>
                 <input wire:model="email" id="email" 
-                    class="block w-full pl-11 pr-4 py-4 input-custom rounded-2xl text-sm placeholder-slate-400" 
-                    type="email" name="email" required placeholder="Correo electrónico" />
+                    class="block w-full pl-11 pr-4 py-4 input-flat" 
+                    type="email" name="email" required autocomplete="username" placeholder="Correo electrónico" />
             </div>
             <x-input-error :messages="$errors->get('email')" class="mt-1 text-[10px]" />
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Password -->
-            <div class="space-y-1">
+        <div class="grid grid-cols-2 gap-3">
+            <!-- Password & Confirm -->
+            <div>
                 <input wire:model="password" id="password" 
-                    class="block w-full px-4 py-4 input-custom rounded-2xl text-sm placeholder-slate-400" 
-                    type="password" name="password" required placeholder="Contraseña" />
+                    class="block w-full px-4 py-4 input-flat" 
+                    type="password" name="password" required autocomplete="new-password" placeholder="Contraseña" />
                 <x-input-error :messages="$errors->get('password')" class="mt-1 text-[10px]" />
             </div>
 
-            <!-- Confirm Password -->
-            <div class="space-y-1">
+            <div>
                 <input wire:model="password_confirmation" id="password_confirmation" 
-                    class="block w-full px-4 py-4 input-custom rounded-2xl text-sm placeholder-slate-400" 
-                    type="password" name="password_confirmation" required placeholder="Confirmar" />
+                    class="block w-full px-4 py-4 input-flat" 
+                    type="password" name="password_confirmation" required autocomplete="new-password" placeholder="Confirmar" />
                 <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1 text-[10px]" />
             </div>
         </div>
 
-        <!-- Legal Documents Acceptance -->
         <div class="pt-2">
-            <label class="flex items-center cursor-pointer group">
-                <input type="checkbox" wire:model="accepted_legal" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600/20">
-                <span class="ms-3 text-[10px] font-semibold text-slate-500 group-hover:text-slate-700 transition-colors leading-tight">
-                    Acepto el <a href="{{ route('privacy') }}" target="_blank" class="text-indigo-600 font-bold">Aviso de Privacidad</a> y los <a href="{{ route('terms') }}" target="_blank" class="text-indigo-600 font-bold">Términos y Condiciones</a>
+            <label for="accepted_legal" class="flex items-start bg-transparent cursor-pointer group">
+                <div class="relative flex-shrink-0 flex items-center justify-center w-5 h-5 mr-3 mt-0.5 bg-[#f4f4f5] border-2 border-[#e4e4e7] rounded-md transition-colors group-hover:border-indigo-400">
+                    <input wire:model="accepted_legal" id="accepted_legal" type="checkbox" class="absolute w-full h-full opacity-0 cursor-pointer" name="accepted_legal">
+                    <svg class="w-3 h-3 text-indigo-600 hidden group-has-[:checked]:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <span class="text-xs font-medium text-slate-500 leading-snug">
+                    Acepto el <a href="{{ route('aviso-privacidad') }}" target="_blank" class="text-indigo-600 font-bold hover:underline">Aviso de Privacidad</a> y los <a href="{{ route('terminos-condiciones') }}" target="_blank" class="text-indigo-600 font-bold hover:underline">Términos y Condiciones</a>
                 </span>
             </label>
             <x-input-error :messages="$errors->get('accepted_legal')" class="mt-1 text-[10px]" />
         </div>
 
-        <div class="pt-4 flex flex-col gap-4">
-            <button type="submit" class="w-full py-4 btn-primary-custom rounded-2xl font-bold text-sm shadow-lg active:scale-95 transition-all" wire:loading.attr="disabled">
-                <span wire:loading.remove wire:target="register">Registrarse</span>
-                <span wire:loading wire:target="register">Procesando...</span>
+
+        <div class="mt-6">
+            <button type="submit" class="w-full btn-flat py-4 text-sm uppercase tracking-wider relative group overflow-hidden" wire:loading.attr="disabled">
+                <span class="relative z-10 flex items-center justify-center gap-2">
+                    <span wire:loading.remove wire:target="register">Completar Registro</span>
+                    <span wire:loading wire:target="register">Procesando...</span>
+                </span>
             </button>
-            <div class="text-center">
-                <a class="text-xs font-bold text-slate-400 hover:text-slate-600 transition" href="{{ route('login') }}" wire:navigate>
-                    ¿Ya tienes una cuenta? <span class="text-indigo-600">Entra aquí</span>
-                </a>
-            </div>
+        </div>
+        
+        <div class="mt-8 pt-6 border-t border-slate-100 text-center">
+            <p class="text-sm text-slate-500 font-medium">¿Ya tienes cuenta? 
+                <a href="{{ route('login') }}" wire:navigate class="text-indigo-600 font-bold hover:underline">Ingresa aquí</a>
+            </p>
         </div>
     </form>
 </div>
