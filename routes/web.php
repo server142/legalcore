@@ -14,6 +14,7 @@ Route::get('/', function () {
     $plans = Plan::where('is_active', true)
         ->where('slug', '!=', 'trial')
         ->where('slug', '!=', 'exento')
+        ->where('slug', 'not like', '%directory%')
         ->orderBy('price', 'asc')
         ->get();
     
