@@ -30,14 +30,15 @@
                                     str_contains($tp, 'premium') => 'Premium',
                                     str_contains($tp, 'basic')   => 'Básico',
                                     str_contains($tp, 'pro')     => 'Pro',
+                                    $tp === 'trial'              => 'TRIAL (Despacho Completo - Cuenta Creada con Bug Anterior)',
                                     default                      => 'Gratuito',
                                 };
                                 $headerPlanClass = ($headerPlanLabel === 'Gratuito')
                                     ? 'text-gray-500 bg-gray-100'
-                                    : 'text-indigo-700 bg-indigo-50 border border-indigo-200';
+                                    : 'text-rose-700 bg-red-100 border border-red-200';
                             @endphp
-                            <span class="text-xs font-semibold {{ $headerPlanClass }} px-2 py-0.5 rounded-full">
-                                Plan {{ $headerPlanLabel }}
+                            <span class="text-[10px] font-black {{ $headerPlanClass }} px-2 py-0.5 rounded-full">
+                                {{ $headerPlanLabel === 'Gratuito' ? 'Plan ' : '' }}{{ $headerPlanLabel }}
                             </span>
                         </div>
                     </div>
