@@ -22,64 +22,64 @@
                 100% { background-position: 0% 50%; }
             }
             
-            @keyframes float {
-                0%, 100% { transform: translateY(0px); }
-                50% { transform: translateY(-20px); }
+            @keyframes pulse-slow {
+                0%, 100% { opacity: 0.3; transform: scale(1); }
+                50% { opacity: 0.5; transform: scale(1.1); }
             }
             
-            @keyframes fadeInUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(30px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-            
-            .gradient-bg { 
-                background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe);
-                background-size: 400% 400%;
+            .premium-bg {
+                background: radial-gradient(circle at 0% 0%, #1e1b4b 0%, #0f172a 50%, #020617 100%);
+                background-size: 200% 200%;
                 animation: gradient 15s ease infinite;
             }
-            
-            .float-animation {
-                animation: float 6s ease-in-out infinite;
+
+            .glow-orb {
+                position: absolute;
+                width: 600px;
+                height: 600px;
+                background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%);
+                border-radius: 50%;
+                filter: blur(60px);
+                z-index: 0;
+                animation: pulse-slow 10s ease-in-out infinite;
             }
             
-            .fade-in-up {
-                animation: fadeInUp 0.8s ease-out;
+            .glass-panel {
+                background: rgba(15, 23, 42, 0.6);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             }
             
-            .glass-effect {
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-            }
-            
-            .pattern-dots {
-                background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-                background-size: 20px 20px;
+            .input-glow:focus {
+                box-shadow: 0 0 15px -3px rgba(99, 102, 241, 0.4);
             }
         </style>
     </head>
-    <body class="font-sans antialiased text-gray-900">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900 gradient-bg relative overflow-hidden pattern-dots px-4">
-            <!-- Floating Shapes -->
-            <div class="absolute top-20 left-20 w-32 h-32 bg-white/10 rounded-full blur-3xl float-animation"></div>
-            <div class="absolute bottom-20 right-20 w-40 h-40 bg-white/10 rounded-full blur-3xl float-animation" style="animation-delay: 2s;"></div>
-            <div class="absolute top-1/2 left-1/3 w-24 h-24 bg-white/10 rounded-full blur-2xl float-animation" style="animation-delay: 4s;"></div>
+    <body class="font-sans antialiased text-slate-200">
+        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 premium-bg relative overflow-hidden px-4">
+            
+            <!-- Dynamic Orbs -->
+            <div class="glow-orb" style="top: -200px; left: -200px; background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);"></div>
+            <div class="glow-orb" style="bottom: -200px; right: -200px; background: radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%); animation-delay: -5s;"></div>
 
-            <div class="w-full {{ $maxWidth ?? 'sm:max-w-md' }} mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg glass-effect fade-in-up relative z-10">
-                <div class="flex justify-center mb-8">
-                    <!-- Logo -->
-                    <a href="/" class="text-3xl font-bold text-gray-900 tracking-wider hover:text-indigo-600 transition">
-                        DIOGENES
-                    </a>
+            <div class="w-full {{ $maxWidth ?? 'sm:max-w-md' }} mt-6 px-1 py-1 overflow-hidden sm:rounded-[2.5rem] relative z-10">
+                <!-- Subtle Gradient Border -->
+                <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent rounded-[2.5rem] -z-10"></div>
+                
+                <div class="bg-slate-900/40 backdrop-blur-3xl p-8 sm:p-10 rounded-[2.4rem] border border-white/5 shadow-2xl">
+                    <div class="flex flex-col items-center mb-10">
+                        <!-- Modern Logo -->
+                        <a href="/" class="flex items-center gap-3 group">
+                            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+                            </div>
+                            <span class="text-2xl font-black tracking-widest text-white">DIOGENES</span>
+                        </a>
+                    </div>
+
+                    {{ $slot }}
                 </div>
-
-                {{ $slot }}
             </div>
             
             <!-- Footer Links -->
