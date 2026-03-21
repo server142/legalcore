@@ -16,19 +16,54 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         
         <style>
-            .premium-bg {
-                background-color: #f8fafc;
-                background-image: url('{{ asset('assets/img/auth-bg.png') }}');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
+            .premium-canvas {
+                background-color: #f1f5f9;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1.5rem;
+                min-height: 100vh;
             }
             
-            .auth-card {
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(10px);
-                box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.05), 0 30px 60px -30px rgba(0, 0, 0, 0.05);
-                border: 1px solid rgba(255, 255, 255, 0.5);
+            .app-container {
+                background: white;
+                border-radius: 4rem;
+                width: 100%;
+                max-width: 1100px;
+                height: 85vh;
+                min-height: 600px;
+                position: relative;
+                box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.03);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            .inner-form-card {
+                background: white;
+                border-radius: 2.5rem;
+                width: 100%;
+                max-width: 420px;
+                padding: 2.5rem;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+                position: relative;
+                z-index: 20;
+            }
+
+            .illustration-layer {
+                position: absolute;
+                bottom: 10%;
+                left: 0;
+                right: 0;
+                display: flex;
+                justify-content: center;
+                pointer-events: none;
+                z-index: 10;
+            }
+            
+            .illustration-layer img {
+                max-height: 400px;
+                opacity: 0.9;
             }
 
             .btn-primary-custom {
@@ -40,12 +75,11 @@
             .btn-primary-custom:hover {
                 background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
                 transform: translateY(-1px);
-                box-shadow: 0 15px 25px -5px rgba(79, 70, 229, 0.4);
             }
 
             .input-custom {
-                background: #f1f5f9;
-                border: 2px solid transparent;
+                background: #f8fafc;
+                border: 1.5px solid #f1f5f9;
                 color: #1e293b;
                 transition: all 0.3s ease;
             }
@@ -55,34 +89,69 @@
                 border-color: #4f46e5;
                 ring: 0;
                 outline: none;
-                box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+                box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.05);
+            }
+
+            .social-circle {
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                border: 1.5px solid #f1f5f9;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #64748b;
+                transition: all 0.3s ease;
+            }
+
+            .social-circle:hover {
+                background: #f8fafc;
+                color: #4f46e5;
             }
         </style>
     </head>
-    <body class="font-sans antialiased text-slate-800">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center py-6 premium-bg relative px-4">
+    <body class="font-sans antialiased">
+        <div class="premium-canvas">
             
-            <div class="w-full {{ $maxWidth ?? 'sm:max-w-xl md:max-w-4xl' }} relative z-10 auth-card rounded-[2.5rem] p-8 sm:p-12 flex flex-col md:flex-row gap-8 lg:gap-16 items-center">
+            <!-- White Main App Container (Red. Style) -->
+            <div class="app-container">
                 
-                <div class="hidden md:flex flex-1 flex-col justify-center">
-                    <div class="mb-8">
-                        <!-- Img Logo Diogenes -->
-                        <img src="{{ asset('favicon.png') }}" alt="Diogenes Logo" class="w-32 h-auto mb-6">
-                        <h1 class="text-3xl font-black text-slate-900 leading-tight">Gestión Jurídica<br><span class="text-indigo-600">Inteligente</span></h1>
-                    </div>
-                    <p class="text-sm text-slate-500 font-medium mb-6">Optimiza tu firma con la plataforma líder para abogados mexicanos.</p>
-                    <div class="flex items-center gap-4 text-[10px] font-bold text-slate-400">
-                        <span class="flex items-center gap-1"><svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> 15 DÍAS PRUEBA GRATIS</span>
-                        <span class="flex items-center gap-1"><svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> SOPORTE PREMIUM</span>
+                <!-- Navbar (Internal) -->
+                <div class="flex items-center justify-between px-12 py-8 relative z-30">
+                    <a href="/" class="flex items-center gap-3">
+                        <img src="{{ asset('favicon.png') }}" alt="Logo" class="w-10 h-auto">
+                        <span class="text-xl font-black text-slate-800 tracking-tighter">Diogenes<span class="text-indigo-600">.</span></span>
+                    </a>
+                    <div class="flex items-center gap-3">
+                        <a href="https://wa.me/522281405060" target="_blank" class="social-circle">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        </a>
+                        <a href="https://www.diogenes.com.mx" target="_blank" class="social-circle bg-slate-900 !border-slate-900 !text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                        </a>
                     </div>
                 </div>
 
-                <div class="w-full md:w-[400px]">
-                    <div class="md:hidden flex flex-col items-center mb-8">
-                        <img src="{{ asset('favicon.png') }}" alt="Diogenes Logo" class="w-24 h-auto">
+                <!-- Central Content -->
+                <div class="flex-1 flex items-center justify-center p-6 relative">
+                    
+                    <!-- Form Card (Floating on Top) -->
+                    <div class="inner-form-card">
+                        {{ $slot }}
                     </div>
-                    {{ $slot }}
+
+                    <!-- Illustration Layer (Background) -->
+                    <div class="illustration-layer">
+                        <img src="{{ asset('assets/img/auth-illustration.png') }}" alt="Illustration">
+                    </div>
+
                 </div>
+
+                <!-- Corner Texts / Footer inside -->
+                <div class="absolute bottom-8 right-12 text-[10px] font-bold text-slate-300 pointer-events-none">
+                    DIOGENES &copy; 2026
+                </div>
+
             </div>
             
             <!-- Footer Links -->

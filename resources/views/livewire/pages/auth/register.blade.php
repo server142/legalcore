@@ -141,12 +141,14 @@ new #[Layout('layouts.guest')] class extends Component
 @endphp
 
 <div>
-    <div class="mb-10 text-center">
-        <h2 class="text-3xl font-bold text-slate-900 tracking-tight mb-2">Crear cuenta</h2>
+    <div class="mb-8 text-left">
         @if($planSlug === 'directory-free')
-            <p class="text-xs font-black text-indigo-600 uppercase tracking-widest bg-indigo-500/5 py-2 rounded-full inline-block px-4 border border-indigo-500/10 mb-2">Plan Directorio Gratuito</p>
+            <p class="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 py-1.5 px-3 rounded-full inline-block border border-indigo-100 mb-4">Directorio Gratuito</p>
+        @else
+            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Paso 1/1</h3>
         @endif
-        <p class="text-sm text-slate-500 font-medium tracking-wide">Comienza tu prueba gratuita hoy</p>
+        <h2 class="text-3xl font-black text-slate-900 tracking-tight leading-tight">Crea tu Cuenta</h2>
+        <p class="text-xs text-slate-400 font-bold mt-2">Únete a cientos de despachos digitales</p>
     </div>
 
     @if (session('error'))
