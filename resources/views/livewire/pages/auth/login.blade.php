@@ -25,28 +25,68 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
-    <div class="mb-10 text-center">
-        <h2 class="text-3xl font-black text-white tracking-tight mb-2">Bienvenido</h2>
-        <p class="text-sm text-slate-400 font-medium tracking-wide">Gestiona tu despacho con inteligencia</p>
+    <div class="mb-8 text-center">
+        <h2 class="text-3xl font-bold text-slate-900 tracking-tight mb-2">Iniciar sesión</h2>
+        <p class="text-sm text-slate-500 font-medium">Por favor ingresa tus datos para continuar</p>
     </div>
 
     <!-- Session Status -->
     <x-auth-session-status class="mb-6" :status="session('status')" />
 
-    <form wire:submit="login" class="space-y-6">
+    <form wire:submit="login" class="space-y-5">
         <!-- Email Address -->
         <div class="space-y-1">
-            <label for="email" class="block text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Correo Electrónico</label>
-            <div class="relative group">
+            <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg class="h-5 w-5 text-slate-600 group-focus-within:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206" /></svg>
+                    <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206" /></svg>
                 </div>
                 <input wire:model="form.email" id="email" 
-                    class="block w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all input-glow" 
-                    type="email" name="email" required autofocus autocomplete="username" placeholder="tu@email.com" />
+                    class="block w-full pl-12 pr-4 py-4 input-custom rounded-2xl text-sm placeholder-slate-400 transition-all" 
+                    type="email" name="email" required autofocus autocomplete="username" placeholder="Tu correo electrónico" />
             </div>
-            <x-input-error :messages="$errors->get('form.email')" class="mt-2" />
+            <x-input-error :messages="$errors->get('form.email')" class="mt-2 text-xs" />
         </div>
+
+        <!-- Password -->
+        <div class="space-y-1">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                </div>
+                <input wire:model="form.password" id="password" 
+                    class="block w-full pl-12 pr-4 py-4 input-custom rounded-2xl text-sm placeholder-slate-400 transition-all" 
+                    type="password" name="password" required autocomplete="current-password" placeholder="Tu contraseña" />
+            </div>
+            <x-input-error :messages="$errors->get('form.password')" class="mt-2 text-xs" />
+        </div>
+
+        <div class="flex items-center justify-between px-1">
+            <label for="remember" class="inline-flex items-center cursor-pointer group">
+                <input wire:model="form.remember" id="remember" type="checkbox" class="rounded border-slate-300 text-[#f07e3e] focus:ring-[#f07e3e]/20" name="remember">
+                <span class="ms-2 text-xs font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">Recordarme</span>
+            </label>
+
+            @if (Route::has('password.request'))
+                <a class="text-xs font-bold text-slate-400 hover:text-[#f07e3e] transition" href="{{ route('password.request') }}" wire:navigate>
+                    ¿Olvidaste tu contraseña?
+                </a>
+            @endif
+        </div>
+
+        <div>
+            <button type="submit" class="w-full py-4 btn-primary-custom rounded-2xl font-bold text-sm shadow-lg active:scale-95 transition-all">
+                Entrar
+            </button>
+        </div>
+
+        <div class="pt-4 text-center">
+            <p class="text-xs font-semibold text-slate-500">
+                ¿Aún no tienes cuenta? 
+                <a href="{{ route('register') }}" class="text-[#f07e3e] font-bold hover:underline transition" wire:navigate>Regístrate aquí</a>
+            </p>
+        </div>
+    </form>
+</div>
 
         <!-- Password -->
         <div class="space-y-1">
