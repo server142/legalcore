@@ -76,6 +76,75 @@
             @endforeach
         </div>
 
+        {{-- Pricing Table --}}
+        <div class="mb-24 px-4 sm:px-0">
+            <div class="text-center mb-12">
+                <span class="text-indigo-400 text-xs font-black uppercase tracking-[0.2em] mb-4 block">Nuestros Planes</span>
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-4">Escoge tu nivel de visibilidad</h2>
+                <p class="text-gray-400 max-w-xl mx-auto">Planes diseñados para cada etapa de tu práctica profesional, con todas las herramientas para conectar con clientes.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-{{ $plans->count() }} gap-8 max-w-5xl mx-auto">
+                @foreach($plans as $plan)
+                    @php
+                        $isPro = str_contains($plan->slug, 'pro');
+                    @endphp
+                    <div class="relative flex flex-col p-8 rounded-[2rem] transition-all duration-500 group
+                         {{ $isPro 
+                            ? 'bg-indigo-600/10 border-indigo-500/50 shadow-[0_0_50px_-10px_rgba(99,102,241,0.4)] scale-105 z-10' 
+                            : 'bg-white/5 border-white/10 hover:bg-white/[0.08]' }}"
+                         style="border-width: 1px; border-style: solid; backdrop-filter: blur(10px);">
+                        
+                        @if($isPro)
+                            <!-- Glow Background Effect -->
+                            <div class="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[2rem] blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
+                            
+                            <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-[10px] font-black px-6 py-2 rounded-full uppercase tracking-widest shadow-xl shadow-indigo-500/40 whitespace-nowrap">
+                                ⭐ El más elegido
+                            </div>
+                        @endif
+
+                        <div class="relative mb-8 text-center pt-2">
+                            <h3 class="text-xl font-black mb-3 {{ $isPro ? 'text-indigo-300' : 'text-gray-400 font-bold uppercase tracking-wider text-sm' }}">{{ $plan->name }}</h3>
+                            <div class="flex items-baseline justify-center gap-1">
+                                <span class="text-5xl font-black text-white tracking-tighter">${{ number_format($plan->price, 0) }}</span>
+                                <span class="text-sm text-gray-400 font-medium">/{{ $plan->billing_period === 'monthly' ? 'mes' : 'año' }}</span>
+                            </div>
+                        </div>
+
+                        <ul class="relative space-y-4 mb-10 flex-grow">
+                            @php
+                                $features = [
+                                    'directory-free' => ['Perfil Público Básico', 'Aparecer en búsquedas', '1 Especialidad', 'Foto de perfil'],
+                                    'directory-pro' => ['✅ Perfil Pro Verificado', '🌟 Ubicación Premium', '🚀 5 Especialidades', '💬 Botón Directo WhatsApp', '📊 Estadísticas de Visitas'],
+                                    'default' => ['Perfil Pro', 'Soporte Prioritario', 'Todo incluido']
+                                ];
+                                $pFeatures = $features[$plan->slug] ?? $features['default'];
+                            @endphp
+                            @foreach($pFeatures as $feature)
+                                <li class="flex items-start gap-3 text-sm text-gray-300 leading-tight">
+                                    <div class="flex-shrink-0 mt-0.5">
+                                        <svg class="w-4 h-4 {{ $isPro ? 'text-indigo-400' : 'text-emerald-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                    </div>
+                                    {{ $feature }}
+                                </li>
+                            @endforeach
+                        </ul>
+
+                        <div class="relative">
+                            <a href="{{ route('register', ['plan' => $plan->slug]) }}" 
+                               class="w-full inline-block py-4 rounded-2xl text-[13px] font-black text-center transition-all active:scale-95 shadow-lg
+                               {{ $isPro 
+                                    ? 'bg-white text-indigo-900 hover:shadow-indigo-500/25' 
+                                    : 'bg-white/10 hover:bg-white/20 text-white' }}">
+                               Seleccionar {{ $plan->name }}
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
         {{-- Stats Bar --}}
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;margin-bottom:5rem;">
             @foreach([['500+', 'Abogados registrados'], ['15,000+', 'Búsquedas al mes'], ['98%', 'Clientes satisfechos']] as $s)

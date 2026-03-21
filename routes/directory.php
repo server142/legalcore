@@ -12,7 +12,11 @@ Route::get('/', \App\Livewire\PublicDirectory::class)->name('directory.public');
 
 // Página de registro/publicidad (ANTES del comodín)
 Route::get('/unete', function () {
-    return view('directory.join');
+    $plans = \App\Models\Plan::where('is_active', true)
+        ->where('slug', 'like', '%directory%')
+        ->orderBy('price', 'asc')
+        ->get();
+    return view('directory.join', compact('plans'));
 })->name('directory.advertise');
 
 // Rutas autenticadas del directorio (ANTES del comodín)
