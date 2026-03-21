@@ -102,26 +102,19 @@
                     </div>
                 </div>
 
-                <!-- MOBILE FLOW -->
-                <div class="md:hidden flex-1 p-6 relative z-30">
-                    <div class="form-card px-6 py-8 w-full">
-                        {{ $slot }}
-                    </div>
-                </div>
-
-                <!-- DESKTOP SCENE -->
-                <div class="hidden md:block w-full h-full relative z-10">
+                <!-- UNIVERSAL FLOW (Mobile + Desktop) -->
+                <div class="w-full h-full relative z-10 flex flex-col flex-1 p-6 md:p-0">
                     
-                    <!-- The "Floor" Line -->
-                    <div class="absolute bottom-[25%] left-[10%] right-[10%] border-b border-black"></div>
+                    <!-- The "Floor" Line (Desktop) -->
+                    <div class="hidden md:block absolute bottom-[25%] left-[10%] right-[10%] border-b border-black"></div>
 
-                    <!-- Left Illustration -->
-                    <div class="absolute bottom-[25%] left-[12%] w-[250px] z-20 bg-white" style="margin-bottom: -1px;">
+                    <!-- Left Illustration (Desktop) -->
+                    <div class="hidden md:block absolute bottom-[25%] left-[12%] w-[250px] z-20 bg-white" style="margin-bottom: -1px;">
                         <img src="{{ asset('assets/img/auth-illustration.png') }}" class="w-full h-auto mix-blend-multiply opacity-90" alt="">
                     </div>
 
-                    <!-- Right Deco Boxes -->
-                    <div class="absolute bottom-[25%] right-[15%] z-20 flex items-end gap-1 bg-white px-2" style="margin-bottom: -1px; padding-bottom: 1px;">
+                    <!-- Right Deco Boxes (Desktop) -->
+                    <div class="hidden md:flex absolute bottom-[25%] right-[15%] z-20 items-end gap-1 bg-white px-2" style="margin-bottom: -1px; padding-bottom: 1px;">
                         <div class="w-20 h-32 border-2 border-black bg-white relative">
                             <!-- fake shadow/depth -->
                             <div class="absolute top-2 -right-2 w-full h-full border-r-2 border-b-2 border-black"></div>
@@ -132,8 +125,8 @@
                         </div>
                     </div>
 
-                    <!-- Center Form Card -->
-                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[45%] w-full max-w-[420px] form-card p-10 z-30">
+                    <!-- Center Form Card (Responsive) -->
+                    <div class="form-card w-full max-w-[420px] p-8 md:p-10 z-30 mx-auto mt-6 md:mt-0 md:absolute md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-[45%]">
                          {{ $slot }}
                     </div>
 
