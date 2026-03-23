@@ -86,7 +86,7 @@ class BookingModal extends Component
         $fechaHora = Carbon::parse($this->fecha . ' ' . $this->hora);
 
         // Bypass typical multi-tenant scope manually by setting the specific tenant ID from the profile
-        Asesoria::withoutGlobalScope('tenant')->create([
+        $asesoria = Asesoria::withoutGlobalScope('tenant')->create([
             'tenant_id'        => $profile->user->tenant_id,
             'abogado_id'       => $profile->user_id,
             'tipo'             => $this->tipo,
@@ -97,6 +97,22 @@ class BookingModal extends Component
             'asunto'           => $this->asunto,
             'fecha_hora'       => $fechaHora,
             'duracion_minutos' => 60,
+        ]);
+
+        // Sincronizar automáticamente con la Agenda del Abogado
+        $start = $asesoria->fecha_hora;
+        $end = (clone $start)->addMinutes(60);
+        $descripcion = $asesoria->asunto . "\nTel: " . $asesoria->telefono . "\nEmail: " . $asesoria->email;
+
+        \App\Models\Evento::withoutGlobalScope('tenant')->create([
+            'tenant_id' => $asesoria->tenant_id,
+            'titulo' => "Cita del Directorio - {$asesoria->nombre_prospecto}",
+            'descripcion' => $descripcion,
+            'start_time' => $start,
+            'end_time' => $end,
+            'tipo' => 'cita',
+            'user_id' => $asesoria->abogado_id,
+            'asesoria_id' => $asesoria->id,
         ]);
 
         // Optional: Send notification to the lawyer here
