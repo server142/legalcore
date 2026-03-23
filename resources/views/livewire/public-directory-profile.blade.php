@@ -187,12 +187,12 @@
                         @endif
 
                         <button
-                            @if($isPremium && $whatsapp)
-                                onclick="window.open('https://wa.me/{{ $whatsapp }}?text={{ urlencode('Hola, deseo agendar una cita.') }}', '_blank')"
+                            @if($isPremium)
+                                wire:click="$dispatch('openBookingModal', { profileId: {{ $profile->id }} })"
                             @endif
                             class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl font-semibold text-sm border transition-all active:scale-[0.98]
-                            {{ ($isPremium && $whatsapp) ? 'bg-indigo-600 hover:bg-indigo-700 text-white border-transparent shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed' }}"
-                            @if(!($isPremium && $whatsapp)) disabled @endif>
+                            {{ $isPremium ? 'bg-indigo-600 hover:bg-indigo-700 text-white border-transparent shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed' }}"
+                            @if(!$isPremium) disabled title="Esta función requiere un plan Premium" @endif>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                             Agendar Cita
                         </button>
@@ -299,4 +299,6 @@
         © {{ date('Y') }} Diogenes · Directorio de Abogados en México
     </div>
 
+    <!-- Booking Modal Component -->
+    <livewire:directory.booking-modal />
 </div>

@@ -190,7 +190,7 @@
                         <!-- Botón Agendar Cita -->
                         <button 
                             @if($isButtonActive)
-                                onclick="window.open('https://wa.me/{{ $whatsapp }}?text=Hola, le contacto desde el Directorio de Abogados de www.diogenes.com.mx. Me interesa agendar una cita profesional con usted.', '_blank')"
+                                wire:click="$dispatch('openBookingModal', { profileId: {{ $profile->id }} })"
                             @endif
                             class="flex-grow flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all shadow-sm border
                             {{ $isButtonActive 
@@ -238,4 +238,7 @@
             {{ $profiles->links() }}
         </div>
     </div>
+
+    <!-- Booking Modal Component -->
+    <livewire:directory.booking-modal />
 </div>
