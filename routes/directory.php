@@ -28,5 +28,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Perfil individual de abogado (COMODÍN AL FINAL)
 // IMPORTANTE: El constraint "where" evita que el buscador de perfiles atrape rutas del sistema como login, register, etc.
 Route::get('/{profile}', App\Livewire\PublicDirectoryProfile::class)
-    ->where('profile', '^(?!login|register|admin|dashboard|unete|perfil|logout|legal|privacy|terms|billing|livewire)[^/]+$')
+    ->where('profile', '^(?!login|register|admin|dashboard|unete|perfil|logout|legal|privacy|terms|billing|livewire|asesorias|expedientes|proyectos|clientes|agenda|terminos|ai|dof|sjf|manual|formatos|marketing|settings|usuarios|roles|estados-calendarios|abogados|materias|estados-procesales|actuaciones|pricing|profile)[^/]+$')
     ->name('directory.show');
