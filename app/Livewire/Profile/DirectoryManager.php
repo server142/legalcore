@@ -147,6 +147,36 @@ class DirectoryManager extends Component
         $this->dispatch('notify', message: '✓ Perfil guardado correctamente.');
     }
 
+    public function generateAIBio()
+    {
+        $this->validateOnly('headline');
+
+        $ai = new \App\Services\AIService();
+        
+        $name = Auth::user()->name;
+        $headline = $this->headline ?? 'Abogado';
+        $specialtiesText = empty($this->specialties) ? 'derecho general' : implode(', ', $this->specialties);
+        
+        $prompt = "Escribe una biografía profesional muy atractiva y directa (máximo 450 caracteres) para un abogado llamado '$name'. 
+Su título es '$headline' y sus especialidades son: $specialtiesText. 
+La biografía debe escribirse en primera persona ('Ayudo a mis clientes a...', 'Me especializo en...'), ser sumamente persuasiva y transmitir confianza, autoridad y empatía. No uses comillas, no incluyas saludos ni despedidas, y que sea un solo párrafo contundente perfecto para un directorio legal público.";
+
+        $messages = [
+            ['role' => 'system', 'content' => 'Eres un experto en marketing jurídico y escritura persuasiva para perfiles profesionales de abogados.'],
+            ['role' => 'user', 'content' => $prompt]
+        ];
+
+        // 0.7 temperature brings a bit of creative flair but stays professional
+        $response = $ai->ask($messages, 0.7, 300);
+
+        if (isset($response['success']) && $response['success']) {
+            $this->bio = trim($response['content']);
+            $this->dispatch('notify', message: '✨ Biografía generada con Inteligencia Artificial.');
+        } else {
+            $this->dispatch('notify', message: '❌ Error de conexión con la IA. Inténtalo más tarde.');
+        }
+    }
+
     public function render()
     {
         return view('livewire.profile.directory-manager', [

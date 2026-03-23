@@ -333,9 +333,20 @@
 
                         <!-- Bio -->
                         <div class="col-span-6">
-                            <label for="bio" class="block text-sm font-medium text-gray-700">Biografía / Presentación</label>
-                            <div class="mt-1">
-                                <textarea wire:model.live.debounce.500ms="bio" id="bio" rows="4" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Cuéntale a tus clientes por qué eres la mejor opción para resolver su caso..."></textarea>
+                            <div class="flex justify-between items-end mb-1">
+                                <label for="bio" class="block text-sm font-medium text-gray-700">Biografía / Presentación</label>
+                                <button type="button" wire:click="generateAIBio" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                                    <svg wire:loading.remove wire:target="generateAIBio" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                    <svg wire:loading wire:target="generateAIBio" class="animate-spin w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    <span wire:loading.remove wire:target="generateAIBio">Redactar con IA</span>
+                                    <span wire:loading wire:target="generateAIBio">Generando...</span>
+                                </button>
+                            </div>
+                            <div class="mt-1 relative">
+                                <textarea wire:model.live.debounce.500ms="bio" id="bio" rows="4" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Recomendación: Mínimo 2 líneas. Cuéntale a tus clientes por qué eres la mejor opción para resolver su caso..."></textarea>
+                                <div wire:loading wire:target="generateAIBio" class="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center rounded-md z-10 border border-indigo-200">
+                                    <span class="text-sm font-bold text-indigo-600 animate-pulse">La Inteligencia Artificial está escribiendo tu biografía...</span>
+                                </div>
                             </div>
                             <p class="mt-2 text-xs text-gray-500">Breve descripción de tu experiencia y enfoque.</p>
                             @error('bio') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
