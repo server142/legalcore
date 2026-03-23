@@ -15,9 +15,10 @@ class LogoutButton extends Component
         $logout();
 
         if ($isDirOnly) {
-            $this->redirect('/directorio', navigate: true);
+            $this->redirect(route('directory.public'), navigate: true);
         } else {
-            $this->redirect('/', navigate: true);
+            // For Premium, try to redirect back to the marketing landing unless they want to stay on the directory
+            $this->redirect(route('welcome'), navigate: true);
         }
     }
 

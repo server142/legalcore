@@ -14,9 +14,9 @@ new class extends Component
         $logout();
 
         if ($isDirOnly) {
-            $this->redirect('/directorio', navigate: true);
+            $this->redirect(route('directory.public'), navigate: true);
         } else {
-            $this->redirect('/', navigate: true);
+            $this->redirect(route('welcome'), navigate: true);
         }
     }
 }; ?>
