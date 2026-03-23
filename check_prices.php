@@ -1,0 +1,1 @@
+<?php require "vendor/autoload.php"; $app = require_once "bootstrap/app.php"; $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class); $kernel->bootstrap(); $plans = App\Models\Plan::where("slug", "like", "%directory%")->get(); foreach($plans as $p) echo $p->name . " - $" . $p->price . " (" . $p->billing_period . ")\n";

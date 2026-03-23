@@ -41,28 +41,39 @@ class PublicDirectory extends Component
 
     public function render()
     {
-        $profiles = DirectoryProfile::with('user')
-            ->where('is_public', true)
+        $profiles = DirectoryProfile::select('directory_profiles.*')
+            ->with(['user', 'user.tenant'])
+            ->join('users', 'directory_profiles.user_id', '=', 'users.id')
+            ->join('tenants', 'users.tenant_id', '=', 'tenants.id')
+            ->where('directory_profiles.is_public', true)
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('headline', 'like', '%' . $this->search . '%')
-                      ->orWhere('bio', 'like', '%' . $this->search . '%')
-                      ->orWhereHas('user', function ($u) {
-                          $u->where('name', 'like', '%' . $this->search . '%');
-                      });
+                    $q->where('directory_profiles.headline', 'like', '%' . $this->search . '%')
+                      ->orWhere('directory_profiles.bio', 'like', '%' . $this->search . '%')
+                      ->orWhere('users.name', 'like', '%' . $this->search . '%');
                 });
             })
             ->when($this->state, function ($query) {
-                $query->where('state', 'like', '%' . $this->state . '%');
+                $query->where('directory_profiles.state', 'like', '%' . $this->state . '%');
             })
             ->when($this->city, function ($query) {
-                $query->where('city', 'like', '%' . $this->city . '%');
+                $query->where('directory_profiles.city', 'like', '%' . $this->city . '%');
             })
             ->when($this->specialty, function ($query) {
-                 $query->whereJsonContains('specialties', $this->specialty);
+                 $query->whereJsonContains('directory_profiles.specialties', $this->specialty);
             })
-            ->orderByDesc('is_verified') // Verified first
-            ->latest()
+            // 1. MAX PRIORITY: PRO plans and Full Diogenes System Users
+            // 2. MID PRIORITY: Basic Directory Plans
+            // 3. LOW PRIORITY: Free Directory Plans
+            ->orderByRaw("
+                CASE 
+                    WHEN tenants.plan LIKE '%pro%' OR tenants.plan NOT LIKE 'directory-%' THEN 3
+                    WHEN tenants.plan LIKE '%basic%' THEN 2
+                    ELSE 1 
+                END DESC
+            ")
+            ->orderByDesc('directory_profiles.is_verified') // Verified first among same tier
+            ->latest('directory_profiles.created_at')
             ->paginate(12);
 
         // Get unique specialties for filter

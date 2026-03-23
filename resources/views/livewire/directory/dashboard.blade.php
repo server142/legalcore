@@ -117,10 +117,31 @@
         </div>
 
         {{-- ── Main Grid ────────────────────────────────────────────────── --}}
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        @php
+            $currentDirPlan = auth()->user()->tenant->plan ?? 'directory-free';
+            $hasStatsAccess = $this->is_despacho_user || str_contains($currentDirPlan, 'directory-pro') || str_contains($currentDirPlan, 'diogenes');
+        @endphp
+
+        <div class="relative grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            @if(!$hasStatsAccess)
+                {{-- PAYWALL OVERLAY --}}
+                <div class="absolute inset-0 z-10 bg-white/50 backdrop-blur-[6px] rounded-2xl flex flex-col items-center justify-center p-8 text-center" style="border: 1px solid rgba(255,255,255,0.5);">
+                    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(79,70,229,0.4)]">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-900 tracking-tight">Estadísticas Exclusivas</h3>
+                    <p class="text-gray-600 font-medium mt-2 max-w-md">
+                        Mide el impacto de tu perfil: Visitas, impresiones y tasa de conversión al descubierto con <strong class="text-indigo-600">Directorio Pro</strong>.
+                    </p>
+                    <a href="{{ route('directory.advertise') }}" class="mt-6 px-8 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-200 transition-all hover:scale-105">
+                        Mejorar mi Plan
+                    </a>
+                </div>
+            @endif
 
             {{-- Chart --}}
-            <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+            <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm relative {{ !$hasStatsAccess ? 'opacity-30 pointer-events-none select-none' : '' }}">
                 <div class="flex items-center justify-between mb-6">
                     <div>
                         <h2 class="text-base font-bold text-gray-900">Actividad del perfil</h2>
@@ -225,19 +246,38 @@
                         </div>
 
                         {{-- Ratio de conversión --}}
-                        @php
-                            $convRate = $totals['views'] > 0 ? round(($totals['contacts'] / $totals['views']) * 100, 1) : 0;
-                        @endphp
-                        <div class="grid grid-cols-2 gap-2 pt-1">
-                            <div class="bg-indigo-50 rounded-xl p-3 text-center">
-                                <p class="text-xl font-black text-indigo-700">{{ number_format($totals['views']) }}</p>
-                                <p class="text-[10px] text-indigo-500 font-semibold">Visitas totales</p>
+                        @if($hasStatsAccess)
+                            @php
+                                $convRate = $totals['views'] > 0 ? round(($totals['contacts'] / $totals['views']) * 100, 1) : 0;
+                            @endphp
+                            <div class="grid grid-cols-2 gap-2 pt-1">
+                                <div class="bg-indigo-50 rounded-xl p-3 text-center">
+                                    <p class="text-xl font-black text-indigo-700">{{ number_format($totals['views']) }}</p>
+                                    <p class="text-[10px] text-indigo-500 font-semibold">Visitas totales</p>
+                                </div>
+                                <div class="bg-emerald-50 rounded-xl p-3 text-center">
+                                    <p class="text-xl font-black text-emerald-700">{{ $convRate }}%</p>
+                                    <p class="text-[10px] text-emerald-500 font-semibold">Tasa conversión</p>
+                                </div>
                             </div>
-                            <div class="bg-emerald-50 rounded-xl p-3 text-center">
-                                <p class="text-xl font-black text-emerald-700">{{ $convRate }}%</p>
-                                <p class="text-[10px] text-emerald-500 font-semibold">Tasa conversión</p>
+                        @else
+                            <div class="relative grid grid-cols-2 gap-2 pt-1">
+                                <div class="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <a href="{{ route('directory.advertise') }}" class="text-[10px] font-bold text-indigo-700 bg-white px-3 py-1 rounded-full shadow-sm border border-indigo-100 flex items-center gap-1 hover:bg-indigo-50 transition-colors">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                        Bloqueado
+                                    </a>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-3 text-center opacity-40">
+                                    <p class="text-xl font-black text-gray-400">???</p>
+                                    <p class="text-[10px] text-gray-400 font-semibold">Visitas totales</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-3 text-center opacity-40">
+                                    <p class="text-xl font-black text-gray-400">?%</p>
+                                    <p class="text-[10px] text-gray-400 font-semibold">Tasa conversión</p>
+                                </div>
                             </div>
-                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

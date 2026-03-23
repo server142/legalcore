@@ -120,24 +120,38 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             @forelse($profiles as $profile)
-                <div class="bg-white rounded-2xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden hover:shadow-[0_20px_40px_-5px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 flex flex-col group h-full">
+                @php
+                    $plan = $profile->user->tenant->plan ?? 'directory-free';
+                    $isFree = $plan === 'directory-free';
+                    $isPro = str_contains($plan, 'pro') || !str_starts_with($plan, 'directory');
+                    $whatsapp = $profile->whatsapp ? preg_replace('/[^0-9]/', '', $profile->whatsapp) : null;
+                    $hasContact = !empty($whatsapp);
+                    $isButtonActive = !$isFree && $hasContact;
+                @endphp
+                <div class="bg-white rounded-2xl shadow-[0_5px_20px_-5px_rgba(0,0,0,0.05)] border-2 {{ $isPro ? 'border-transparent [background-clip:padding-box,border-box] [background-origin:padding-box,border-box] bg-[linear-gradient(#fff,#fff),linear-gradient(to_right,#6366f1,#a855f7)] shadow-indigo-100/50' : 'border-slate-100' }} overflow-hidden hover:shadow-[0_20px_40px_-5px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 flex flex-col group h-full relative">
                     
-                    <!-- Card Header -->
-                    <div class="p-6 pb-2 relative">
-                        <!-- Verified Badge -->
-                        @if($profile->is_verified)
-                            <div class="absolute top-4 right-4 z-10" title="Verificación Oficial">
-                                <div class="bg-blue-50/80 backdrop-blur-sm text-blue-600 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center border border-blue-100 shadow-sm">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                                    Verificado
-                                </div>
+                    <!-- PRO / Verified Badges Area -->
+                    <div class="absolute top-4 right-4 z-10 flex flex-col gap-2 items-end">
+                        @if($isPro)
+                            <div title="Miembro Pro" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+                                <svg class="w-3 h-3 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                PRO
                             </div>
                         @endif
+                        @if($profile->is_verified)
+                            <div title="Verificación Oficial" class="bg-blue-50/90 backdrop-blur-sm text-blue-600 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center border border-blue-200 shadow-sm">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                Verificado
+                            </div>
+                        @endif
+                    </div>
 
+                    <!-- Card Header -->
+                    <div class="p-6 pb-2 relative">
                         <div class="flex flex-col items-center text-center">
                             <div class="relative mb-3">
                                 @if($profile->profile_photo_path)
-                                    <img class="h-24 w-24 rounded-full object-cover border-4 border-white shadow-md group-hover:scale-105 transition-transform duration-500" src="{{ $profile->profile_photo_url }}" alt="{{ $profile->user->name }}">
+                                    <img class="h-24 w-24 rounded-full object-cover border-4 {{ $isPro ? 'border-indigo-50' : 'border-white' }} shadow-md group-hover:scale-105 transition-transform duration-500" src="{{ $profile->profile_photo_url }}" alt="{{ $profile->user->name }}">
                                 @else
                                     <div class="h-24 w-24 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-black text-3xl border-4 border-white shadow-md group-hover:scale-105 transition-transform duration-500">
                                         {{ substr($profile->user->name, 0, 1) }}

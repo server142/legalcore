@@ -1,0 +1,1 @@
+<?php require "vendor/autoload.php"; $app = require_once "bootstrap/app.php"; $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class); $kernel->bootstrap(); $u = App\Models\User::where("email", "mail@simpson.com")->first(); if($u) { $t = $u->tenant; if($t) { $t->plan = "directory-free"; $t->save(); echo "Fixed Lisa!"; } }

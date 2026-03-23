@@ -1,0 +1,1 @@
+<?php require "vendor/autoload.php"; $app = require_once "bootstrap/app.php"; $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class); $kernel->bootstrap(); $u = App\Models\User::latest()->first(); echo "\nEmail: " . $u->email . "\nRoles: " . $u->roles->pluck("name")->implode(", ") . "\n";
