@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Laravel\Sanctum\HasApiTokens;
 use App\Traits\BelongsToTenant;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, BelongsToTenant, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, BelongsToTenant, SoftDeletes;
 
     public function getProfilePhotoUrlAttribute()
     {

@@ -12,3 +12,8 @@ Route::prefix('v1')->group(function () {
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::middleware(['auth:sanctum'])->prefix('v1/bot/asesorias')->group(function () {
+    Route::post('/available-slots', [\App\Http\Controllers\Api\BotAsesoriaController::class, 'getAvailableSlots']);
+    Route::post('/store', [\App\Http\Controllers\Api\BotAsesoriaController::class, 'store']);
+});
