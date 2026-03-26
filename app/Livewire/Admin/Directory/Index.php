@@ -5,7 +5,9 @@ namespace App\Livewire\Admin\Directory;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\DirectoryProfile;
+use App\Models\DirectoryAnalytic;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class Index extends Component
 {
@@ -55,6 +57,34 @@ class Index extends Component
         $this->selectedProfileId = null;
     }
 
+    public function getGlobalStatsProperty()
+    {
+        $totalViews = DirectoryAnalytic::where('event_type', 'profile_view')->count();
+        $totalContacts = DirectoryAnalytic::where('event_type', 'whatsapp_click')->count();
+        $totalProfiles = DirectoryProfile::count();
+        
+        $conversionRate = $totalViews > 0 ? round(($totalContacts / $totalViews) * 100, 1) : 0;
+
+        // Top 3 lawyers with most views in the last 30 days
+        $topProfiles = DirectoryProfile::with('user')
+            ->select('directory_profiles.*')
+            ->join('directory_analytics', 'directory_profiles.id', '=', 'directory_analytics.directory_profile_id')
+            ->where('directory_analytics.event_type', 'profile_view')
+            ->where('directory_analytics.event_date', '>=', now()->subDays(30))
+            ->groupBy('directory_profiles.id')
+            ->orderByRaw('COUNT(directory_analytics.id) DESC')
+            ->limit(3)
+            ->get();
+
+        return [
+            'total_views' => $totalViews,
+            'total_contacts' => $totalContacts,
+            'total_profiles' => $totalProfiles,
+            'conversion_rate' => $conversionRate,
+            'top_profiles' => $topProfiles
+        ];
+    }
+
     public function render()
     {
         $profiles = DirectoryProfile::with('user')
@@ -67,7 +97,8 @@ class Index extends Component
             ->paginate(10);
 
         return view('livewire.admin.directory.index', [
-            'profiles' => $profiles
+            'profiles' => $profiles,
+            'stats'    => $this->globalStats
         ])->layout('layouts.app');
     }
 }

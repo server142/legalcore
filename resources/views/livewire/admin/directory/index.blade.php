@@ -4,13 +4,77 @@
             <div class="p-6 lg:p-8 bg-white border-b border-gray-200">
                 
                 <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-2xl font-medium text-gray-900">
+                    <h1 class="text-2xl font-bold text-gray-900">
                         Administración del Directorio Público
                     </h1>
                     
                     <div class="relative">
-                        <input wire:model.live.debounce.300ms="search" type="text" placeholder="Buscar abogado..." class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                        <input wire:model.live.debounce.300ms="search" type="text" placeholder="Buscar abogado..." class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-64">
                     </div>
+                </div>
+
+                <!-- Global Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 flex items-center">
+                        <div class="bg-indigo-100 p-3 rounded-lg mr-4">
+                            <span class="text-2xl">👁️</span>
+                        </div>
+                        <div>
+                            <p class="text-xs text-indigo-600 font-bold uppercase tracking-wider">Visitas Totales</p>
+                            <p class="text-2xl font-black text-indigo-900">{{ number_format($stats['total_views']) }}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex items-center">
+                        <div class="bg-emerald-100 p-3 rounded-lg mr-4">
+                            <span class="text-2xl">💬</span>
+                        </div>
+                        <div>
+                            <p class="text-xs text-emerald-600 font-bold uppercase tracking-wider">WhatsApp Leads</p>
+                            <p class="text-2xl font-black text-emerald-900">{{ number_format($stats['total_contacts']) }}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-100 flex items-center">
+                        <div class="bg-amber-100 p-3 rounded-lg mr-4">
+                            <span class="text-2xl">📈</span>
+                        </div>
+                        <div>
+                            <p class="text-xs text-amber-600 font-bold uppercase tracking-wider">Conversión</p>
+                            <p class="text-2xl font-black text-amber-900">{{ $stats['conversion_rate'] }}%</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-center">
+                        <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                            <span class="text-2xl">⚖️</span>
+                        </div>
+                        <div>
+                            <p class="text-xs text-blue-600 font-bold uppercase tracking-wider">Perfiles Activos</p>
+                            <p class="text-2xl font-black text-blue-900">{{ $stats['total_profiles'] }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Performing Lawyers -->
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-8">
+                    <h3 class="text-sm font-bold text-gray-700 uppercase mb-3 flex items-center">
+                        <span class="mr-2">🔥</span> Abogados más populares (Últimos 30 días)
+                    </h3>
+                    <div class="flex flex-wrap gap-4">
+                        @forelse($stats['top_profiles'] as $profile)
+                            <div class="bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200 flex items-center">
+                                <span class="text-xs font-bold text-gray-400 mr-2">#{{ $loop->iteration }}</span>
+                                <span class="text-sm font-medium text-gray-800">{{ $profile->user->name }}</span>
+                            </div>
+                        @empty
+                            <p class="text-sm text-gray-400">Sin datos suficientes aún.</p>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-700">Explorar Perfiles</h2>
                 </div>
 
                 <div class="overflow-x-auto relative shadow-md sm:rounded-lg">
