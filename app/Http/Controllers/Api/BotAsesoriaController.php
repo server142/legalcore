@@ -16,6 +16,15 @@ class BotAsesoriaController extends Controller
      */
     public function getAvailableSlots(Request $request)
     {
+        $user = $request->user();
+
+        // Validar que el usuario tenga un tenant_id asignado
+        if (!$user->tenant_id) {
+            return response()->json([
+                'error' => 'El usuario autenticado no tiene un tenant (despacho) asociado.'
+            ], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'date' => 'required|date_format:Y-m-d',
             'duration_minutes' => 'nullable|integer|min:15|max:120',
@@ -27,7 +36,6 @@ class BotAsesoriaController extends Controller
 
         $date = Carbon::parse($request->date);
         $durationMinutes = $request->duration_minutes ?? 30;
-        $user = $request->user();
         $tenant = $user->tenant;
         $settings = $tenant?->settings ?? [];
 
@@ -112,6 +120,15 @@ class BotAsesoriaController extends Controller
      */
     public function store(Request $request)
     {
+        $user = $request->user();
+
+        // Validar que el usuario tenga un tenant_id asignado
+        if (!$user->tenant_id) {
+            return response()->json([
+                'error' => 'El usuario autenticado no tiene un tenant (despacho) asociado.'
+            ], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'nombre_prospecto' => 'required|string|max:255',
             'telefono' => 'required|string|max:50',
@@ -125,7 +142,6 @@ class BotAsesoriaController extends Controller
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        $user = $request->user();
         $start = Carbon::parse($request->fecha_hora);
         $duration = $request->duracion_minutos ?? 30;
         $end = (clone $start)->addMinutes($duration);
@@ -153,7 +169,7 @@ class BotAsesoriaController extends Controller
         $asesoria = Asesoria::create([
             'tenant_id' => $user->tenant_id,
             'abogado_id' => $user->id,
-            'tipo' => 'videoconferencia', // Por defecto para landings
+            'tipo' => 'videoconferencia',
             'estado' => 'agendada',
             'nombre_prospecto' => $request->nombre_prospecto,
             'telefono' => $request->telefono,

@@ -146,6 +146,9 @@
             <x-sidebar-link :href="route('admin.settings')" :active="request()->routeIs('admin.settings')" icon="settings">
                 {{ __('Configuración') }}
             </x-sidebar-link>
+            <x-sidebar-link :href="route('admin.api-settings')" :active="request()->routeIs('admin.api-settings')" icon="key">
+                {{ __('Configuración API') }}
+            </x-sidebar-link>
             <x-sidebar-link :href="route('admin.legal-documents.index')" :active="request()->routeIs('admin.legal-documents.*')" icon="book">
                 {{ __('Documentos Legales') }}
             </x-sidebar-link>
