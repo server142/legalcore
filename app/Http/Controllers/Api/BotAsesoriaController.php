@@ -217,6 +217,7 @@ class BotAsesoriaController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Asesoría agendada correctamente',
+            'public_link' => route('asesorias.public', $asesoria->public_token),
             'data' => $asesoria
         ], 201);
     }
