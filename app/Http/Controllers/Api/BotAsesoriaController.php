@@ -135,7 +135,9 @@ class BotAsesoriaController extends Controller
             'email' => 'nullable|email|max:255',
             'asunto' => 'required|string|max:255',
             'fecha_hora' => 'required|date_format:Y-m-d H:i:s',
-            'duracion_minutos' => 'nullable|integer'
+            'duracion_minutos' => 'nullable|integer',
+            'tipo' => 'nullable|in:presencial,videoconferencia',
+            'origen' => 'nullable|string'
         ]);
 
         if ($validator->fails()) {
@@ -147,6 +149,7 @@ class BotAsesoriaController extends Controller
         $end = (clone $start)->addMinutes($duration);
 
         // Verificamos si no hay conflicto antes de agendar
+        // Buscamos conflicto tanto en eventos como en asesorías agendadas
         $conflictEvento = Evento::where('tenant_id', $user->tenant_id)
             ->where('user_id', $user->id)
             ->where('start_time', '<', $end)
@@ -166,29 +169,50 @@ class BotAsesoriaController extends Controller
             ], 409);
         }
 
+        $origen = $request->origen ?? 'BOT Diogenes AI';
+        $notas = "[ORIGEN: {$origen}]\r\nAgendada vía API Bot por " . $user->name . "\r\nNotas adicionales: " . $request->asunto;
+
         $asesoria = Asesoria::create([
             'tenant_id' => $user->tenant_id,
             'abogado_id' => $user->id,
-            'tipo' => 'videoconferencia',
+            'tipo' => $request->tipo ?? 'videoconferencia',
             'estado' => 'agendada',
             'nombre_prospecto' => $request->nombre_prospecto,
             'telefono' => $request->telefono,
             'email' => $request->email,
             'asunto' => $request->asunto,
             'fecha_hora' => $start,
-            'duracion_minutos' => $duration
+            'duracion_minutos' => $duration,
+            'costo' => 0.00,
+            'notas' => $notas,
         ]);
         
-        // Crear el evento de agenda
+        // Crear el evento de agenda VINCULADO a la asesoría
         Evento::create([
             'tenant_id' => $user->tenant_id,
             'user_id' => $user->id,
-            'titulo' => 'Asesoría Inicial - ' . $request->nombre_prospecto,
+            'asesoria_id' => $asesoria->id,
+            'titulo' => 'Asesoría (' . ucfirst($origen) . ') - ' . $request->nombre_prospecto,
             'descripcion' => "Asunto: " . $request->asunto . "\nTel: " . $request->telefono,
             'start_time' => $start,
             'end_time' => $end,
-            'tipo' => 'cita'
+            'tipo' => 'cita',
+            'color' => '#6366f1' // Color distintivo para bots (indigo)
         ]);
+
+        // Intentar envío de correos si el email está presente
+        try {
+            if ($asesoria->email) {
+                \Illuminate\Support\Facades\Mail::to($asesoria->email)
+                    ->send(new \App\Mail\AsesoriaConfirmation($asesoria));
+            }
+            if ($user->email) {
+                \Illuminate\Support\Facades\Mail::to($user->email)
+                    ->send(new \App\Mail\AsesoriaNotificationAbogado($asesoria));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error enviando emails desde Bot: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,
